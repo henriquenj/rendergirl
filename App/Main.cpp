@@ -1,6 +1,5 @@
 /*
-	RenderGirl - OpenCL raytrace renderer
-	December - 2013
+	RenderGirl - OpenCL raytracer renderer
 	Copyright(C) Henrique Jung
 
 	This program is free software: you can redistribute it and/or modify
@@ -19,6 +18,8 @@
 
 
 
+
+// App project will consist on a stand alone interface for the raytracer using the wxWidgets toolkit
 int main()
 {
 	return 0;
