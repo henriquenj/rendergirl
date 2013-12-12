@@ -17,11 +17,11 @@
 */
 
 
-#include "RenderGirlCore.h"
+
+#include "OpenCLShared.h"
 
 
-/* App project will consist on a stand alone interface for the raytracer using the wxWidgets toolkit */
-int main()
+void OpenCLShared::InitOpenCL()
 {
-	return 0;
+
 }

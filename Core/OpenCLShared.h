@@ -17,11 +17,15 @@
 */
 
 
-#include "RenderGirlCore.h"
+// Static class encapsules all the OpenCL status and interacts with the OpenCL device
 
 
-/* App project will consist on a stand alone interface for the raytracer using the wxWidgets toolkit */
-int main()
+class OpenCLShared
 {
-	return 0;
-}
+private:
+	OpenCLShared(){;}
+
+public:
+	// init OpenCL on a given device
+	static void InitOpenCL();
+};

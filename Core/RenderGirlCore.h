@@ -17,11 +17,11 @@
 */
 
 
-#include "RenderGirlCore.h"
+/* Core project contains only the core renderer and the OpenCL wrappers
+	interfaces will be put on another projects */
 
 
-/* App project will consist on a stand alone interface for the raytracer using the wxWidgets toolkit */
-int main()
-{
-	return 0;
-}
+#include "OpenCLShared.h"
+
+
+
