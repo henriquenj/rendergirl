@@ -23,5 +23,3 @@
 
 #include "OpenCLShared.h"
 
-
-

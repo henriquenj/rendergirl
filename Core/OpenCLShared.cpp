@@ -17,11 +17,26 @@
 */
 
 
-
 #include "OpenCLShared.h"
 
+cl_context		OpenCLShared::context;
+cl_device_id	OpenCLShared::deviceId;
+cl_platform_id	OpenCLShared::platformId;
 
-void OpenCLShared::InitOpenCL()
+void OpenCLShared::InitOpenCL(int DeviceType)
 {
+	// create and init OpenCL
 
+	// error handling
+	cl_uint error = CL_SUCCESS;
+
+	// create plataforms
+	error = clGetPlatformIDs(1, &platformId, NULL);
+
+	//TODO: make debug class
+
+}
+
+OpenCLShared::~OpenCLShared()
+{
 }

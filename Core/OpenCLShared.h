@@ -17,15 +17,29 @@
 */
 
 
+#include "CL\cl.h"
+
+#define DEVICE_GPU 1
+#define DEVICE_CPU 2
+
+
 // Static class encapsules all the OpenCL status and interacts with the OpenCL device
-
-
 class OpenCLShared
 {
+public:
+	/*init OpenCL on a given device
+		DEVICE_GPU for GPU device
+		DEVICE_CPU for CPU device
+	*/
+	static void InitOpenCL(int DeviceType = DEVICE_CPU);
+
+	~OpenCLShared();
+
 private:
 	OpenCLShared(){;}
 
-public:
-	// init OpenCL on a given device
-	static void InitOpenCL();
+	// OpenCL stuff for internal control
+	static cl_platform_id platformId;
+	static cl_device_id deviceId;
+	static cl_context context;
 };
