@@ -16,11 +16,22 @@
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __OPENCLSHARED_CLASS__
+#define __OPENCLSHARED_CLASS__
+
 
 #include "CL\cl.h"
 
-#define DEVICE_GPU 1
-#define DEVICE_CPU 2
+
+// types of devices accepted by OpenCL
+enum DeviceType
+{
+	Default = 0x00000001,
+	CPU = 0x00000002,
+	GPU = 0x00000004,
+	Accelerator = 0x00000008,
+	All = 0xFFFFFFFF
+};
 
 
 // Static class encapsules all the OpenCL status and interacts with the OpenCL device
@@ -28,10 +39,8 @@ class OpenCLShared
 {
 public:
 	/*init OpenCL on a given device
-		DEVICE_GPU for GPU device
-		DEVICE_CPU for CPU device
 	*/
-	static void InitOpenCL(int DeviceType = DEVICE_CPU);
+	static void InitOpenCL(int DeviceType = CPU);
 
 	~OpenCLShared();
 
@@ -43,3 +52,7 @@ private:
 	static cl_device_id deviceId;
 	static cl_context context;
 };
+
+
+
+#endif // __OPENCLSHARED_CLASS__

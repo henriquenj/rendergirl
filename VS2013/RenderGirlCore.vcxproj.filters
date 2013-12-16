@@ -17,9 +17,15 @@
     <ClInclude Include="..\Core\OpenCLShared.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Core\Log.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Core\OpenCLShared.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Core\Log.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

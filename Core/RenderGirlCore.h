@@ -17,9 +17,18 @@
 */
 
 
+#ifndef __RENDERGIRLCORE_HEADER__
+#define __RENDERGIRLCORE_HEADER__
+
+// Master include file for RenderGirlCore
+
 /* Core project contains only the core renderer and the OpenCL wrappers
 	interfaces will be put on another projects */
 
 
 #include "OpenCLShared.h"
+#include "Log.h"
 
+
+
+#endif // __RENDERGIRLCORE_HEADER__

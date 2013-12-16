@@ -14,14 +14,42 @@
 
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+	*/
 
 
 #include "RenderGirlCore.h"
 
+#include <Windows.h>
+#include <iostream>
+
 
 /* App project will consist on a stand alone interface for the raytracer using the wxWidgets toolkit */
+
+
+class LogOutput : public LogListener
+{
+public:
+	void PrintLog(const char * message)
+	{
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+		std::cout << message << std::endl;
+	}
+	void PrintError(const char * error)
+	{
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),BACKGROUND_RED);
+		std::cout << error << std::endl;
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+	}
+};
+
 int main()
 {
+	LogOutput* listenerOutput = new LogOutput();
+	Log::AddListener(listenerOutput);
+
+	//OpenCLShared::InitOpenCL();
+
+	system("pause");
+
 	return 0;
 }

@@ -19,10 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Core\Log.h" />
     <ClInclude Include="..\Core\OpenCLShared.h" />
     <ClInclude Include="..\Core\RenderGirlCore.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Core\Log.cpp" />
     <ClCompile Include="..\Core\OpenCLShared.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

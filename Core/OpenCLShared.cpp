@@ -33,7 +33,7 @@ void OpenCLShared::InitOpenCL(int DeviceType)
 	// create plataforms
 	error = clGetPlatformIDs(1, &platformId, NULL);
 
-	//TODO: make debug class
+	
 
 }
 
