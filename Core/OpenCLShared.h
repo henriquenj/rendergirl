@@ -20,6 +20,7 @@
 #define __OPENCLSHARED_CLASS__
 
 #include <assert.h>
+#include <string>
 
 #include "CL\cl.h"
 #include "Log.h"
@@ -35,27 +36,41 @@ enum DeviceType
 	All = 0xFFFFFFFF
 };
 
+struct OCLPlatform
+{
+	cl_platform_id id;
+	std::string name;
+};
+
 
 // Static class encapsules all the OpenCL status and interacts with the OpenCL device
 class OpenCLShared
 {
 public:
-	/*init OpenCL on a given device*/
-	static void InitOpenCL(DeviceType deviceType = CPU);
-	/* return true if the OpenCL device is initialized and ready to run*/
-	static bool IsOpenCLOk();
+	/*init OpenCL platforms, return TRUE for success or return FALSE for failure*/
+	static bool InitPlatforms();
+	/* return list of avaiable platforms */ 
+	static inline const std::vector<OCLPlatform>& ReturnPlatforms()
+	{
+		return platformIds;
+	}
+	/* return number of avaiable platforms*/
+	static inline const int GetPlatformsSize()
+	{
+		return platformIds.size();
+	}
 	~OpenCLShared();
 
 private:
 	OpenCLShared(){;}
 
 	// OpenCL stuff for internal control
-	static cl_platform_id platformId;
+	static std::vector<OCLPlatform> platformIds;
 	static cl_device_id deviceId;
-	static cl_context context;
+	static cl_context context; 
 
-	// set this flag if the OpenCL device is ok and running
-	static bool isOk; 
+	// helper function to query information about platforms (thanks QT project for the hint =D)
+	static const std::string GetStringFromPlatform(cl_platform_id id, cl_platform_info name);
 };
 
 

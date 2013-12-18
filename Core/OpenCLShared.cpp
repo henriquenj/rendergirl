@@ -19,73 +19,95 @@
 
 #include "OpenCLShared.h"
 
-cl_context		OpenCLShared::context;
-cl_device_id	OpenCLShared::deviceId;
-cl_platform_id	OpenCLShared::platformId;
-bool			OpenCLShared::isOk = false;
+cl_context					OpenCLShared::context;
+cl_device_id				OpenCLShared::deviceId;
+std::vector<OCLPlatform>	OpenCLShared::platformIds;
 
-void OpenCLShared::InitOpenCL(DeviceType deviceType)
+bool OpenCLShared::InitPlatforms()
 {
-	assert(!isOk); //prevent program from initializing OpenCL twice
+	// do not query for new platforms if it has queried before
+	assert(platformIds.empty());
 
-	isOk = false;
 	// create and init OpenCL
-
-	Log::Message("Initializing OpenCL device...");
-	// error handling
-	cl_uint error = CL_SUCCESS;
+	Log::Message("Initializing OpenCL platforms...");
 
 	// create plataforms
-	error = clGetPlatformIDs(1, &platformId, NULL);
-	if (error != CL_SUCCESS)
+	cl_uint platSize = 0;	// number of loaded platforms
+
+	// empty query to see the size of platforms
+	if (clGetPlatformIDs(0, 0, &platSize) != CL_SUCCESS)
 	{
 		Log::Error("OpenCL platform could not be created, please check the OpenCL drivers for your device");
-		return;
+		return false;
 	}
+	
+	cl_platform_id* platforms = new cl_platform_id[platSize];
 
-	Log::Message("");
-	Log::Message("Platform created using the specs below: ");
-	char platProfile[16];
-	char platVersion[16];
-	char platName[50];
-	char platVendor[50];
-	char platExt[50];
-	// print information about platform
-	clGetPlatformInfo(platformId, CL_PLATFORM_PROFILE, 16 * sizeof(char), platProfile, NULL);
-	clGetPlatformInfo(platformId, CL_PLATFORM_VERSION, 16 * sizeof(char), platVersion, NULL);
-	clGetPlatformInfo(platformId, CL_PLATFORM_NAME, 50 * sizeof(char), platName, NULL);
-	clGetPlatformInfo(platformId, CL_PLATFORM_VENDOR, 50 * sizeof(char), platVendor, NULL);
-	error = clGetPlatformInfo(platformId, CL_PLATFORM_EXTENSIONS, 50 * sizeof(char), platExt, NULL);
-
-	std::string platProfile_s("Platform profile: ");
-	platProfile_s += platProfile;
-	Log::Message(platProfile_s);
-
-	std::string platVersion_s("Version: ");
-	platVersion_s += platVersion;
-	Log::Message(platVersion_s);
-
-	std::string platName_s("Name: ");
-	platName_s += platName;
-	Log::Message(platName_s);
-
-	std::string platVendor_s("Vendor: ");
-	platVendor_s += platVendor;
-	Log::Message(platVendor_s);
-
-	if (error == CL_SUCCESS)
+	// now the real query
+	if (clGetPlatformIDs(platSize, platforms, &platSize) != CL_SUCCESS)
 	{
-		std::string platExt_s("Extensions: ");
-		platExt_s += platExt;
-		Log::Message(platExt_s);
+		Log::Error("OpenCL platform could not be created, please check the OpenCL drivers for your device");
+		return false;
 	}
-	else Log::Message("No known extensions");
 
+	// put all in the platforms vector
+	for (int a = 0; a < platSize; a++)
+	{
+		OCLPlatform platform;
+		platform.id = platforms[a];
+		platformIds.push_back(platform);
+		// name will be filled later
+	}
 
-	// ask for the given device (GPU, CPU, ...)
-	//error = clGetDeviceIDs(platformId);
+	Log::Message(std::to_string(platSize) + " platforms were created.");
+
+	//for every platform, print information
+	int size = platformIds.size();
+	for (int a = 0; a < size; a++)
+	{
+		Log::Message("");
+		Log::Message("Platform " + std::to_string(a+1) + " created using the specs below: ");
+		std::string platProfile;
+		std::string platVersion;
+		std::string platName;
+		std::string platVendor;
+		std::string platExt;
+
+		// query info about the platform
+		platProfile = OpenCLShared::GetStringFromPlatform(platformIds[a].id, CL_PLATFORM_PROFILE);
+		platVersion = OpenCLShared::GetStringFromPlatform(platformIds[a].id, CL_PLATFORM_VERSION);
+		platName = OpenCLShared::GetStringFromPlatform(platformIds[a].id, CL_PLATFORM_NAME);
+		platVendor = OpenCLShared::GetStringFromPlatform(platformIds[a].id, CL_PLATFORM_VENDOR);
+		platExt = OpenCLShared::GetStringFromPlatform(platformIds[a].id, CL_PLATFORM_EXTENSIONS);
+
+		// print
+		Log::Message("Name: " + platName);
+		Log::Message("Vendor: " + platVendor);
+		Log::Message("Version: " + platVersion);
+		Log::Message("Platform profile: " + platProfile);
+		if (!platExt.empty())
+			Log::Message("Extensions: " + platExt);
+		else Log::Message("No known extensions");
+
+		// update name on vector
+		platformIds[a].name = platName;
+	}
 	
-	
+	return true;
+}
+
+const std::string OpenCLShared::GetStringFromPlatform(cl_platform_id id, cl_platform_info name)
+{
+	size_t size;
+	if (!id || clGetPlatformInfo(id, name, 0, 0, &size) != CL_SUCCESS)
+	{
+		return std::string();
+	}
+	std::string info;
+	info.resize(size);
+	clGetPlatformInfo(id, name, size, (void*)info.data(), &size);
+
+	return info;
 }
 
 OpenCLShared::~OpenCLShared()
