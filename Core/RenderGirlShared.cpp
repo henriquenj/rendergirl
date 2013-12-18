@@ -19,8 +19,6 @@
 
 #include "RenderGirlShared.h"
 
-cl_context					RenderGirlShared::context;
-cl_device_id				RenderGirlShared::deviceId;
 std::vector<OCLPlatform>	RenderGirlShared::platforms;
 
 bool RenderGirlShared::InitPlatforms()
@@ -65,6 +63,18 @@ bool RenderGirlShared::InitPlatforms()
 	delete platforms_cl;
 	
 	return true;
+}
+
+bool RenderGirlShared::InitDevices(DeviceType type)
+{
+	bool allOk = true;
+	int size = platforms.size();
+	for (int a = 0; a < size; a++)
+	{
+		allOk = platforms[a].InitDevices(type);
+	}
+
+	return allOk;
 }
 
 RenderGirlShared::~RenderGirlShared()

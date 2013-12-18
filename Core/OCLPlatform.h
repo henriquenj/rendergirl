@@ -24,11 +24,22 @@
 
 #include "CL\cl.h"
 #include "Log.h"
+#include "OCLDevice.h"
 
 // OCLPlatform class encapsules the OpenCL platform information
 class OCLPlatform
 {
 public:
+
+	// init this platform
+	void Init(cl_platform_id id);
+	/* query for devices on this platform and init them
+		DeviceType parameter can be CPU, GPU, All, Accelerator or Default
+		if at least one device failed to initialized, return FALSE
+	*/
+	bool InitDevices(DeviceType type);
+
+
 	// Get name of this platform
 	inline const std::string& GetName()const
 	{
@@ -39,15 +50,27 @@ public:
 	{
 		return vendor;
 	}
+	// get extensions list, return empty string if there's no known extensions
+	inline const std::string& GetExtensions() const
+	{
+		return extensions;
+	}
+	// get profile type, TRUE for FULL_PROFILE and FALSE for EMBEDDED PROFILE
+	inline const bool GetProfileType() const
+	{
+		if (profile.compare("FULL_PROFILE") == 0)
+		{
+			return true;
+		}
+		else { return false; }
+	}
 	inline const cl_platform_id& GetID() const
 	{
 		return id;
 	}
-	// init this platform
-	void Init(cl_platform_id id);
 private:
 
-	// helper function to query information about platforms (thanks QT project for the hint)
+	// helper function to query information about platforms (thanks QT project for this hint)
 	const std::string GetStringFromPlatform(cl_platform_info name);
 
 	std::string name;
@@ -57,6 +80,8 @@ private:
 	std::string version;
 
 	cl_platform_id id;
+
+	std::vector<OCLDevice> devices;
 };
 
 

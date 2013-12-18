@@ -25,17 +25,7 @@
 #include "CL\cl.h"
 #include "Log.h"
 #include "OCLPlatform.h"
-
-
-// types of devices accepted by OpenCL
-enum DeviceType
-{
-	Default = 0x00000001,
-	CPU = 0x00000002,
-	GPU = 0x00000004,
-	Accelerator = 0x00000008,
-	All = 0xFFFFFFFF
-};
+#include "OCLDevice.h"
 
 
 // Static class encapsules the OpenCL status and the renderer status
@@ -44,6 +34,8 @@ class RenderGirlShared
 public:
 	/*init OpenCL platforms, return TRUE for success or return FALSE for failure*/
 	static bool InitPlatforms();
+	/* init all devices for all platforms, return FALSE if at least one device failed to initialize */
+	static bool InitDevices(DeviceType type);
 	/* return list of avaiable platforms */ 
 	static inline const std::vector<OCLPlatform>& ReturnPlatforms()
 	{

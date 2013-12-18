@@ -37,8 +37,27 @@ void OCLPlatform::Init(cl_platform_id id)
 	if (!extensions.empty())
 		Log::Message("Extensions: " + extensions);
 	else Log::Message("No known extensions");
+}
 
+bool OCLPlatform::InitDevices(DeviceType type)
+{
+	bool allOk = true;
 
+	Log::Message("");
+	Log::Message("Retrieving devices on platform " + name + "...");
+
+	cl_uint deviceSize;
+
+	// query number of devices for this platform
+	if (clGetDeviceIDs(id, type, 0, 0, &deviceSize) != CL_SUCCESS)
+	{
+		Log::Error("Couldn't retrieve devices on platform " + name + ". Check your OpenCL drivers.");
+		return false;
+	}
+
+	//TODO: FINISH RETRIEVING
+
+	return allOk;
 }
 
 const std::string OCLPlatform::GetStringFromPlatform(cl_platform_info name)

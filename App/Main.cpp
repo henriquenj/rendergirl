@@ -48,6 +48,7 @@ int main()
 	Log::AddListener(listenerOutput);
 	
 	RenderGirlShared::InitPlatforms();
+	RenderGirlShared::InitDevices(All);
 
 	system("pause");
 

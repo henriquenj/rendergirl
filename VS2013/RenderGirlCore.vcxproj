@@ -20,12 +20,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Core\Log.h" />
+    <ClInclude Include="..\Core\OCLDevice.h" />
     <ClInclude Include="..\Core\OCLPlatform.h" />
     <ClInclude Include="..\Core\RenderGirlCore.h" />
     <ClInclude Include="..\Core\RenderGirlShared.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Core\Log.cpp" />
+    <ClCompile Include="..\Core\OCLDevice.cpp" />
     <ClCompile Include="..\Core\OCLPlatform.cpp" />
     <ClCompile Include="..\Core\RenderGirlShared.cpp" />
   </ItemGroup>
