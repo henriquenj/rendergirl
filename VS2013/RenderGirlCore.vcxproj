@@ -20,12 +20,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Core\Log.h" />
-    <ClInclude Include="..\Core\OpenCLShared.h" />
+    <ClInclude Include="..\Core\OCLPlatform.h" />
     <ClInclude Include="..\Core\RenderGirlCore.h" />
+    <ClInclude Include="..\Core\RenderGirlShared.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Core\Log.cpp" />
-    <ClCompile Include="..\Core\OpenCLShared.cpp" />
+    <ClCompile Include="..\Core\OCLPlatform.cpp" />
+    <ClCompile Include="..\Core\RenderGirlShared.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1110E5D3-904D-46B6-99F2-91BF554C3EC4}</ProjectGuid>

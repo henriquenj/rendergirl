@@ -47,7 +47,7 @@ int main()
 	LogOutput* listenerOutput = new LogOutput();
 	Log::AddListener(listenerOutput);
 	
-	OpenCLShared::InitPlatforms();
+	RenderGirlShared::InitPlatforms();
 
 	system("pause");
 

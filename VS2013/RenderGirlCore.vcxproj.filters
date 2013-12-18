@@ -14,18 +14,24 @@
     <ClInclude Include="..\Core\RenderGirlCore.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Core\OpenCLShared.h">
+    <ClInclude Include="..\Core\Log.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Core\Log.h">
+    <ClInclude Include="..\Core\OCLPlatform.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Core\RenderGirlShared.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\Core\OpenCLShared.cpp">
+    <ClCompile Include="..\Core\Log.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Core\Log.cpp">
+    <ClCompile Include="..\Core\OCLPlatform.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Core\RenderGirlShared.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

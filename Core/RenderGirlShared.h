@@ -16,14 +16,15 @@
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __OPENCLSHARED_CLASS__
-#define __OPENCLSHARED_CLASS__
+#ifndef __RENDERGIRL_SHARED_CLASS__
+#define __RENDERGIRL_SHARED_CLASS__
 
 #include <assert.h>
 #include <string>
 
 #include "CL\cl.h"
 #include "Log.h"
+#include "OCLPlatform.h"
 
 
 // types of devices accepted by OpenCL
@@ -36,15 +37,9 @@ enum DeviceType
 	All = 0xFFFFFFFF
 };
 
-struct OCLPlatform
-{
-	cl_platform_id id;
-	std::string name;
-};
 
-
-// Static class encapsules all the OpenCL status and interacts with the OpenCL device
-class OpenCLShared
+// Static class encapsules the OpenCL status and the renderer status
+class RenderGirlShared
 {
 public:
 	/*init OpenCL platforms, return TRUE for success or return FALSE for failure*/
@@ -52,27 +47,23 @@ public:
 	/* return list of avaiable platforms */ 
 	static inline const std::vector<OCLPlatform>& ReturnPlatforms()
 	{
-		return platformIds;
+		return platforms;
 	}
-	/* return number of avaiable platforms*/
+
+	/* return number of avaiable platforms */
 	static inline const int GetPlatformsSize()
 	{
-		return platformIds.size();
+		return platforms.size();
 	}
-	~OpenCLShared();
+	~RenderGirlShared();
 
 private:
-	OpenCLShared(){;}
+	RenderGirlShared(){ ; }
 
 	// OpenCL stuff for internal control
-	static std::vector<OCLPlatform> platformIds;
-	static cl_device_id deviceId;
-	static cl_context context; 
-
-	// helper function to query information about platforms (thanks QT project for the hint =D)
-	static const std::string GetStringFromPlatform(cl_platform_id id, cl_platform_info name);
+	static std::vector<OCLPlatform> platforms;
 };
 
 
 
-#endif // __OPENCLSHARED_CLASS__
+#endif // __RENDERGIRL_SHARED_CLASS__

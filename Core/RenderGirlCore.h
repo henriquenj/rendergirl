@@ -26,7 +26,7 @@
 	interfaces will be put on another projects */
 
 
-#include "OpenCLShared.h"
+#include "RenderGirlShared.h"
 #include "Log.h"
 
 
