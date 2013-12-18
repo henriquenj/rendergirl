@@ -46,8 +46,8 @@ int main()
 {
 	LogOutput* listenerOutput = new LogOutput();
 	Log::AddListener(listenerOutput);
-
-	//OpenCLShared::InitOpenCL();
+	
+	OpenCLShared::InitOpenCL();
 
 	system("pause");
 

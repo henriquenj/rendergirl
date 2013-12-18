@@ -19,8 +19,10 @@
 #ifndef __OPENCLSHARED_CLASS__
 #define __OPENCLSHARED_CLASS__
 
+#include <assert.h>
 
 #include "CL\cl.h"
+#include "Log.h"
 
 
 // types of devices accepted by OpenCL
@@ -38,10 +40,10 @@ enum DeviceType
 class OpenCLShared
 {
 public:
-	/*init OpenCL on a given device
-	*/
-	static void InitOpenCL(int DeviceType = CPU);
-
+	/*init OpenCL on a given device*/
+	static void InitOpenCL(DeviceType deviceType = CPU);
+	/* return true if the OpenCL device is initialized and ready to run*/
+	static bool IsOpenCLOk();
 	~OpenCLShared();
 
 private:
@@ -51,6 +53,9 @@ private:
 	static cl_platform_id platformId;
 	static cl_device_id deviceId;
 	static cl_context context;
+
+	// set this flag if the OpenCL device is ok and running
+	static bool isOk; 
 };
 
 
