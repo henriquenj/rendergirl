@@ -55,8 +55,25 @@ bool OCLPlatform::InitDevices(DeviceType type)
 		return false;
 	}
 
-	//TODO: FINISH RETRIEVING
+	cl_device_id* devices_cl = new cl_device_id[deviceSize];
+	// query all devices
+	if (clGetDeviceIDs(id, type, deviceSize, devices_cl, &deviceSize) != CL_SUCCESS)
+	{
+		Log::Error("Couldn't retrieve devices on platform " + name + ". Check your OpenCL drivers.");
+		return false;
+	}
 
+	for (int a = 0; a < deviceSize; a++)
+	{
+		Log::Message("");
+		Log::Message("Device " + std::to_string(a + 1) + " created on platform " + name);
+		OCLDevice device;
+		device.InitDevice(devices_cl[a]);
+		devices.push_back(device);
+	}
+
+
+	delete devices_cl;
 	return allOk;
 }
 

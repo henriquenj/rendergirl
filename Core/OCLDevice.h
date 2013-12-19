@@ -20,17 +20,19 @@
 #ifndef __OCLDEVICE_CLASS__
 #define __OCLDEVICE_CLASS__
 
+#include <string>
 
 #include "CL\cl.h"
+#include "Log.h"
 
 // types of devices accepted by OpenCL
 enum DeviceType
 {
-	Default = 0x00000001,
-	CPU = 0x00000002,
-	GPU = 0x00000004,
-	Accelerator = 0x00000008,
-	All = 0xFFFFFFFF
+	Default = CL_DEVICE_TYPE_DEFAULT,
+	CPU = CL_DEVICE_TYPE_CPU,
+	GPU = CL_DEVICE_TYPE_GPU,
+	Accelerator = CL_DEVICE_TYPE_ACCELERATOR,
+	All = CL_DEVICE_TYPE_ALL
 };
 
 /* OCLDevice class encapsules the OpenCL device information*/
@@ -38,11 +40,30 @@ class OCLDevice
 {
 public:
 	// Init device and put it ready to receive a context
-	void InitDevice(DeviceType type,cl_device_id id);
+	void InitDevice(cl_device_id id);
 
 private:
-	DeviceType type;
+	// helper function to query information about devices (thanks QT project for this hint)
+	const std::string GetStringFromDevice(cl_device_info name)const;
+	const cl_ulong GetULongFromDevice(cl_device_info name) const;
+	const cl_uint GetUIntFromDevice(cl_device_info name)const;
+
 	cl_device_id id;
+	// information about the device
+	DeviceType type;
+	std::string name;
+	std::string vendor;
+	std::string version;
+	std::string extensions;
+	std::string cldriverVersion;
+
+	// size of global memory in bytes
+	cl_ulong memSize;
+	// clock of this device
+	cl_uint clock;
+	//maximum number of opencl cores
+	cl_uint clCores;
+	
 };
 
 

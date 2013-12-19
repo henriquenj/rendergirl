@@ -34,8 +34,9 @@ class RenderGirlShared
 public:
 	/*init OpenCL platforms, return TRUE for success or return FALSE for failure*/
 	static bool InitPlatforms();
-	/* init all devices for all platforms, return FALSE if at least one device failed to initialize */
-	static bool InitDevices(DeviceType type);
+	/* init all devices for all platforms, return FALSE if at least one device failed to initialize
+	   param type define which type of device will be initialized */
+	static bool InitDevices(DeviceType type = All);
 	/* return list of avaiable platforms */ 
 	static inline const std::vector<OCLPlatform>& ReturnPlatforms()
 	{

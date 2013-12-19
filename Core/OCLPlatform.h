@@ -55,6 +55,11 @@ public:
 	{
 		return extensions;
 	}
+	// Get OpenCL version of this platform
+	inline const std::string& GetVersion()const
+	{
+		return version;
+	}
 	// get profile type, TRUE for FULL_PROFILE and FALSE for EMBEDDED PROFILE
 	inline const bool GetProfileType() const
 	{
@@ -64,9 +69,17 @@ public:
 		}
 		else { return false; }
 	}
+
+	// get platform ID
 	inline const cl_platform_id& GetID() const
 	{
 		return id;
+	}
+
+	// Get devices of this platform
+	inline const std::vector<OCLDevice>& GetDevices()
+	{
+		return devices;
 	}
 private:
 
