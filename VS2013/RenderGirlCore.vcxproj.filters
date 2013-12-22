@@ -9,6 +9,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\OpenCL Wrapper">
+      <UniqueIdentifier>{5237d3a0-cff6-47ba-b9ef-d47693998cbd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Core\RenderGirlCore.h">
@@ -17,13 +20,22 @@
     <ClInclude Include="..\Core\Log.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Core\OCLPlatform.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\Core\RenderGirlShared.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Core\OCLContext.h">
+      <Filter>Source Files\OpenCL Wrapper</Filter>
+    </ClInclude>
     <ClInclude Include="..\Core\OCLDevice.h">
+      <Filter>Source Files\OpenCL Wrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Core\OCLPlatform.h">
+      <Filter>Source Files\OpenCL Wrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Core\OCLMemoryObject.h">
+      <Filter>Source Files\OpenCL Wrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Core\UtilitiesFuncions.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -31,14 +43,20 @@
     <ClCompile Include="..\Core\Log.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Core\OCLPlatform.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\Core\RenderGirlShared.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Core\OCLContext.cpp">
+      <Filter>Source Files\OpenCL Wrapper</Filter>
+    </ClCompile>
     <ClCompile Include="..\Core\OCLDevice.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\OpenCL Wrapper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Core\OCLPlatform.cpp">
+      <Filter>Source Files\OpenCL Wrapper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Core\OCLMemoryObject.cpp">
+      <Filter>Source Files\OpenCL Wrapper</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

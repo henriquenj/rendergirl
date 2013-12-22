@@ -22,9 +22,8 @@
 
 // Master include file for RenderGirlCore
 
-/* Core project contains only the core renderer and the OpenCL wrappers
-	interfaces will be put on another projects */
-
+/* Core project contains only the core renderer and the OpenCL wrappers.
+	Interfaces will be put on another projects */
 
 #include "RenderGirlShared.h"
 #include "Log.h"

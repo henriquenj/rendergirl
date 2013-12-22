@@ -37,7 +37,7 @@ public:
 		DeviceType parameter can be CPU, GPU, All, Accelerator or Default
 		if at least one device failed to initialized, return FALSE
 	*/
-	bool InitDevices(DeviceType type);
+	bool InitDevices(OCLDevice::DeviceType type);
 
 
 	// Get name of this platform
@@ -80,6 +80,12 @@ public:
 	inline const std::vector<OCLDevice>& GetDevices()
 	{
 		return devices;
+	}
+
+	// Get the amount of devices on this platform
+	inline const int GetDeviceAmount()const
+	{
+		return devices.size();
 	}
 private:
 

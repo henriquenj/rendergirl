@@ -39,7 +39,7 @@ void OCLPlatform::Init(cl_platform_id id)
 	else Log::Message("No known extensions");
 }
 
-bool OCLPlatform::InitDevices(DeviceType type)
+bool OCLPlatform::InitDevices(OCLDevice::DeviceType type)
 {
 	bool allOk = true;
 
@@ -73,7 +73,7 @@ bool OCLPlatform::InitDevices(DeviceType type)
 	}
 
 
-	delete devices_cl;
+	delete[] devices_cl;
 	return allOk;
 }
 

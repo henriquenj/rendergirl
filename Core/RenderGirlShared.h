@@ -36,7 +36,18 @@ public:
 	static bool InitPlatforms();
 	/* init all devices for all platforms, return FALSE if at least one device failed to initialize
 	   param type define which type of device will be initialized */
-	static bool InitDevices(DeviceType type = All);
+	static bool InitDevices(OCLDevice::DeviceType type = OCLDevice::All);
+
+	/* Select a device for executing the OpenCL program*/
+	static void SelectDevice(OCLDevice* select);
+
+	/* Return selected device */
+	static const OCLDevice* GetSelectedDevice()
+	{
+		assert(selectedDevice != NULL && "There's no selected device to get!");
+		return selectedDevice;
+	}
+
 	/* return list of avaiable platforms */ 
 	static inline const std::vector<OCLPlatform>& ReturnPlatforms()
 	{
@@ -55,6 +66,9 @@ private:
 
 	// OpenCL stuff for internal control
 	static std::vector<OCLPlatform> platforms;
+
+	// device selected for doing the computation
+	static OCLDevice* selectedDevice;
 };
 
 

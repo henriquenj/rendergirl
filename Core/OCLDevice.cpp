@@ -18,10 +18,11 @@
 
 
 #include "OCLDevice.h"
-
+#include "UtilitiesFuncions.h"
 
 void OCLDevice::InitDevice(cl_device_id id)
 {
+	isReady = false;
 	this->id = id;
 	// query type
 	clGetDeviceInfo(id, CL_DEVICE_TYPE, sizeof(cl_device_type), &type, 0);
@@ -36,6 +37,8 @@ void OCLDevice::InitDevice(cl_device_id id)
 	memSize = GetULongFromDevice(CL_DEVICE_GLOBAL_MEM_SIZE);
 	clock = GetUIntFromDevice(CL_DEVICE_MAX_CLOCK_FREQUENCY);
 	clCores = GetUIntFromDevice(CL_DEVICE_MAX_COMPUTE_UNITS);
+	maxWorkItens = GetSizeTFromDevice(CL_DEVICE_MAX_WORK_GROUP_SIZE);
+
 	
 
 	// type as a string
@@ -53,6 +56,10 @@ void OCLDevice::InitDevice(cl_device_id id)
 		break;
 	}
 
+	// intel creates some empty spaces on the beginning of the string that I want to remove
+	// must pay attention to other kinds of devices as well
+	name = TrimString(name);
+
 	Log::Message("Name: " + name);
 	Log::Message("Vendor: " + vendor);
 	Log::Message("Version: " + version);
@@ -61,8 +68,24 @@ void OCLDevice::InitDevice(cl_device_id id)
 	Log::Message("Memory: " + std::to_string(memSize / 1048576) + "MB");
 	Log::Message("Clock: " + std::to_string(clock) + "MHz");
 	Log::Message("Max OpenCL Cores: " + std::to_string(clCores));
+	Log::Message("Max work itens: " + std::to_string(maxWorkItens));
 	//Log::Message("Extensions: " + extensions);
 
+}
+
+bool OCLDevice::CreateContext()
+{
+	assert((!context.IsReady()) && "This device already has a working context!");
+
+	// init context
+	if (!context.InitContext(this))
+	{
+		// something went wrong
+		return false;
+	}
+
+	isReady = true;
+	return true;
 }
 
 const std::string OCLDevice::GetStringFromDevice(cl_device_info name)const
@@ -91,6 +114,14 @@ const cl_ulong OCLDevice::GetULongFromDevice(cl_device_info name)const
 const cl_uint OCLDevice::GetUIntFromDevice(cl_device_info name)const
 {
 	cl_uint value;
+	clGetDeviceInfo(id, name, sizeof(value), &value, 0);
+
+	return value;
+}
+
+const size_t OCLDevice::GetSizeTFromDevice(cl_device_info name)const
+{
+	size_t value;
 	clGetDeviceInfo(id, name, sizeof(value), &value, 0);
 
 	return value;

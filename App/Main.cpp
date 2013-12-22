@@ -50,6 +50,13 @@ int main()
 	RenderGirlShared::InitPlatforms();
 	RenderGirlShared::InitDevices();
 
+	// select a device
+	std::vector<OCLPlatform> platforms = RenderGirlShared::ReturnPlatforms();
+	// get the first one
+	std::vector<OCLDevice> devices = platforms[0].GetDevices();
+	// select this
+	RenderGirlShared::SelectDevice(&devices[0]);
+
 	system("pause");
 
 	return 0;

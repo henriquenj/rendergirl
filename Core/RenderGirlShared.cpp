@@ -20,9 +20,12 @@
 #include "RenderGirlShared.h"
 
 std::vector<OCLPlatform>	RenderGirlShared::platforms;
+OCLDevice*					RenderGirlShared::selectedDevice;
 
 bool RenderGirlShared::InitPlatforms()
 {
+	selectedDevice = NULL;
+
 	// do not query for new platforms if it has queried before
 	assert(platforms.empty());
 
@@ -60,12 +63,12 @@ bool RenderGirlShared::InitPlatforms()
 		platforms.push_back(platform);
 	}
 
-	delete platforms_cl;
+	delete[] platforms_cl;
 	
 	return true;
 }
 
-bool RenderGirlShared::InitDevices(DeviceType type)
+bool RenderGirlShared::InitDevices(OCLDevice::DeviceType type)
 {
 	bool allOk = true;
 	int size = platforms.size();
@@ -75,6 +78,22 @@ bool RenderGirlShared::InitDevices(DeviceType type)
 	}
 
 	return allOk;
+}
+
+void RenderGirlShared::SelectDevice(OCLDevice* select)
+{
+	assert(select != NULL);
+	if (selectedDevice != NULL)
+	{
+		//TODO RELEASE OLD DEVICE
+	}
+
+	selectedDevice = select;
+	if (!selectedDevice->IsReady())
+	{
+		// prepare this device
+		selectedDevice->CreateContext();
+	}
 }
 
 RenderGirlShared::~RenderGirlShared()
