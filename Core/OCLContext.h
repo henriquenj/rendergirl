@@ -37,10 +37,21 @@ public:
 	{
 		return device;
 	}
+	// Get OpenCL context
+	inline const cl_context* GetContext()const
+	{
+		return &context;
+	}
 	// Is this context ready to receive kernels?
 	inline const bool IsReady()const
 	{
 		return isReady;
+	}
+	// execute all commands on the command queue
+	inline void ExecuteCommands()
+	{
+		//TODO: MAYBE it'll be intersting to capture errors here, don't know
+		clFinish(queue);
 	}
 
 private:
@@ -49,6 +60,10 @@ private:
 	OCLDevice* device;
 	// internal pointer to cl context
 	cl_context context;
+	// internal pointer to cl command queue
+	cl_command_queue queue;
+	/*	I'll be using only one command queue for each context to keep things simple, 
+		maybe later I'll implement a command queue class and share it among contexts */
 
 	// is this context ready to receive kernels?
 	bool isReady;

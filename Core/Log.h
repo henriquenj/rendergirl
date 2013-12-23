@@ -49,7 +49,7 @@ private:
 
 
 /*	Abstratic class for programs intersted in capturing log details. 
-	Just instantiate this class, override the PrintLog and PrintError functions and
+	Just instantiate this derived class, override the PrintLog and PrintError functions and
 	add to the static Log class using AddListener */
 class LogListener
 {

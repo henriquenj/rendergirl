@@ -58,8 +58,24 @@ bool OCLContext::InitContext(OCLDevice *device)
 	}
 
 	Log::Message("Context was created without errors.");
+	Log::Message("Creating command queue on " + device->GetName());
 
-	//TODO: create command queue
+	queue = clCreateCommandQueue(context, device->GetID(), NULL, &error);
+
+	if (error != CL_SUCCESS)
+	{
+		if (error == CL_OUT_OF_HOST_MEMORY)
+		{
+			Log::Error("There's not enough memory on the host to alloc the OpenCL implementation.");
+			return false;
+		}
+		else // some other error
+		{
+			Log::Error("Couldn't create a command queue inside " + device->GetName() + " device");
+			return false;
+		}
+	}
+
 
 	isReady = true;
 	return true;
