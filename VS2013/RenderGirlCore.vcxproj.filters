@@ -55,8 +55,5 @@
     <ClCompile Include="..\Core\OCLPlatform.cpp">
       <Filter>Source Files\OpenCL Wrapper</Filter>
     </ClCompile>
-    <ClCompile Include="..\Core\OCLMemoryObject.cpp">
-      <Filter>Source Files\OpenCL Wrapper</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>

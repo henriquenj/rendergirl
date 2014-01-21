@@ -20,7 +20,10 @@
 #ifndef __OCLCONTEXT_CLASS__
 #define __OCLCONTEXT_CLASS__
 
+#include <list>
+
 #include "CL\cl.h"
+#include "OCLMemoryObject.h"
 
 class OCLDevice;
 
@@ -31,6 +34,23 @@ class OCLContext
 public:
 	// Init a context inside a given device, return false if there was an error
 	bool InitContext(OCLDevice *device);
+
+	/* alloc a memory object on this context, size in the amount of elements */
+	template <class T>
+	OCLMemoryObject<T>* CreateMemoryObject(int size, MemoryType type = ReadWrite)
+	{
+		OCLMemoryObject<T>* newMem = new OCLMemoryObject<T>(this, &queue, size, type);
+		memList.push_back(newMem);
+
+		return newMem;
+	}
+	/* delete a memory object associated with this context */
+	template <class T>
+	void DeleteMemoryObject(OCLMemoryObject<T>* memObject)
+	{
+		delete memObject;
+		memList.remove(memObject);
+	}
 
 	// Get device where this context is running
 	inline const OCLDevice* GetDevice()const
@@ -47,7 +67,7 @@ public:
 	{
 		return isReady;
 	}
-	// execute all commands on the command queue
+	// execute all commands on the command queue, this is a blocking call
 	inline void ExecuteCommands()
 	{
 		//TODO: MAYBE it'll be intersting to capture errors here, don't know
@@ -67,6 +87,9 @@ private:
 
 	// is this context ready to receive kernels?
 	bool isReady;
+
+	// list of memories associated with this context
+	std::list<OCLMemoryObjectBase*> memList;
 };
 
 

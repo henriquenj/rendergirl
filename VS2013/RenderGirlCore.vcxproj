@@ -32,7 +32,6 @@
     <ClCompile Include="..\Core\Log.cpp" />
     <ClCompile Include="..\Core\OCLContext.cpp" />
     <ClCompile Include="..\Core\OCLDevice.cpp" />
-    <ClCompile Include="..\Core\OCLMemoryObject.cpp" />
     <ClCompile Include="..\Core\OCLPlatform.cpp" />
     <ClCompile Include="..\Core\RenderGirlShared.cpp" />
   </ItemGroup>

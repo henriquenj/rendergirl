@@ -20,23 +20,45 @@
 #ifndef __OCLMEMORYOBJECT_CLASS__
 #define __OCLMEMORYOBJECT_CLASS__
 
-
+#include "CL\cl.h"
 #include <assert.h>
-
-#include "OCLContext.h"
 #include "Log.h"
 
+
+/* I know that there're more types, for now I'll only use these*/
+enum MemoryType
+{
+	ReadWrite = CL_MEM_READ_WRITE,
+	ReadOnly = CL_MEM_READ_ONLY,
+	WriteOnly = CL_MEM_WRITE_ONLY
+};
+
+
+class OCLContext;
+
+// to fit into a std::list
+// TODO: check if there's a better way to handle this
+class OCLMemoryObjectBase
+{
+public:
+	OCLMemoryObjectBase(){ ; }
+};
 
 /* Memory object class stores any kind of data into an OpenCL device, contains methods for transferring data
 	between device memory and host memory. Those objects are created by a OCLContext only */
 template <class T>
-class OCLMemoryObject
+class OCLMemoryObject : public OCLMemoryObjectBase
 {
 public:
+	
 	/* Copy data to this object; since it's being copied, you are free to delete afterwards.
 		Bear in mind that this function WON'T transfer the data to the device, call the sync functions to do that. 
 		If there's another data previously loaded, the old one will be DELETED*/
-	void SetData(T* data);
+	void SetData(T* data)
+	{
+		// copy data
+		memcpy(data_host, data, sizeof(T)* size);
+	}
 	/* Get raw data currently on the host memory */
 	inline const T* GetData()const
 	{
@@ -56,26 +78,69 @@ public:
 		you CAN'T use the data right after calling this (only after the queue is flushed)
 		return false if the allocation failed
 		*/
-	bool SyncHostToDevice();
+	bool SyncHostToDevice()
+	{
+		// add an command to the current command queue
+		/* I'll use a NON BLOCKING call for now, that means it's NOT safe to use data on host after calling this,
+		I'm using that way just to try to improve the speed of the program
+		TODO: test with blocking calls to see if there's a difference in performance
+		*/
+		if (clEnqueueWriteBuffer(queue, data_device, CL_FALSE, 0, sizeof(T)* size, data_host, NULL, NULL) != CL_SUCCESS)
+		{
+			Log::Error("Couldn't alloc enough memory on " + context->GetDevice()->GetName() + " device");
+			return false;
+		}
+
+		return true;
+	}
 	/* Copy memory from device to host, this causes an intrinsic flush on the command queue,
 		return false if the allocation failed*/
-	bool SyncDeviceToHost();
-
-	~OCLMemoryObject();
-
-
-	/* I know that there're more types, for now I'll only use these*/
-	enum MemoryType
+	bool SyncDeviceToHost()
 	{
-		ReadWrite = CL_MEM_READ_WRITE,
-		ReadOnly = CL_MEM_READ_ONLY,
-		WriteOnly = CL_MEM_WRITE_ONLY
-	};
+		if (clEnqueueReadBuffer(queue, data_device, CL_TRUE, 0, sizeof(T)* size, data_host, NULL, NULL) != CL_SUCCESS)
+		{
+			Log::Error("Couldn't read the memory on " + context->GetDevice()->GetName() + " device");
+			return false;
+		}
+
+		return true;
+	}
+
+	~OCLMemoryObject()
+	{
+		// dealloc resources and free memory on both host and device
+		delete[] data_host;
+		clReleaseMemObject(data_device);
+	}
 
 private:
-	/* Only OCLContext is able to create those objects 
-		size is the number of elements, NOT the size in bytes*/
-	OCLMemoryObject(OCLContext* context, cl_command_queue* queue, int size, bool &error, MemoryType type = ReadWrite);
+
+	/* Only OCLContext is able to create those objects
+	size is the number of elements, NOT the size in bytes*/
+	OCLMemoryObject(OCLContext* context, cl_command_queue* queue, int size, MemoryType type)
+	{
+		assert(size > 0 && "Size should be at least 1!");
+		cl_int error = false;
+
+		this->context = context;
+		this->queue = queue;
+		this->size = size;
+
+		//cl_int error = CL_SUCCESS;
+
+		// create OpenCL memory
+		data_device = clCreateBuffer(*(context->GetContext()), type, size * sizeof(T), NULL, &error);
+
+		if (error != CL_SUCCESS)
+		{
+			Log::Error("Couldn't alloc enough memory on " + context->GetDevice()->GetName() + " device");
+			return;
+		}
+
+		// reserve the space required
+		data_host = new T[size];
+	}
+
 
 	friend class OCLContext;
 

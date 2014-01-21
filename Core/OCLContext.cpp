@@ -14,7 +14,7 @@
 
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+	*/
 
 
 #include "OCLContext.h"
@@ -38,7 +38,7 @@ bool OCLContext::InitContext(OCLDevice *device)
 	// get platform 
 	cl_platform_id platform;
 	clGetDeviceInfo(device->GetID(), CL_DEVICE_PLATFORM, sizeof(cl_device_id), &platform, NULL);
-	cl_context_properties props[] = {CL_CONTEXT_PLATFORM,(cl_context_properties)platform, 0};
+	cl_context_properties props[] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platform, 0 };
 
 	cl_int error = CL_SUCCESS;
 	context = clCreateContext(props, 1, &device->GetID(), ImplementationError, this, &error);
@@ -77,6 +77,24 @@ bool OCLContext::InitContext(OCLDevice *device)
 	}
 
 
+	OCLMemoryObject<char>* charMemorie = this->CreateMemoryObject<char>(10);
+
 	isReady = true;
 	return true;
 }
+
+//template<class T>
+//OCLMemoryObject<T>* OCLContext::CreateMemoryObject(int size, MemoryType type)
+//{
+//	OCLMemoryObject<T>* newMem = new OCLMemoryObject<T>(this, &queue, size, type);
+//	memList.push_back(newMem);
+//
+//	return newMem;
+//}
+
+//template<class T>
+//void OCLContext::DeleteMemoryObject(OCLMemoryObject<T>* memObject)
+//{
+//	delete memObject;
+//	memList.remove(memObject);
+//}
