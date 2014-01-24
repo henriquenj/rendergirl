@@ -38,8 +38,11 @@ public:
 	   param type define which type of device will be initialized */
 	static bool InitDevices(OCLDevice::DeviceType type = OCLDevice::All);
 
-	/* Select a device for executing the OpenCL program*/
-	static void SelectDevice(OCLDevice* select);
+	/* Prepare a given device for executing the OpenCL program, return FALSE if there's an error with device*/
+	static bool SelectDevice(OCLDevice* select);
+
+	/* Release the selected device from use, deallocing all memory used  */
+	static void ReleaseDevice();
 
 	/* Return selected device */
 	static const OCLDevice* GetSelectedDevice()

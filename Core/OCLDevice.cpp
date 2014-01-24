@@ -73,6 +73,17 @@ void OCLDevice::InitDevice(cl_device_id id)
 
 }
 
+void OCLDevice::ReleaseContext()
+{
+	assert(isReady);
+
+	// make sure there's a context
+	if (isReady)
+	{
+		context.ReleaseContext();
+	}
+}
+
 bool OCLDevice::CreateContext()
 {
 	assert((!context.IsReady()) && "This device already has a working context!");

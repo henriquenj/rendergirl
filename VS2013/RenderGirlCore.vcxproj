@@ -22,8 +22,10 @@
     <ClInclude Include="..\Core\Log.h" />
     <ClInclude Include="..\Core\OCLContext.h" />
     <ClInclude Include="..\Core\OCLDevice.h" />
+    <ClInclude Include="..\Core\OCLKernel.h" />
     <ClInclude Include="..\Core\OCLMemoryObject.h" />
     <ClInclude Include="..\Core\OCLPlatform.h" />
+    <ClInclude Include="..\Core\OCLProgram.h" />
     <ClInclude Include="..\Core\RenderGirlCore.h" />
     <ClInclude Include="..\Core\RenderGirlShared.h" />
     <ClInclude Include="..\Core\UtilitiesFuncions.h" />
@@ -32,7 +34,9 @@
     <ClCompile Include="..\Core\Log.cpp" />
     <ClCompile Include="..\Core\OCLContext.cpp" />
     <ClCompile Include="..\Core\OCLDevice.cpp" />
+    <ClCompile Include="..\Core\OCLKernel.cpp" />
     <ClCompile Include="..\Core\OCLPlatform.cpp" />
+    <ClCompile Include="..\Core\OCLProgram.cpp" />
     <ClCompile Include="..\Core\RenderGirlShared.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

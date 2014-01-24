@@ -35,11 +35,15 @@ public:
 	// Init a context inside a given device, return false if there was an error
 	bool InitContext(OCLDevice *device);
 
-	/* alloc a memory object on this context, size in the amount of elements */
+	// Release this context, freeing all the memory associated with it
+	void ReleaseContext();
+
+	/* alloc a memory object on this context, size in the amount of elements, NOT the size in bytes.
+		return error = true if there's an error upon allocating*/
 	template <class T>
-	OCLMemoryObject<T>* CreateMemoryObject(int size, MemoryType type = ReadWrite)
+	OCLMemoryObject<T>* CreateMemoryObject(int size, MemoryType type = ReadWrite, cl_bool *error = NULL)
 	{
-		OCLMemoryObject<T>* newMem = new OCLMemoryObject<T>(this, &queue, size, type);
+		OCLMemoryObject<T>* newMem = new OCLMemoryObject<T>(this, queue, size, type, error);
 		memList.push_back(newMem);
 
 		return newMem;
@@ -48,6 +52,9 @@ public:
 	template <class T>
 	void DeleteMemoryObject(OCLMemoryObject<T>* memObject)
 	{
+		// check if the memory belongs to this context
+		assert((std::find(memList.begin(), memList.end(), memObject) != memList.end()) 
+				&& "This piece of memory is not part of this context!");
 		delete memObject;
 		memList.remove(memObject);
 	}

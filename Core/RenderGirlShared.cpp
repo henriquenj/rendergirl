@@ -80,20 +80,30 @@ bool RenderGirlShared::InitDevices(OCLDevice::DeviceType type)
 	return allOk;
 }
 
-void RenderGirlShared::SelectDevice(OCLDevice* select)
+bool RenderGirlShared::SelectDevice(OCLDevice* select)
 {
 	assert(select != NULL);
+
+	bool error = true;
 	if (selectedDevice != NULL)
 	{
-		//TODO RELEASE OLD DEVICE
+		selectedDevice->ReleaseContext();
 	}
 
 	selectedDevice = select;
 	if (!selectedDevice->IsReady())
 	{
 		// prepare this device
-		selectedDevice->CreateContext();
+		error = selectedDevice->CreateContext();
 	}
+
+	return error;
+}
+
+void RenderGirlShared::ReleaseDevice()
+{
+	assert(selectedDevice != NULL);
+	selectedDevice->ReleaseContext();
 }
 
 RenderGirlShared::~RenderGirlShared()

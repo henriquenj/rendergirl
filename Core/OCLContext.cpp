@@ -14,11 +14,12 @@
 
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
-	*/
+*/
 
 
 #include "OCLContext.h"
 #include "OCLDevice.h"
+
 
 // callback function to capture errors on this context
 static void ImplementationError(const char* errinfo, const void* private_info, size_t cb, void* user_data)
@@ -76,25 +77,21 @@ bool OCLContext::InitContext(OCLDevice *device)
 		}
 	}
 
-
-	OCLMemoryObject<char>* charMemorie = this->CreateMemoryObject<char>(10);
-
 	isReady = true;
 	return true;
 }
 
-//template<class T>
-//OCLMemoryObject<T>* OCLContext::CreateMemoryObject(int size, MemoryType type)
-//{
-//	OCLMemoryObject<T>* newMem = new OCLMemoryObject<T>(this, &queue, size, type);
-//	memList.push_back(newMem);
-//
-//	return newMem;
-//}
+void OCLContext::ReleaseContext()
+{
+	// dealloc all memory associated with this device
+	std::list<OCLMemoryObjectBase*>::iterator it;
+	for (it = memList.begin(); it != memList.end(); it++)
+	{
+		delete *it;
+	}
+	memList.clear();
 
-//template<class T>
-//void OCLContext::DeleteMemoryObject(OCLMemoryObject<T>* memObject)
-//{
-//	delete memObject;
-//	memList.remove(memObject);
-//}
+	// release OpenCL stuff
+	clReleaseContext(context);
+	clReleaseCommandQueue(queue);
+}

@@ -36,6 +36,9 @@ public:
 	void InitDevice(cl_device_id id);
 	// Create context within this device, return false if there was an error
 	bool CreateContext();
+
+	// Release this context from use, freeing all the memory and resources used in the process
+	void ReleaseContext();
 	
 	// return name of this device
 	inline const std::string& GetName()const
@@ -120,7 +123,7 @@ private:
 	const cl_uint GetUIntFromDevice(cl_device_info name) const;
 	const size_t GetSizeTFromDevice(cl_device_info name) const;
 
-	// is this device ready to execute? (with context and shit)
+	// a device is considered ready when there's a context ready to use
 	bool isReady;
 
 	cl_device_id id;

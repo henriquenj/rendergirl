@@ -56,6 +56,7 @@ int main()
 	std::vector<OCLDevice> devices = platforms[0].GetDevices();
 	// select this
 	RenderGirlShared::SelectDevice(&devices[0]);
+	RenderGirlShared::ReleaseDevice();
 
 	system("pause");
 

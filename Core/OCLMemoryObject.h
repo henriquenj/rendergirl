@@ -42,6 +42,7 @@ class OCLMemoryObjectBase
 {
 public:
 	OCLMemoryObjectBase(){ ; }
+	virtual ~OCLMemoryObjectBase(){};
 };
 
 /* Memory object class stores any kind of data into an OpenCL device, contains methods for transferring data
@@ -117,10 +118,10 @@ private:
 
 	/* Only OCLContext is able to create those objects
 	size is the number of elements, NOT the size in bytes*/
-	OCLMemoryObject(OCLContext* context, cl_command_queue* queue, int size, MemoryType type)
+	OCLMemoryObject(OCLContext* context, cl_command_queue queue, int size, MemoryType type, cl_bool* error)
 	{
 		assert(size > 0 && "Size should be at least 1!");
-		cl_int error = false;
+		cl_int l_error = false;
 
 		this->context = context;
 		this->queue = queue;
@@ -129,13 +130,19 @@ private:
 		//cl_int error = CL_SUCCESS;
 
 		// create OpenCL memory
-		data_device = clCreateBuffer(*(context->GetContext()), type, size * sizeof(T), NULL, &error);
+		data_device = clCreateBuffer(*(context->GetContext()), type, size * sizeof(T), NULL, &l_error);
 
-		if (error != CL_SUCCESS)
+		if (l_error != CL_SUCCESS)
 		{
 			Log::Error("Couldn't alloc enough memory on " + context->GetDevice()->GetName() + " device");
+			if (error != NULL) // set error flag
+				*error = true;
 			return;
 		}
+
+		// set error flag
+		if (error != NULL)
+			*error = false;
 
 		// reserve the space required
 		data_host = new T[size];
@@ -146,7 +153,7 @@ private:
 
 	// context to which this block of data is associated
 	OCLContext* context;
-	cl_command_queue* queue;
+	cl_command_queue queue;
 
 	// raw host data
 	T* data_host;

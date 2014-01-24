@@ -38,6 +38,12 @@
     <ClInclude Include="..\Core\UtilitiesFuncions.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Core\OCLKernel.h">
+      <Filter>Source Files\OpenCL Wrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Core\OCLProgram.h">
+      <Filter>Source Files\OpenCL Wrapper</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Core\Log.cpp">
@@ -53,6 +59,12 @@
       <Filter>Source Files\OpenCL Wrapper</Filter>
     </ClCompile>
     <ClCompile Include="..\Core\OCLPlatform.cpp">
+      <Filter>Source Files\OpenCL Wrapper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Core\OCLKernel.cpp">
+      <Filter>Source Files\OpenCL Wrapper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Core\OCLProgram.cpp">
       <Filter>Source Files\OpenCL Wrapper</Filter>
     </ClCompile>
   </ItemGroup>
