@@ -95,7 +95,15 @@ bool RenderGirlShared::SelectDevice(OCLDevice* select)
 	{
 		// prepare this device
 		error = selectedDevice->CreateContext();
+		Log::Message("Selected device: " + selectedDevice->GetName());
 	}
+
+	/* TEMP SHIT*/
+	OCLContext* context = selectedDevice->GetContext();
+	OCLMemoryObject<int>* mem = context->CreateMemoryObject<int>(10);
+
+	OCLProgram program(context);
+	program.BuildProgramWithSource("BubbleSort.cl");
 
 	return error;
 }

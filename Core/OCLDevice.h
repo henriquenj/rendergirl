@@ -94,12 +94,12 @@ public:
 		return isReady;
 	}
 	// get cl_device_id of this device
-	inline const cl_device_id& GetID()const
+	inline const cl_device_id GetID()const
 	{
 		return id;
 	}
 	// get context associated with this device
-	inline const OCLContext* GetContext() const
+	inline OCLContext* GetContext()
 	{
 		return &context;
 	}

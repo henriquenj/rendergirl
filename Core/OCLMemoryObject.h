@@ -67,7 +67,7 @@ public:
 	}
 
 	/* Get pointer to device memory */
-	inline const cl_mem* GetDeviceMemory()const
+	inline const cl_mem GetDeviceMemory()const
 	{
 		return data_device;
 	}
@@ -130,7 +130,7 @@ private:
 		//cl_int error = CL_SUCCESS;
 
 		// create OpenCL memory
-		data_device = clCreateBuffer(*(context->GetContext()), type, size * sizeof(T), NULL, &l_error);
+		data_device = clCreateBuffer((context->GetContext()), type, size * sizeof(T), NULL, &l_error);
 
 		if (l_error != CL_SUCCESS)
 		{
@@ -147,7 +147,6 @@ private:
 		// reserve the space required
 		data_host = new T[size];
 	}
-
 
 	friend class OCLContext;
 

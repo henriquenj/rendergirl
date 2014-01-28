@@ -44,14 +44,14 @@ bool OCLPlatform::InitDevices(OCLDevice::DeviceType type)
 	bool allOk = true;
 
 	Log::Message("");
-	Log::Message("Retrieving devices on platform " + name + "...");
+	Log::Message("Retrieving devices on platform " + name);
 
 	cl_uint deviceSize;
 
 	// query number of devices for this platform
 	if (clGetDeviceIDs(id, type, 0, 0, &deviceSize) != CL_SUCCESS)
 	{
-		Log::Error("Couldn't retrieve devices on platform " + name + ". Check your OpenCL drivers.");
+		Log::Error("Couldn't retrieve devices on platform " + name);
 		return false;
 	}
 
@@ -59,7 +59,7 @@ bool OCLPlatform::InitDevices(OCLDevice::DeviceType type)
 	// query all devices
 	if (clGetDeviceIDs(id, type, deviceSize, devices_cl, &deviceSize) != CL_SUCCESS)
 	{
-		Log::Error("Couldn't retrieve devices on platform " + name + ". Check your OpenCL drivers.");
+		Log::Error("Couldn't retrieve devices on platform " + name);
 		return false;
 	}
 

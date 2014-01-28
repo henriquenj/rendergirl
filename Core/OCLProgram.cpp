@@ -16,5 +16,95 @@
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 #include "OCLProgram.h"
+#include "OCLDevice.h"
+
+OCLProgram::OCLProgram(OCLContext* context)
+{
+	assert(context != NULL);
+	this->context = context;
+
+	assert(context->IsReady() && "Context must be ready to execute kernels!");
+
+	isCompiled = false;
+}
+
+OCLProgram::~OCLProgram()
+{
+	if (isCompiled)
+	{
+		clReleaseProgram(program);
+	}
+}
+
+bool OCLProgram::BuildProgramWithSource(const std::string sourceFile)
+{
+	// load kernel code from file
+	FILE* kernelCodeFile = fopen(sourceFile.c_str(), "r");
+	if (kernelCodeFile == NULL)
+	{
+		Log::Error("The program couldn't find the source file " + sourceFile);
+		return false;
+	}
+
+	// look for file size
+	fseek(kernelCodeFile, 0, SEEK_END);
+	long size = ftell(kernelCodeFile);
+	fseek(kernelCodeFile, 0, SEEK_SET);
+
+	//alloc enough memory
+	const char* kernelCode = new char[size];
+	memset((char*)kernelCode, 0, size);
+	fread((char*)kernelCode, sizeof(char), size, kernelCodeFile);
+	// end file stuff
+	fclose(kernelCodeFile);
+
+	// now the building phase
+	Log::Message("Compiling " + sourceFile);
+
+	cl_int error;
+
+	// send source code to OpenCL
+	program = clCreateProgramWithSource(context->GetContext(), 1, &kernelCode, NULL,&error);
+	if (error != CL_SUCCESS)
+	{
+		Log::Error("There was an error when sending the source code to the OpenCL implementation.");
+		return false;
+	}
+
+	error = clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
+
+	if (error != CL_SUCCESS)
+	{
+
+		if (error == CL_BUILD_PROGRAM_FAILURE) 
+		{
+			// Determine the size of the log
+			size_t log_size;
+			clGetProgramBuildInfo(program, context->GetDevice()->GetID(), CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
+
+			// Allocate memory for the log
+			char *log = (char *)malloc(log_size);
+			
+			// Get the log
+			clGetProgramBuildInfo(program, context->GetDevice()->GetID(), CL_PROGRAM_BUILD_LOG, log_size, (void*)log, NULL);
+
+			// Print the log
+			Log::Error("OpenCL compiler returned an error: " + std::string(log));
+			free(log);
+		}
+		else
+		{
+			Log::Error("Error while compiling OpenCL code on file: " + sourceFile);
+		}
+		return false;
+	}
+
+	// ok, cool
+	isCompiled = true;
+	delete[] kernelCode;
+
+
+	return true;
+}
+

@@ -25,8 +25,7 @@
 static void ImplementationError(const char* errinfo, const void* private_info, size_t cb, void* user_data)
 {
 	OCLContext* context = (OCLContext*)user_data;
-	Log::Error("OpenCL context on device " + context->GetDevice()->GetName() +
-		" report the following error: " + errinfo);
+	Log::Error("OpenCL context on device " + context->GetDevice()->GetName() + " report the following error: " + errinfo);
 }
 
 bool OCLContext::InitContext(OCLDevice *device)
@@ -35,14 +34,16 @@ bool OCLContext::InitContext(OCLDevice *device)
 	this->device = device;
 
 	Log::Message("");
-	Log::Message("Creating context on " + device->GetName() + " device");
+	Log::Message("Creating context on device "  + device->GetName());
 	// get platform 
 	cl_platform_id platform;
 	clGetDeviceInfo(device->GetID(), CL_DEVICE_PLATFORM, sizeof(cl_device_id), &platform, NULL);
 	cl_context_properties props[] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platform, 0 };
 
 	cl_int error = CL_SUCCESS;
-	context = clCreateContext(props, 1, &device->GetID(), ImplementationError, this, &error);
+
+	cl_device_id id_t = device->GetID();
+	context = clCreateContext(props, 1, &id_t, ImplementationError, this, &error);
 
 	if (error != CL_SUCCESS)
 	{
@@ -53,7 +54,7 @@ bool OCLContext::InitContext(OCLDevice *device)
 		}
 		else // some other error
 		{
-			Log::Error("Couldn't create a context inside " + device->GetName() + " device");
+			Log::Error("Couldn't create a context inside " + device->GetName());
 			return false;
 		}
 	}
@@ -72,12 +73,27 @@ bool OCLContext::InitContext(OCLDevice *device)
 		}
 		else // some other error
 		{
-			Log::Error("Couldn't create a command queue inside " + device->GetName() + " device");
+			Log::Error("Couldn't create a command queue inside " + device->GetName());
 			return false;
 		}
 	}
 
 	isReady = true;
+	return true;
+}
+
+bool OCLContext::ExecuteCommands()
+{
+	assert(isReady && "You cannot flush a queue if the context is not ready!");
+
+	// the flush!
+	if (clFinish(queue) != CL_SUCCESS)
+	{
+		// host probrably out of mememory
+		Log::Error("Failed to flush the command queue on the device " + device->GetName());
+		return false;
+	}
+
 	return true;
 }
 

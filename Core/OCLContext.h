@@ -24,6 +24,7 @@
 
 #include "CL\cl.h"
 #include "OCLMemoryObject.h"
+#include "OCLProgram.h"
 
 class OCLDevice;
 
@@ -65,21 +66,18 @@ public:
 		return device;
 	}
 	// Get OpenCL context
-	inline const cl_context* GetContext()const
+	inline const cl_context GetContext()const
 	{
-		return &context;
+		return context;
 	}
 	// Is this context ready to receive kernels?
 	inline const bool IsReady()const
 	{
 		return isReady;
 	}
-	// execute all commands on the command queue, this is a blocking call
-	inline void ExecuteCommands()
-	{
-		//TODO: MAYBE it'll be intersting to capture errors here, don't know
-		clFinish(queue);
-	}
+	/* execute all commands on the command queue (call a clFlush), this is a blocking call.
+		return TRUE for sucess and FALSE for an error */
+	bool ExecuteCommands();
 
 private:
 
@@ -91,6 +89,7 @@ private:
 	cl_command_queue queue;
 	/*	I'll be using only one command queue for each context to keep things simple, 
 		maybe later I'll implement a command queue class and share it among contexts */
+
 
 	// is this context ready to receive kernels?
 	bool isReady;

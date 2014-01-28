@@ -109,6 +109,7 @@ const std::string OCLDevice::GetStringFromDevice(cl_device_info name)const
 	std::string info;
 	info.resize(size);
 	clGetDeviceInfo(id, name, size, (void*)info.data(), &size);
+	info.pop_back(); // remove the null terminating char that was killing my strings
 
 	return info;
 }
