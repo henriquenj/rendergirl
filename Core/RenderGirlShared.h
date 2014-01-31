@@ -26,6 +26,7 @@
 #include "Log.h"
 #include "OCLPlatform.h"
 #include "OCLDevice.h"
+#include "OCLKernel.h"
 
 
 // Static class encapsules the OpenCL status and the renderer status

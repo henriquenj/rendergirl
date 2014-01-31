@@ -19,6 +19,33 @@
 #ifndef __OCLKERNEL_HEADER__
 #define __OCLKERNEL_HEADER__
 
+#include "OCLProgram.h"
+
+/* OCLKernel class dispatches execution for OCLProgram objects, using data avaiable on a given OCLContext,
+	must be instantiated using a valid OCLProgram*/
+class OCLKernel
+{
+public:
+	OCLKernel(OCLProgram* program,std::string &name);
+	~OCLKernel();
+
+	// return FALSE is the kernel was not ok (probrably there's no such kernel in this progrm)
+	inline bool GetOk()
+	{
+		return kernelOk;
+	}
+
+private:
+	// the program that this kernel will execute
+	OCLProgram* program;
+	// OpenCL kernel pointer
+	cl_kernel kernel;
+	// kernel name
+	std::string name;
+	// is this kernel Ok?
+	bool kernelOk;
+};
+
 
 
 

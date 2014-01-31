@@ -27,18 +27,17 @@ OCLProgram::OCLProgram(OCLContext* context)
 	assert(context->IsReady() && "Context must be ready to execute kernels!");
 
 	isCompiled = false;
+	isLoaded = false;
 }
 
 OCLProgram::~OCLProgram()
 {
-	if (isCompiled)
-	{
-		clReleaseProgram(program);
-	}
+	clReleaseProgram(program);
 }
 
-bool OCLProgram::BuildProgramWithSource(const std::string sourceFile)
+bool OCLProgram::LoadProgramWithSource(const std::string &sourceFile)
 {
+	this->sourceFile = sourceFile;
 	// load kernel code from file
 	FILE* kernelCodeFile = fopen(sourceFile.c_str(), "r");
 	if (kernelCodeFile == NULL)
@@ -72,12 +71,21 @@ bool OCLProgram::BuildProgramWithSource(const std::string sourceFile)
 		return false;
 	}
 
-	error = clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
+	delete[] kernelCode;
+
+	isLoaded = true;
+
+	return true;
+}
+
+bool OCLProgram::BuildProgram(const char* options)
+{
+	cl_int error = clBuildProgram(program, 0, NULL, options, NULL, NULL);
 
 	if (error != CL_SUCCESS)
 	{
 
-		if (error == CL_BUILD_PROGRAM_FAILURE) 
+		if (error == CL_BUILD_PROGRAM_FAILURE)
 		{
 			// Determine the size of the log
 			size_t log_size;
@@ -85,7 +93,7 @@ bool OCLProgram::BuildProgramWithSource(const std::string sourceFile)
 
 			// Allocate memory for the log
 			char *log = (char *)malloc(log_size);
-			
+
 			// Get the log
 			clGetProgramBuildInfo(program, context->GetDevice()->GetID(), CL_PROGRAM_BUILD_LOG, log_size, (void*)log, NULL);
 
@@ -102,9 +110,8 @@ bool OCLProgram::BuildProgramWithSource(const std::string sourceFile)
 
 	// ok, cool
 	isCompiled = true;
-	delete[] kernelCode;
-
 
 	return true;
+
 }
 

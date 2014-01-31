@@ -103,7 +103,14 @@ bool RenderGirlShared::SelectDevice(OCLDevice* select)
 	OCLMemoryObject<int>* mem = context->CreateMemoryObject<int>(10);
 
 	OCLProgram program(context);
-	program.BuildProgramWithSource("BubbleSort.cl");
+	if (!program.LoadProgramWithSource("BubbleSort.cl"))
+		return true;
+	if (!program.BuildProgram(NULL))
+		return true;
+
+	OCLKernel kernel(&program,std::string("BubbleSort2"));
+
+	/*HERE FINISH TEMP SHIT*/
 
 	return error;
 }

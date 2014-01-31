@@ -30,14 +30,32 @@ public:
 	OCLProgram(OCLContext* context);
 	~OCLProgram();
 
-	/* Build an OpenCL program in a given context, sourceFile argument is a path to a .cl file.
+	/* Load an OpenCL program in a given context, sourceFile argument is a path to a .cl file.
 		Return FALSE if there was a problem with the source code */
-	bool BuildProgramWithSource(const std::string sourceFile);
+	bool LoadProgramWithSource(const std::string &sourceFile);
+
+	/* Build the loaded OpenCL program in a given context, options argument is a set 
+		of options to the OpenCL compiler (can be NULL), return FALSE if there was a problem.
+		For the list of avaiable options, please refer to
+		http://www.khronos.org/registry/cl/sdk/1.0/docs/man/xhtml/clBuildProgram.html */
+	bool BuildProgram(const char* options);
 
 	/* Return TRUE if this program is ready to be executed */
 	inline bool IsCompiled() const
 	{
 		return isCompiled;
+	}
+
+	/* Return OpenCL program pointer */
+	inline cl_program GetCLProgram()
+	{
+		return program;
+	}
+
+	/* Get the OCLContext associated with this program */
+	inline OCLContext*  GetContext()
+	{
+		return context;
 	}
 
 private:
@@ -48,6 +66,10 @@ private:
 
 	// is the program compiled and ready to be executed?
 	bool isCompiled;
+	// is this program source code loaded?
+	bool isLoaded;
+	// the path of the sourcefile
+	std::string sourceFile; 
 };
 
 

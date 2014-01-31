@@ -16,3 +16,34 @@
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "OCLKernel.h"
+
+
+OCLKernel::OCLKernel(OCLProgram* program, std::string &name)
+{
+	assert(program != NULL);
+	assert(program->IsCompiled() && "Must be a valid program object");
+	assert(!name.empty() && "Kernel name should not be empty");
+
+	this->program = program;
+	this->name = name;
+
+	cl_int error;
+	kernel = clCreateKernel(program->GetCLProgram(), name.c_str(), &error);
+	
+	if (error != CL_SUCCESS)
+	{
+		Log::Error("There was an error while creating an OpenCL kernel.");
+		if (error == CL_INVALID_KERNEL_NAME)
+			Log::Error("There's no kernel called " + name);
+		kernelOk = false;
+	}
+
+	kernelOk = true;
+}
+
+OCLKernel::~OCLKernel()
+{
+	clReleaseKernel(kernel);
+}
+
