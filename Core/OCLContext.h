@@ -60,15 +60,28 @@ public:
 		memList.remove(memObject);
 	}
 
+	/* Call SyncDeviceToHost on all memories associated with this context. Return FALSE if at least
+		one memory syncronization failed */
+	bool SyncAllMemoryDeviceToHost();
+	/* Call SyncHostToDevice on all memories associated with this context. Return FALSE if at 
+		least one memory syncronization failed */
+	bool SyncAllMemoryHostToDevice();
+
+
 	// Get device where this context is running
 	inline const OCLDevice* GetDevice()const
 	{
 		return device;
 	}
 	// Get OpenCL context
-	inline const cl_context GetContext()const
+	inline const cl_context GetCLContext()const
 	{
 		return context;
+	}
+	// Get OpenCL command queue of this context
+	inline const cl_command_queue GetCLQueue()
+	{
+		return queue;
 	}
 	// Is this context ready to receive kernels?
 	inline const bool IsReady()const

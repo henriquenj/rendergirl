@@ -64,7 +64,7 @@ bool OCLProgram::LoadProgramWithSource(const std::string &sourceFile)
 	cl_int error;
 
 	// send source code to OpenCL
-	program = clCreateProgramWithSource(context->GetContext(), 1, &kernelCode, NULL,&error);
+	program = clCreateProgramWithSource(context->GetCLContext(), 1, &kernelCode, NULL, &error);
 	if (error != CL_SUCCESS)
 	{
 		Log::Error("There was an error when sending the source code to the OpenCL implementation.");

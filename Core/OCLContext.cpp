@@ -97,6 +97,36 @@ bool OCLContext::ExecuteCommands()
 	return true;
 }
 
+bool OCLContext::SyncAllMemoryDeviceToHost()
+{
+	bool error = true;
+	std::list<OCLMemoryObjectBase*>::iterator it;
+	for (it = memList.begin(); it != memList.end(); it++)
+	{
+		if (!(*it)->SyncDeviceToHost())
+		{
+			error = false;
+		}
+	}
+
+	return error;
+}
+
+bool OCLContext::SyncAllMemoryHostToDevice()
+{
+	bool error = true;
+	std::list<OCLMemoryObjectBase*>::iterator it;
+	for (it = memList.begin(); it != memList.end(); it++)
+	{
+		if (!(*it)->SyncHostToDevice())
+		{
+			error = false;
+		}
+	}
+
+	return error;
+}
+
 void OCLContext::ReleaseContext()
 {
 	// dealloc all memory associated with this device

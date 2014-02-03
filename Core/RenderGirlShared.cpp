@@ -99,16 +99,53 @@ bool RenderGirlShared::SelectDevice(OCLDevice* select)
 	}
 
 	/* TEMP SHIT*/
-	OCLContext* context = selectedDevice->GetContext();
-	OCLMemoryObject<int>* mem = context->CreateMemoryObject<int>(10);
+	//int numbers[10];
+	//for (int a = 0; a < 10; a++)
+	//{
+	//	numbers[a] = 10 - a;
+	//}
+	//OCLContext* context = selectedDevice->GetContext();
+	//OCLMemoryObject<int>* numberHost = context->CreateMemoryObject<int>(10);
+	//OCLMemoryObject<char>* odd = context->CreateMemoryObject<char>(1);
+	//OCLMemoryObject<char>* keepSorting = context->CreateMemoryObject<char>(1);
+	//OCLMemoryObject<int>* size = context->CreateMemoryObject<int>(1);
 
-	OCLProgram program(context);
-	if (!program.LoadProgramWithSource("BubbleSort.cl"))
-		return true;
-	if (!program.BuildProgram(NULL))
-		return true;
+	//numberHost->SetData(numbers);
 
-	OCLKernel kernel(&program,std::string("BubbleSort2"));
+	//const int size_l = 10;
+	//size->SetData(&size_l);
+
+	//const char odd_l = 0;
+	//odd->SetData(&odd_l);
+	//keepSorting->SetData(&odd_l);
+
+	//context->SyncAllMemoryHostToDevice();
+
+	//OCLProgram program(context);
+	//if (!program.LoadProgramWithSource("BubbleSort.cl"))
+	//	return true;
+	//if (!program.BuildProgram(NULL))
+	//	return true;
+
+	//OCLKernel kernel(&program,std::string("BubbleSort"));
+	//if (kernel.GetOk())
+	//{
+	//	// call kernel
+	//	kernel.SetGlobalWorkSize(4);
+	//	kernel.SetArgument(0, numberHost);
+	//	kernel.SetArgument(1, size);
+	//	kernel.SetArgument(2, odd);
+	//	kernel.SetArgument(3, keepSorting);
+	//	kernel.EnqueueExecution();
+	//}
+
+	//context->ExecuteCommands();
+
+	//context->SyncAllMemoryDeviceToHost();
+
+	//const int * result = numberHost->GetData();
+
+	//context->DeleteMemoryObject(numberHost);
 
 	/*HERE FINISH TEMP SHIT*/
 

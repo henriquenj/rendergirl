@@ -17,6 +17,7 @@
 */
 
 #include "OCLKernel.h"
+#include "OCLDevice.h"
 
 
 OCLKernel::OCLKernel(OCLProgram* program, std::string &name)
@@ -37,9 +38,67 @@ OCLKernel::OCLKernel(OCLProgram* program, std::string &name)
 		if (error == CL_INVALID_KERNEL_NAME)
 			Log::Error("There's no kernel called " + name);
 		kernelOk = false;
+		return;
 	}
 
+	clGetKernelInfo(kernel, CL_KERNEL_NUM_ARGS, sizeof(cl_uint), (void*)&argumentSize, NULL);
+
+	// init variables to kernel dispatch
+	workDim = 1;
+	globalWorkSize = 1;
+
 	kernelOk = true;
+}
+
+bool OCLKernel::EnqueueExecution()
+{
+	/* For now, I'll let OpenCL implementation decide the size of each work-group */
+
+	cl_int error = CL_SUCCESS;
+
+	assert(kernelOk && "Kernel must be ready to execution");
+
+	error = clEnqueueNDRangeKernel(program->GetContext()->GetCLQueue(), kernel, workDim,
+			NULL, // should always be NULL, this is from the OpenCL specification
+			&globalWorkSize, // the total amount of threads (work-itens)
+			NULL, // passing NULL on the size of the work-groups, OpenCL will hopefully pick the proper size
+			0,NULL, NULL); // events syncronization stuff
+
+	if (error != CL_SUCCESS)
+	{
+		std::string errorString = "Kernel being executed on " + program->GetContext()->GetDevice()->GetName()
+			+ " report the following error: ";
+		// print the error codes, I'm not taking care of all of them
+		switch (error)
+		{
+		case CL_INVALID_KERNEL_ARGS:
+			errorString += "CL_INVALID_KERNEL_ARGS";
+			break;
+		case CL_INVALID_WORK_GROUP_SIZE:
+			errorString += "CL_INVALID_KERNEL_ARGS";
+			break;
+		case CL_INVALID_WORK_ITEM_SIZE:// for now will never get here
+			errorString += "CL_INVALID_WORK_ITEM_SIZE";
+			break;
+		case CL_OUT_OF_RESOURCES:
+			errorString += "CL_OUT_OF_RESOURCES";
+			break;
+		case CL_MEM_OBJECT_ALLOCATION_FAILURE:
+			errorString += "CL_MEM_OBJECT_ALLOCATION_FAILURE";
+			break;
+		case CL_OUT_OF_HOST_MEMORY:
+			errorString += "CL_OUT_OF_HOST_MEMORY";
+			break; // yeah I just copy-pasted all of them, I'm lazy
+		default:
+			errorString += "generic error";  // OK that was even MORE lazy
+		}
+
+		Log::Error(errorString);
+
+		return false;
+	}
+
+	return true;
 }
 
 OCLKernel::~OCLKernel()

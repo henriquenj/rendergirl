@@ -43,6 +43,8 @@ class OCLMemoryObjectBase
 public:
 	OCLMemoryObjectBase(){ ; }
 	virtual ~OCLMemoryObjectBase(){};
+	virtual bool SyncHostToDevice() = 0;
+	virtual bool SyncDeviceToHost() = 0;
 };
 
 /* Memory object class stores any kind of data into an OpenCL device, contains methods for transferring data
@@ -55,8 +57,9 @@ public:
 	/* Copy data to this object; since it's being copied, you are free to delete afterwards.
 		Bear in mind that this function WON'T transfer the data to the device, call the sync functions to do that. 
 		If there's another data previously loaded, the old one will be DELETED*/
-	void SetData(T* data)
+	void SetData(const T* data)
 	{
+		memorySet = true;
 		// copy data
 		memcpy(data_host, data, sizeof(T)* size);
 	}
@@ -81,12 +84,13 @@ public:
 		*/
 	bool SyncHostToDevice()
 	{
+		assert(memorySet && "You must set this memory before syncing with the device");
 		// add an command to the current command queue
 		/* I'll use a NON BLOCKING call for now, that means it's NOT safe to use data on host after calling this,
 		I'm using that way just to try to improve the speed of the program
 		TODO: test with blocking calls to see if there's a difference in performance
 		*/
-		if (clEnqueueWriteBuffer(queue, data_device, CL_FALSE, 0, sizeof(T)* size, data_host, NULL, NULL) != CL_SUCCESS)
+		if (clEnqueueWriteBuffer(queue, data_device, CL_FALSE, 0, sizeof(T)* size, data_host,0, NULL, NULL) != CL_SUCCESS)
 		{
 			Log::Error("Couldn't alloc enough memory on " + context->GetDevice()->GetName() + " device");
 			return false;
@@ -98,7 +102,7 @@ public:
 		return false if the allocation failed*/
 	bool SyncDeviceToHost()
 	{
-		if (clEnqueueReadBuffer(queue, data_device, CL_TRUE, 0, sizeof(T)* size, data_host, NULL, NULL) != CL_SUCCESS)
+		if (clEnqueueReadBuffer(queue, data_device, CL_TRUE, 0, sizeof(T)* size, data_host,0, NULL, NULL) != CL_SUCCESS)
 		{
 			Log::Error("Couldn't read the memory on " + context->GetDevice()->GetName() + " device");
 			return false;
@@ -110,8 +114,8 @@ public:
 	~OCLMemoryObject()
 	{
 		// dealloc resources and free memory on both host and device
-		delete[] data_host;
 		clReleaseMemObject(data_device);
+		delete[] data_host;
 	}
 
 private:
@@ -127,10 +131,9 @@ private:
 		this->queue = queue;
 		this->size = size;
 
-		//cl_int error = CL_SUCCESS;
 
 		// create OpenCL memory
-		data_device = clCreateBuffer((context->GetContext()), type, size * sizeof(T), NULL, &l_error);
+		data_device = clCreateBuffer((context->GetCLContext()), type, size * sizeof(T), NULL, &l_error);
 
 		if (l_error != CL_SUCCESS)
 		{
@@ -146,6 +149,8 @@ private:
 
 		// reserve the space required
 		data_host = new T[size];
+
+		memorySet = false;
 	}
 
 	friend class OCLContext;
@@ -160,6 +165,9 @@ private:
 	cl_mem data_device;
 	// number of elements 
 	int size;
+
+	// control if the memory has been at least once before syncronizing, useful only in debug
+	bool memorySet;
 
 };
 
