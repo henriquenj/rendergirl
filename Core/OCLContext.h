@@ -42,13 +42,26 @@ public:
 	/* alloc a memory object on this context, size in the amount of elements, NOT the size in bytes.
 		return error = true if there's an error upon allocating*/
 	template <class T>
-	OCLMemoryObject<T>* CreateMemoryObject(int size, MemoryType type = ReadWrite, cl_bool *error = NULL)
+	OCLMemoryObject<T>* CreateMemoryObject(const int size,const MemoryType type = ReadWrite,cl_bool *error = NULL)
 	{
 		OCLMemoryObject<T>* newMem = new OCLMemoryObject<T>(this, queue, size, type, error);
 		memList.push_back(newMem);
 
 		return newMem;
 	}
+	/* alloc a memory object on this context. Data is a pointer to a block of data,
+	copy parameter define if the data will be copied or just the pointer
+	size in the amount of elements, NOT the size in bytes.
+	return error = true if there's an error upon allocating*/
+	template<class T>
+	OCLMemoryObject<T>* CreateMemoryObjectWithData(const int size,T* data,bool copy = true,
+									const MemoryType type = ReadWrite,cl_bool *error = NULL)
+	{
+		OCLMemoryObject<T>* newMem =  this->CreateMemoryObject<T>(size, type, error);
+		newMem->SetData(data,copy);
+		return newMem;
+	}
+
 	/* delete a memory object associated with this context */
 	template <class T>
 	void DeleteMemoryObject(OCLMemoryObject<T>* memObject)

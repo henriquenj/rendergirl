@@ -54,14 +54,28 @@ class OCLMemoryObject : public OCLMemoryObjectBase
 {
 public:
 	
-	/* Copy data to this object; since it's being copied, you are free to delete afterwards.
+	/* Set data on this memory. Parameter copy define if the data will be copied entirely or just the pointer;
+		if just the pointer is copied, the class will DELETE it after using it.
 		Bear in mind that this function WON'T transfer the data to the device, call the sync functions to do that. 
 		If there's another data previously loaded, the old one will be DELETED*/
-	void SetData(const T* data)
+	void SetData(T* data, bool copy = true)
 	{
+		if (memorySet)
+			delete[] data_host; // delete old content
+
+		if (copy)
+		{
+			data_host = new T[size];
+			// copy data
+			memcpy(data_host, data, sizeof(T)* size);
+		}
+		else
+		{
+			// copy pointer only
+			data_host = data;
+		}
+
 		memorySet = true;
-		// copy data
-		memcpy(data_host, data, sizeof(T)* size);
 	}
 	/* Get raw data currently on the host memory */
 	inline const T* GetData()const
@@ -118,11 +132,16 @@ public:
 		delete[] data_host;
 	}
 
+	inline T &operator[](int index)
+	{
+		return data_host[index];
+	}
+
 private:
 
 	/* Only OCLContext is able to create those objects
 	size is the number of elements, NOT the size in bytes*/
-	OCLMemoryObject(OCLContext* context, cl_command_queue queue, int size, MemoryType type, cl_bool* error)
+	OCLMemoryObject(const OCLContext* context,const cl_command_queue queue,const int size,const MemoryType type,cl_bool* error)
 	{
 		assert(size > 0 && "Size should be at least 1!");
 		cl_int l_error = false;
@@ -147,8 +166,7 @@ private:
 		if (error != NULL)
 			*error = false;
 
-		// reserve the space required
-		data_host = new T[size];
+		data_host = NULL;
 
 		memorySet = false;
 	}
@@ -156,7 +174,7 @@ private:
 	friend class OCLContext;
 
 	// context to which this block of data is associated
-	OCLContext* context;
+	const OCLContext* context;
 	cl_command_queue queue;
 
 	// raw host data

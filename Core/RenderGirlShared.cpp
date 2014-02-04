@@ -104,20 +104,21 @@ bool RenderGirlShared::SelectDevice(OCLDevice* select)
 	//{
 	//	numbers[a] = 10 - a;
 	//}
+	//int size_l = 10;
+	//char odd_l = 0;
 	//OCLContext* context = selectedDevice->GetContext();
-	//OCLMemoryObject<int>* numberHost = context->CreateMemoryObject<int>(10);
-	//OCLMemoryObject<char>* odd = context->CreateMemoryObject<char>(1);
-	//OCLMemoryObject<char>* keepSorting = context->CreateMemoryObject<char>(1);
-	//OCLMemoryObject<int>* size = context->CreateMemoryObject<int>(1);
+	//OCLMemoryObject<int>* numberHost = context->CreateMemoryObjectWithData<int>(10,numbers,false);
+	//OCLMemoryObject<char>* odd = context->CreateMemoryObjectWithData<char>(1,&odd_l,false);
+	//OCLMemoryObject<char>* keepSorting = context->CreateMemoryObjectWithData<char>(1,&odd_l,false);
+	//OCLMemoryObject<int>* size = context->CreateMemoryObjectWithData<int>(1,&size_l,false);
 
-	//numberHost->SetData(numbers);
 
-	//const int size_l = 10;
+	///*numberHost->SetData(numbers);
+
 	//size->SetData(&size_l);
 
-	//const char odd_l = 0;
 	//odd->SetData(&odd_l);
-	//keepSorting->SetData(&odd_l);
+	//keepSorting->SetData(&odd_l);*/
 
 	//context->SyncAllMemoryHostToDevice();
 
@@ -144,6 +145,7 @@ bool RenderGirlShared::SelectDevice(OCLDevice* select)
 	//context->SyncAllMemoryDeviceToHost();
 
 	//const int * result = numberHost->GetData();
+	//int r = (*numberHost)[1];
 
 	//context->DeleteMemoryObject(numberHost);
 
