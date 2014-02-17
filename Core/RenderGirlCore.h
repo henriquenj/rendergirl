@@ -26,6 +26,7 @@
 	Interfaces will be put on another projects */
 
 #include "RenderGirlShared.h"
+#include "CLStructs.h"
 #include "Log.h"
 
 

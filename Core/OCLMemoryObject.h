@@ -37,7 +37,6 @@ enum MemoryType
 class OCLContext;
 
 // to fit into a std::list
-// TODO: check if there's a better way to handle this
 class OCLMemoryObjectBase
 {
 public:
@@ -60,7 +59,7 @@ public:
 		If there's another data previously loaded, the old one will be DELETED*/
 	void SetData(T* data, bool copy = true)
 	{
-		if (memorySet)
+		if (data_host != NULL)
 			delete[] data_host; // delete old content
 
 		if (copy)
@@ -74,8 +73,6 @@ public:
 			// copy pointer only
 			data_host = data;
 		}
-
-		memorySet = true;
 	}
 	/* Get raw data currently on the host memory */
 	inline const T* GetData()const
@@ -98,7 +95,7 @@ public:
 		*/
 	bool SyncHostToDevice()
 	{
-		assert(memorySet && "You must set this memory before syncing with the device");
+		assert(data_host != NULL && "You must set this memory before syncing with the device");
 		// add an command to the current command queue
 		/* I'll use a NON BLOCKING call for now, that means it's NOT safe to use data on host after calling this,
 		I'm using that way just to try to improve the speed of the program
@@ -129,10 +126,11 @@ public:
 	{
 		// dealloc resources and free memory on both host and device
 		clReleaseMemObject(data_device);
+		if (data_host != NULL)
 		delete[] data_host;
 	}
 
-	inline T &operator[](int index)
+	inline T &operator[](const int index)
 	{
 		return data_host[index];
 	}
@@ -167,8 +165,6 @@ private:
 			*error = false;
 
 		data_host = NULL;
-
-		memorySet = false;
 	}
 
 	friend class OCLContext;
@@ -183,9 +179,6 @@ private:
 	cl_mem data_device;
 	// number of elements 
 	int size;
-
-	// control if the memory has been at least once before syncronizing, useful only in debug
-	bool memorySet;
 
 };
 

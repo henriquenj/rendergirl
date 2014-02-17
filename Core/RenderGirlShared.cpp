@@ -98,8 +98,8 @@ bool RenderGirlShared::SelectDevice(OCLDevice* select)
 		Log::Message("Selected device: " + selectedDevice->GetName());
 	}
 
-	/* TEMP SHIT*/
-	//int numbers[10];
+	///* TEMP SHIT*/
+	//int* numbers = new int[10];
 	//for (int a = 0; a < 10; a++)
 	//{
 	//	numbers[a] = 10 - a;
@@ -107,10 +107,10 @@ bool RenderGirlShared::SelectDevice(OCLDevice* select)
 	//int size_l = 10;
 	//char odd_l = 0;
 	//OCLContext* context = selectedDevice->GetContext();
-	//OCLMemoryObject<int>* numberHost = context->CreateMemoryObjectWithData<int>(10,numbers,false);
-	//OCLMemoryObject<char>* odd = context->CreateMemoryObjectWithData<char>(1,&odd_l,false);
-	//OCLMemoryObject<char>* keepSorting = context->CreateMemoryObjectWithData<char>(1,&odd_l,false);
-	//OCLMemoryObject<int>* size = context->CreateMemoryObjectWithData<int>(1,&size_l,false);
+	//OCLMemoryObject<int>* numberHost = context->CreateMemoryObjectWithData<int>(10,numbers,true);
+	//OCLMemoryObject<char>* odd = context->CreateMemoryObjectWithData<char>(1,&odd_l);
+	//OCLMemoryObject<char>* keepSorting = context->CreateMemoryObjectWithData<char>(1,&odd_l);
+	//OCLMemoryObject<int>* size = context->CreateMemoryObjectWithData<int>(1,&size_l);
 
 
 	///*numberHost->SetData(numbers);
@@ -137,7 +137,7 @@ bool RenderGirlShared::SelectDevice(OCLDevice* select)
 	//	kernel.SetArgument(1, size);
 	//	kernel.SetArgument(2, odd);
 	//	kernel.SetArgument(3, keepSorting);
-	//	kernel.EnqueueExecution();
+	//	//kernel.EnqueueExecution();
 	//}
 
 	//context->ExecuteCommands();
@@ -149,7 +149,7 @@ bool RenderGirlShared::SelectDevice(OCLDevice* select)
 
 	//context->DeleteMemoryObject(numberHost);
 
-	/*HERE FINISH TEMP SHIT*/
+	///*HERE FINISH TEMP SHIT*/
 
 	return error;
 }

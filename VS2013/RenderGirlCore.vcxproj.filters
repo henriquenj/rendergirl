@@ -44,6 +44,9 @@
     <ClInclude Include="..\Core\OCLProgram.h">
       <Filter>Source Files\OpenCL Wrapper</Filter>
     </ClInclude>
+    <ClInclude Include="..\Core\CLStructs.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Core\Log.cpp">

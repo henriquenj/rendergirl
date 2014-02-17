@@ -14,13 +14,15 @@
 
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
-	*/
+*/
 
 
 #include "RenderGirlCore.h"
 
 #include <Windows.h>
 #include <iostream>
+
+#include "OBJLoader.h"
 
 
 /* App project will consist on a stand alone interface for the raytracer using the wxWidgets toolkit */
@@ -44,6 +46,7 @@ public:
 
 int main()
 {
+
 	LogOutput* listenerOutput = new LogOutput();
 	Log::AddListener(listenerOutput);
 	
@@ -56,6 +59,11 @@ int main()
 	std::vector<OCLDevice> devices = platforms[0].GetDevices();
 	// select this
 	RenderGirlShared::SelectDevice(&devices[0]);
+
+
+	LoadOBJ(ShowFileDialog(0,DialogOpen,"OBJ Files (*.obj)","*.obj"));
+
+
 	RenderGirlShared::ReleaseDevice();
 
 	system("pause");

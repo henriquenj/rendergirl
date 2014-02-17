@@ -28,7 +28,6 @@
 #include "OCLDevice.h"
 #include "OCLKernel.h"
 
-
 // Static class encapsules the OpenCL status and the renderer status
 class RenderGirlShared
 {

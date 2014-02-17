@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Core\CLStructs.h" />
     <ClInclude Include="..\Core\Log.h" />
     <ClInclude Include="..\Core\OCLContext.h" />
     <ClInclude Include="..\Core\OCLDevice.h" />
