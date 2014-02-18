@@ -27,6 +27,7 @@
 #include "OCLPlatform.h"
 #include "OCLDevice.h"
 #include "OCLKernel.h"
+#include "CLStructs.h"
 
 // Static class encapsules the OpenCL status and the renderer status
 class RenderGirlShared
@@ -41,7 +42,21 @@ public:
 	/* Prepare a given device for executing the OpenCL program, return FALSE if there's an error with device*/
 	static bool SelectDevice(OCLDevice* select);
 
-	/* Release the selected device from use, deallocing all memory used  */
+	/* PrepareRaytracer function prepare the OpenCL raytracer to work on the selected device.
+		You got to have a selected device to call this. Return FALSE if there's an error with the device. */
+	static bool PrepareRaytracer();
+
+	/* Send 3D data to the renderer. This should be called after PrepareRaytracer.
+		The renderer will take hold of the data, so don't use it after sending it to the renderer.
+		Return FALSE if there's an error */
+	static bool Set3DScene(Scene3D* pscene);
+
+	/* Render a frame. You should only call this with a kernel ready and a 3D scene.
+		Param resolution is the resolution of the resulting image.
+		Return FALSE for an error */
+	static bool Render(int resolution);
+
+	/* Release the selected device from use, deallocing all memory used */
 	static void ReleaseDevice();
 
 	/* Return selected device */
@@ -62,7 +77,6 @@ public:
 	{
 		return platforms.size();
 	}
-	~RenderGirlShared();
 
 private:
 	RenderGirlShared(){ ; }
@@ -72,6 +86,12 @@ private:
 
 	// device selected for doing the computation
 	static OCLDevice* selectedDevice;
+
+	static OCLProgram* program;
+	static OCLKernel* kernel;
+	static Scene3D* scene;
+	static bool sceneLoaded;
+	static OCLMemoryObject<cl_uchar3>* frame;
 };
 
 

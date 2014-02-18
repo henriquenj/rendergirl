@@ -80,6 +80,12 @@ public:
 		return data_host;
 	}
 
+	/* Get number of elements on this memory */
+	inline const int GetSize()const
+	{
+		return size;
+	}
+
 	/* Get pointer to device memory */
 	inline const cl_mem GetDeviceMemory()const
 	{

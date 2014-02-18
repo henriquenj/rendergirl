@@ -37,5 +37,17 @@ struct Scene3D
 	cl_int normalSize;
 };
 
+/* SceneInformation struct holds important information related to the 3D scene and
+	how it should be rendered.
+	Any change on this struct should be copied back to the device code on Raytracer.cl */
+typedef struct SceneInformation
+{
+	cl_int resolution;
+	cl_int pixelCount;
+	cl_int verticesSize;
+	cl_int normalSize;
+	cl_int facesSize;
+} SceneInformation;
+
 
 #endif //__CLSTRUCTS_HEADER__

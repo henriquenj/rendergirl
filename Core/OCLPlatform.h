@@ -31,6 +31,8 @@ class OCLPlatform
 {
 public:
 
+	~OCLPlatform();
+
 	// init this platform
 	void Init(cl_platform_id id);
 	/* query for devices on this platform and init them

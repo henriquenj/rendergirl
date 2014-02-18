@@ -18,6 +18,11 @@
 
 #include "OCLPlatform.h"
 
+
+OCLPlatform::~OCLPlatform()
+{
+	devices.clear();
+}
 void OCLPlatform::Init(cl_platform_id id)
 {
 	this->id = id;

@@ -20,11 +20,16 @@
 #include "RenderGirlShared.h"
 
 std::vector<OCLPlatform>	RenderGirlShared::platforms;
-OCLDevice*					RenderGirlShared::selectedDevice;
+OCLDevice*					RenderGirlShared::selectedDevice = NULL;
+OCLProgram*					RenderGirlShared::program = NULL;
+OCLKernel*					RenderGirlShared::kernel = NULL;
+Scene3D*					RenderGirlShared::scene = NULL;
+bool						RenderGirlShared::sceneLoaded = false;
+OCLMemoryObject<cl_uchar3>*	RenderGirlShared::frame = NULL;
+
 
 bool RenderGirlShared::InitPlatforms()
 {
-	selectedDevice = NULL;
 
 	// do not query for new platforms if it has queried before
 	assert(platforms.empty());
@@ -87,7 +92,7 @@ bool RenderGirlShared::SelectDevice(OCLDevice* select)
 	bool error = true;
 	if (selectedDevice != NULL)
 	{
-		selectedDevice->ReleaseContext();
+		RenderGirlShared::ReleaseDevice();
 	}
 
 	selectedDevice = select;
@@ -98,68 +103,189 @@ bool RenderGirlShared::SelectDevice(OCLDevice* select)
 		Log::Message("Selected device: " + selectedDevice->GetName());
 	}
 
-	///* TEMP SHIT*/
-	//int* numbers = new int[10];
-	//for (int a = 0; a < 10; a++)
-	//{
-	//	numbers[a] = 10 - a;
-	//}
-	//int size_l = 10;
-	//char odd_l = 0;
-	//OCLContext* context = selectedDevice->GetContext();
-	//OCLMemoryObject<int>* numberHost = context->CreateMemoryObjectWithData<int>(10,numbers,true);
-	//OCLMemoryObject<char>* odd = context->CreateMemoryObjectWithData<char>(1,&odd_l);
-	//OCLMemoryObject<char>* keepSorting = context->CreateMemoryObjectWithData<char>(1,&odd_l);
-	//OCLMemoryObject<int>* size = context->CreateMemoryObjectWithData<int>(1,&size_l);
-
-
-	///*numberHost->SetData(numbers);
-
-	//size->SetData(&size_l);
-
-	//odd->SetData(&odd_l);
-	//keepSorting->SetData(&odd_l);*/
-
-	//context->SyncAllMemoryHostToDevice();
-
-	//OCLProgram program(context);
-	//if (!program.LoadProgramWithSource("BubbleSort.cl"))
-	//	return true;
-	//if (!program.BuildProgram(NULL))
-	//	return true;
-
-	//OCLKernel kernel(&program,std::string("BubbleSort"));
-	//if (kernel.GetOk())
-	//{
-	//	// call kernel
-	//	kernel.SetGlobalWorkSize(4);
-	//	kernel.SetArgument(0, numberHost);
-	//	kernel.SetArgument(1, size);
-	//	kernel.SetArgument(2, odd);
-	//	kernel.SetArgument(3, keepSorting);
-	//	//kernel.EnqueueExecution();
-	//}
-
-	//context->ExecuteCommands();
-
-	//context->SyncAllMemoryDeviceToHost();
-
-	//const int * result = numberHost->GetData();
-	//int r = (*numberHost)[1];
-
-	//context->DeleteMemoryObject(numberHost);
-
-	///*HERE FINISH TEMP SHIT*/
 
 	return error;
+}
+
+bool RenderGirlShared::PrepareRaytracer()
+{
+	assert(selectedDevice != NULL);
+	assert(program == NULL);
+	OCLContext* context = selectedDevice->GetContext();
+
+	/* Prepare this device compiling the OpenCL kernels*/
+
+	program = new OCLProgram(context);
+	if (!program->LoadProgramWithSource("Raytracer.cl"))
+	{
+		delete program;
+		program = NULL;
+		return false;
+	}
+
+	if (!program->BuildProgram())
+	{
+		delete program;
+		program = NULL;
+		return false;
+	}
+
+	kernel = new OCLKernel(program,std::string("Raytrace"));
+	if (!kernel->GetOk())
+	{
+		delete program;
+		delete kernel;
+		kernel = NULL;
+		program = NULL;
+		return false;
+	}
+
+	return true;
+}
+
+bool RenderGirlShared::Set3DScene(Scene3D* pscene)
+{
+
+	assert(kernel != NULL);
+	assert(kernel->GetOk());
+	assert(pscene != NULL);
+
+	scene = pscene;
+
+	OCLContext* context = selectedDevice->GetContext();
+
+	if (frame != NULL)
+	{
+		context->DeleteMemoryObject(frame);
+		frame = NULL;
+	}
+
+	cl_bool error = false;
+	/* Send data to the OpenCL device*/
+	OCLMemoryObject<cl_float3>* vertices = context->CreateMemoryObject<cl_float3>(scene->verticesSize, ReadOnly,&error);
+	if (error)
+		return false;
+	OCLMemoryObject<cl_float3>* normals = context->CreateMemoryObject<cl_float3>(scene->normalSize,ReadOnly,&error);
+	if (error)
+		return false;
+	OCLMemoryObject<cl_int3>* faces = context->CreateMemoryObject<cl_int3>(scene->facesSize, ReadOnly,&error);
+	if (error)
+		return false;
+
+	vertices->SetData(scene->vertices,false);
+	normals->SetData(scene->normal, false);
+	faces->SetData(scene->faces, false);
+
+	if (!context->SyncAllMemoryHostToDevice())
+		return false;
+
+	/* Set kernel arguments */
+	if (!kernel->SetArgument(0, vertices))
+		return false;
+	if (!kernel->SetArgument(1, normals))
+		return false;
+	if (!kernel->SetArgument(2, faces))
+		return false;
+
+	sceneLoaded = true;
+	return true;
+}
+
+bool RenderGirlShared::Render(int resolution)
+{
+	if (!sceneLoaded)
+	{
+		Log::Error("Cannot render since there's no loaded scene!");
+		return false;
+	}
+
+	OCLContext* context = selectedDevice->GetContext();
+	cl_bool error = false;
+
+	/* Setup render frame */
+
+	int pixelCount = resolution * resolution; // total amount of pixels
+	cl_uchar3* frameRaw = NULL;
+
+	// delete old frame if it's on a different resolution, otherwise, reuses it
+	if (frame != NULL)
+	{
+		if (pixelCount != frame->GetSize())
+		{
+			context->DeleteMemoryObject<cl_uchar3>(frame);
+			frame = context->CreateMemoryObject<cl_uchar3>(pixelCount, WriteOnly, &error);
+			if (error)
+				return false;
+			frameRaw = new cl_uchar3[pixelCount];
+			frame->SetData(frameRaw);
+		}
+	}
+	else
+	{
+		frame = context->CreateMemoryObject<cl_uchar3>(pixelCount, WriteOnly, &error);
+		if (error)
+			return false;
+		frameRaw = new cl_uchar3[pixelCount];
+		frame->SetData(frameRaw);
+	}
+
+	/* Setup render info */
+	SceneInformation sceneInfo;
+	sceneInfo.resolution = resolution;
+	sceneInfo.pixelCount = pixelCount;
+	sceneInfo.normalSize = scene->normalSize;
+	sceneInfo.facesSize = scene->facesSize;
+	sceneInfo.verticesSize = scene->verticesSize;
+
+	OCLMemoryObject<SceneInformation>* sceneInfoMem = context->CreateMemoryObjectWithData(1, &sceneInfo, true, ReadOnly);
+	sceneInfoMem->SyncHostToDevice();
+
+	// set remaining arguments
+	kernel->SetArgument(3, sceneInfoMem);
+	kernel->SetArgument(4, frame);
+
+	kernel->SetGlobalWorkSize(resolution * resolution); // one work-iten per pixel
+	if (!kernel->EnqueueExecution())
+		return false;
+
+	Log::Message("Rendering...");
+	if (!context->ExecuteCommands())
+		return false;
+
+	Log::Message("Rendering complete!");
+
+	frame->SyncDeviceToHost();
+
+	return true;
 }
 
 void RenderGirlShared::ReleaseDevice()
 {
 	assert(selectedDevice != NULL);
-	selectedDevice->ReleaseContext();
-}
+	
+	if (program != NULL)
+	{
+		delete program;
+		program = NULL;
+	}
+	if (kernel != NULL)
+	{
+		delete kernel;
+		kernel = NULL;
+	}
+	if (scene != NULL)
+	{
+		delete scene;
+		scene = NULL;
+	}
+	if (frame != NULL)
+	{
+		/* this will get deallocated anyway on ReleaseContext so there's no need to delete it here
+			just remove the reference */
+		frame = NULL;
+	}
 
-RenderGirlShared::~RenderGirlShared()
-{
+	selectedDevice->ReleaseContext();
+	selectedDevice = NULL;
+	sceneLoaded = false;
 }

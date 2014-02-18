@@ -202,6 +202,10 @@ Scene3D* LoadOBJ(const char* fileName)
 				&(scene->faces[faceCount].s[1]),&temp,&temp,
 				&(scene->faces[faceCount].s[2]), &temp, &temp);
 
+			// make C-like indexes since OBJ file format use indexes starting in 1
+			scene->faces[faceCount].s[0]--;
+			scene->faces[faceCount].s[1]--;
+			scene->faces[faceCount].s[2]--;
 			faceCount++;
 		}
 		//vertices

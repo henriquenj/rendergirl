@@ -60,8 +60,17 @@ int main()
 	// select this
 	RenderGirlShared::SelectDevice(&devices[0]);
 
+	RenderGirlShared::PrepareRaytracer();
 
-	LoadOBJ(ShowFileDialog(0,DialogOpen,"OBJ Files (*.obj)","*.obj"));
+
+	const char * path = ShowFileDialog(0, DialogOpen, "OBJ Files (*.obj)", "*.obj");
+	if (path != NULL)
+	{
+		Scene3D* scene = LoadOBJ(path);
+		// start raytracing
+		RenderGirlShared::Set3DScene(scene);
+		RenderGirlShared::Render(128);
+	}
 
 
 	RenderGirlShared::ReleaseDevice();

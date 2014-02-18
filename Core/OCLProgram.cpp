@@ -58,8 +58,6 @@ bool OCLProgram::LoadProgramWithSource(const std::string &sourceFile)
 	// end file stuff
 	fclose(kernelCodeFile);
 
-	// now the building phase
-	Log::Message("Compiling " + sourceFile);
 
 	cl_int error;
 
@@ -80,6 +78,9 @@ bool OCLProgram::LoadProgramWithSource(const std::string &sourceFile)
 
 bool OCLProgram::BuildProgram(const char* options)
 {
+	// now the building phase
+	Log::Message("Compiling " + sourceFile);
+
 	cl_int error = clBuildProgram(program, 0, NULL, options, NULL, NULL);
 
 	if (error != CL_SUCCESS)
