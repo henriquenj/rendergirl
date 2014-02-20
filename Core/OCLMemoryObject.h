@@ -95,19 +95,14 @@ public:
 	/* Sync functions*/
 
 	/* Copy memory from host to device. WARNING: the task will only be completed when the current command queue is flushed,
-		call ExecuteCommands on OCLContext to guarantee a copy, 
-		you CAN'T use the data right after calling this (only after the queue is flushed)
-		return false if the allocation failed
+		call ExecuteCommands on OCLContext to guarantee a copy. Return FALSE if the allocation failed
 		*/
 	bool SyncHostToDevice()
 	{
 		assert(data_host != NULL && "You must set this memory before syncing with the device");
 		// add an command to the current command queue
-		/* I'll use a NON BLOCKING call for now, that means it's NOT safe to use data on host after calling this,
-		I'm using that way just to try to improve the speed of the program
-		TODO: test with blocking calls to see if there's a difference in performance
-		*/
-		if (clEnqueueWriteBuffer(queue, data_device, CL_FALSE, 0, sizeof(T)* size, data_host,0, NULL, NULL) != CL_SUCCESS)
+		//TODO: try using NON-blocking calls
+		if (clEnqueueWriteBuffer(queue, data_device, CL_TRUE, 0, sizeof(T)* size, data_host,0, NULL, NULL) != CL_SUCCESS)
 		{
 			Log::Error("Couldn't alloc enough memory on " + context->GetDevice()->GetName() + " device");
 			return false;
@@ -115,8 +110,8 @@ public:
 
 		return true;
 	}
-	/* Copy memory from device to host, this causes an intrinsic flush on the command queue,
-		return false if the allocation failed*/
+	/* Copy memory from device to host, this causes an intrinsic flush on the command queue.
+		return FALSE if the allocation failed*/
 	bool SyncDeviceToHost()
 	{
 		if (clEnqueueReadBuffer(queue, data_device, CL_TRUE, 0, sizeof(T)* size, data_host,0, NULL, NULL) != CL_SUCCESS)

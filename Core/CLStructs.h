@@ -24,9 +24,16 @@
 #include "CL\cl.h"
 
 
-/* file loaders (or other software) should fill this struct with 3d information*/
-struct Scene3D
+/* file loaders (or other software) should fill this class with 3d information*/
+class Scene3D
 {
+public:
+
+	/* You may notice that this class is a work in progress (all members on public).
+		It's suppose to work as a bridge between the 3D softwares and the renderer, so 
+		I'm only going to fully implement it once I start developing the plugins */
+	Scene3D(){ ; };
+
 	cl_float3* vertices;
 	cl_int verticesSize;
 	
@@ -35,11 +42,18 @@ struct Scene3D
 
 	cl_float3* normal;
 	cl_int normalSize;
+
+	~Scene3D()
+	{
+		delete vertices;
+		delete faces;
+		delete normal;
+	}
 };
 
 /* SceneInformation struct holds important information related to the 3D scene and
 	how it should be rendered.
-	Any change on this struct should be copied back to the device code on Raytracer.cl */
+	Any change on this struct should be copied back to the device code on Raytracer.cl*/
 typedef struct SceneInformation
 {
 	cl_int resolution;
@@ -48,6 +62,7 @@ typedef struct SceneInformation
 	cl_int normalSize;
 	cl_int facesSize;
 } SceneInformation;
+
 
 
 #endif //__CLSTRUCTS_HEADER__

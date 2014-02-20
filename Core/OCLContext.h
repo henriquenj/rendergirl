@@ -34,7 +34,7 @@ class OCLContext
 {
 public:
 	// Init a context inside a given device, return false if there was an error
-	bool InitContext(OCLDevice *device);
+	bool InitContext(const OCLDevice *device);
 
 	// Release this context, freeing all the memory associated with it
 	void ReleaseContext();
@@ -108,7 +108,7 @@ public:
 private:
 
 	// the device which this context is running
-	OCLDevice* device;
+	const OCLDevice* device;
 	// internal pointer to cl context
 	cl_context context;
 	// internal pointer to cl command queue

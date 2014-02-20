@@ -20,7 +20,7 @@
 #include "OCLDevice.h"
 
 
-OCLKernel::OCLKernel(OCLProgram* program, std::string &name)
+OCLKernel::OCLKernel(OCLProgram* program,const std::string &name)
 {
 	assert(program != NULL);
 	assert(program->IsCompiled() && "Must be a valid program object");

@@ -26,7 +26,7 @@
 class OCLKernel
 {
 public:
-	OCLKernel(OCLProgram* program, std::string &name);
+	OCLKernel(OCLProgram* program,const std::string &name);
 	~OCLKernel();
 
 	/*Enqueue execution of this kernel in the current command queue. Warning: the is a non-blocking call that will only
@@ -55,7 +55,7 @@ public:
 	}
 
 	// return FALSE is the kernel was not ok (probrably there's no such kernel in this progrm)
-	inline bool GetOk()
+	inline bool GetOk()const
 	{
 		return kernelOk;
 	}

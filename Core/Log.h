@@ -35,11 +35,11 @@ public:
 	// remove all listeners inside the listeners list, the method will dealloc the memory for the listeners
 	static void RemoveAllListeners();
 	// remove a given listener, the method will dealloc the memory
-	static void RemoveListener(const LogListener* listener);
+	static void RemoveListener(LogListener* listener);
 	// send a message to all listeners
-	static void Message(const std::string message);
+	static void Message(const std::string &message);
 	// send an error message to all listeners
-	static void Error(const std::string error);
+	static void Error(const std::string &error);
 private:
 	Log(){ ; };
 

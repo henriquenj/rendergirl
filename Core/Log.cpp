@@ -37,7 +37,7 @@ void Log::RemoveAllListeners()
 	logListeners.clear();
 }
 
-void Log::RemoveListener(const LogListener* listener)
+void Log::RemoveListener(LogListener* listener)
 {
 	//search for the listener inside the vector
 	int size = logListeners.size();
@@ -57,7 +57,7 @@ void Log::AddListener(LogListener* listener)
 	logListeners.push_back(listener);
 }
 
-void Log::Message(std::string message)
+void Log::Message(const std::string &message)
 {
 	// send to all listeners
 	int size = logListeners.size();
@@ -67,7 +67,7 @@ void Log::Message(std::string message)
 	}
 }
 
-void Log::Error(std::string error)
+void Log::Error(const std::string &error)
 {
 	// send to all listeners
 	int size = logListeners.size();

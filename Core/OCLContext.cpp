@@ -28,7 +28,7 @@ static void ImplementationError(const char* errinfo, const void* private_info, s
 	Log::Error("OpenCL context on device " + context->GetDevice()->GetName() + " report the following error: " + errinfo);
 }
 
-bool OCLContext::InitContext(OCLDevice *device)
+bool OCLContext::InitContext(const OCLDevice *device)
 {
 	isReady = false;
 	this->device = device;

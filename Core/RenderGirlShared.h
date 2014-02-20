@@ -47,11 +47,12 @@ public:
 	static bool PrepareRaytracer();
 
 	/* Send 3D data to the renderer. This should be called after PrepareRaytracer.
-		The renderer will take hold of the data, so don't use it after sending it to the renderer.
+		The renderer will copy the data, so you are free to use it afterwards.
 		Return FALSE if there's an error */
 	static bool Set3DScene(Scene3D* pscene);
 
 	/* Render a frame. You should only call this with a kernel ready and a 3D scene.
+		This is a blocking call.
 		Param resolution is the resolution of the resulting image.
 		Return FALSE for an error */
 	static bool Render(int resolution);
@@ -72,6 +73,12 @@ public:
 		return platforms;
 	}
 
+	/* Get rendered buffer. This memory belongs to the renderer, so don't delete it.*/
+	static inline const cl_uchar3* GetFrame()
+	{
+		return frame->GetData();
+	}
+
 	/* return number of avaiable platforms */
 	static inline const int GetPlatformsSize()
 	{
@@ -89,7 +96,7 @@ private:
 
 	static OCLProgram* program;
 	static OCLKernel* kernel;
-	static Scene3D* scene;
+	static SceneInformation scene;
 	static bool sceneLoaded;
 	static OCLMemoryObject<cl_uchar3>* frame;
 };

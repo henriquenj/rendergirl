@@ -47,13 +47,13 @@ public:
 	}
 
 	/* Return OpenCL program pointer */
-	inline cl_program GetCLProgram()
+	inline cl_program GetCLProgram()const
 	{
 		return program;
 	}
 
 	/* Get the OCLContext associated with this program */
-	inline OCLContext*  GetContext()
+	inline OCLContext*  GetContext()const
 	{
 		return context;
 	}

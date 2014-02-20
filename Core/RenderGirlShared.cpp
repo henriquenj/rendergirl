@@ -23,7 +23,7 @@ std::vector<OCLPlatform>	RenderGirlShared::platforms;
 OCLDevice*					RenderGirlShared::selectedDevice = NULL;
 OCLProgram*					RenderGirlShared::program = NULL;
 OCLKernel*					RenderGirlShared::kernel = NULL;
-Scene3D*					RenderGirlShared::scene = NULL;
+SceneInformation			RenderGirlShared::scene;
 bool						RenderGirlShared::sceneLoaded = false;
 OCLMemoryObject<cl_uchar3>*	RenderGirlShared::frame = NULL;
 
@@ -46,7 +46,7 @@ bool RenderGirlShared::InitPlatforms()
 		Log::Error("OpenCL platform could not be created, please check the OpenCL drivers for your device");
 		return false;
 	}
-	
+
 	cl_platform_id* platforms_cl = new cl_platform_id[platSize];
 
 	// now the real query
@@ -69,7 +69,7 @@ bool RenderGirlShared::InitPlatforms()
 	}
 
 	delete[] platforms_cl;
-	
+
 	return true;
 }
 
@@ -103,7 +103,6 @@ bool RenderGirlShared::SelectDevice(OCLDevice* select)
 		Log::Message("Selected device: " + selectedDevice->GetName());
 	}
 
-
 	return error;
 }
 
@@ -130,7 +129,7 @@ bool RenderGirlShared::PrepareRaytracer()
 		return false;
 	}
 
-	kernel = new OCLKernel(program,std::string("Raytrace"));
+	kernel = new OCLKernel(program, std::string("Raytrace"));
 	if (!kernel->GetOk())
 	{
 		delete program;
@@ -150,31 +149,27 @@ bool RenderGirlShared::Set3DScene(Scene3D* pscene)
 	assert(kernel->GetOk());
 	assert(pscene != NULL);
 
-	scene = pscene;
+	scene.facesSize = pscene->facesSize;
+	scene.normalSize = pscene->normalSize;
+	scene.verticesSize = pscene->verticesSize;
 
 	OCLContext* context = selectedDevice->GetContext();
 
-	if (frame != NULL)
-	{
-		context->DeleteMemoryObject(frame);
-		frame = NULL;
-	}
-
 	cl_bool error = false;
 	/* Send data to the OpenCL device*/
-	OCLMemoryObject<cl_float3>* vertices = context->CreateMemoryObject<cl_float3>(scene->verticesSize, ReadOnly,&error);
+	OCLMemoryObject<cl_float3>* vertices = context->CreateMemoryObject<cl_float3>(scene.verticesSize, ReadOnly, &error);
 	if (error)
 		return false;
-	OCLMemoryObject<cl_float3>* normals = context->CreateMemoryObject<cl_float3>(scene->normalSize,ReadOnly,&error);
+	OCLMemoryObject<cl_float3>* normals = context->CreateMemoryObject<cl_float3>(scene.normalSize, ReadOnly, &error);
 	if (error)
 		return false;
-	OCLMemoryObject<cl_int3>* faces = context->CreateMemoryObject<cl_int3>(scene->facesSize, ReadOnly,&error);
+	OCLMemoryObject<cl_int3>* faces = context->CreateMemoryObject<cl_int3>(scene.facesSize, ReadOnly, &error);
 	if (error)
 		return false;
 
-	vertices->SetData(scene->vertices,false);
-	normals->SetData(scene->normal, false);
-	faces->SetData(scene->faces, false);
+	vertices->SetData(pscene->vertices);
+	normals->SetData(pscene->normal);
+	faces->SetData(pscene->faces);
 
 	if (!context->SyncAllMemoryHostToDevice())
 		return false;
@@ -205,46 +200,32 @@ bool RenderGirlShared::Render(int resolution)
 	/* Setup render frame */
 
 	int pixelCount = resolution * resolution; // total amount of pixels
-	cl_uchar3* frameRaw = NULL;
 
-	// delete old frame if it's on a different resolution, otherwise, reuses it
+	// delete old frame
 	if (frame != NULL)
 	{
-		if (pixelCount != frame->GetSize())
-		{
-			context->DeleteMemoryObject<cl_uchar3>(frame);
-			frame = context->CreateMemoryObject<cl_uchar3>(pixelCount, WriteOnly, &error);
-			if (error)
-				return false;
-			frameRaw = new cl_uchar3[pixelCount];
-			frame->SetData(frameRaw);
-		}
+		context->DeleteMemoryObject<cl_uchar3>(frame);
+		frame = NULL;
 	}
-	else
-	{
-		frame = context->CreateMemoryObject<cl_uchar3>(pixelCount, WriteOnly, &error);
-		if (error)
-			return false;
-		frameRaw = new cl_uchar3[pixelCount];
-		frame->SetData(frameRaw);
-	}
+
+	frame = context->CreateMemoryObject<cl_uchar3>(pixelCount, WriteOnly, &error);
+	if (error)
+		return false;
+	cl_uchar3* frameRaw = new cl_uchar3[pixelCount];
+	frame->SetData(frameRaw,false);
 
 	/* Setup render info */
-	SceneInformation sceneInfo;
-	sceneInfo.resolution = resolution;
-	sceneInfo.pixelCount = pixelCount;
-	sceneInfo.normalSize = scene->normalSize;
-	sceneInfo.facesSize = scene->facesSize;
-	sceneInfo.verticesSize = scene->verticesSize;
-
-	OCLMemoryObject<SceneInformation>* sceneInfoMem = context->CreateMemoryObjectWithData(1, &sceneInfo, true, ReadOnly);
+	scene.resolution = resolution;
+	scene.pixelCount = pixelCount;
+	
+	OCLMemoryObject<SceneInformation>* sceneInfoMem = context->CreateMemoryObjectWithData(1, &scene, true, ReadOnly);
 	sceneInfoMem->SyncHostToDevice();
 
 	// set remaining arguments
 	kernel->SetArgument(3, sceneInfoMem);
 	kernel->SetArgument(4, frame);
 
-	kernel->SetGlobalWorkSize(resolution * resolution); // one work-iten per pixel
+	kernel->SetGlobalWorkSize(pixelCount); // one work-iten per pixel
 	if (!kernel->EnqueueExecution())
 		return false;
 
@@ -262,7 +243,7 @@ bool RenderGirlShared::Render(int resolution)
 void RenderGirlShared::ReleaseDevice()
 {
 	assert(selectedDevice != NULL);
-	
+
 	if (program != NULL)
 	{
 		delete program;
@@ -272,11 +253,6 @@ void RenderGirlShared::ReleaseDevice()
 	{
 		delete kernel;
 		kernel = NULL;
-	}
-	if (scene != NULL)
-	{
-		delete scene;
-		scene = NULL;
 	}
 	if (frame != NULL)
 	{

@@ -143,7 +143,7 @@ Scene3D* LoadOBJ(const char* fileName)
 	fclose(objFile);
 
 	// now put the data on a nice Scene3D
-	Scene3D* scene = new Scene3D;
+	Scene3D* scene = new Scene3D();
 	memset(scene, 0, sizeof(Scene3D));
 
 

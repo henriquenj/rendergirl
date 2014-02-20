@@ -23,6 +23,7 @@
 #include <iostream>
 
 #include "OBJLoader.h"
+#include "BMPSave.h"
 
 
 /* App project will consist on a stand alone interface for the raytracer using the wxWidgets toolkit */
@@ -69,7 +70,15 @@ int main()
 		Scene3D* scene = LoadOBJ(path);
 		// start raytracing
 		RenderGirlShared::Set3DScene(scene);
-		RenderGirlShared::Render(128);
+		delete scene;
+		if (RenderGirlShared::Render(128))
+		{
+			// dump image on a file
+			BYTE* frame = UChar4ToBYTE(RenderGirlShared::GetFrame(), 128, 128);
+			SaveBMP("image.bmp", 128, 128, frame);
+			delete frame;
+		}
+
 	}
 
 
