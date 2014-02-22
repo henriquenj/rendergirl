@@ -92,7 +92,7 @@ public:
 		return context;
 	}
 	// Get OpenCL command queue of this context
-	inline const cl_command_queue GetCLQueue()
+	inline const cl_command_queue GetCLQueue()const
 	{
 		return queue;
 	}

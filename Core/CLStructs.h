@@ -51,9 +51,23 @@ public:
 	}
 };
 
+//Any change on those structs should be copied back to the device code on Raytracer.cl* /
+
+/* Stores the concept of a Camera */
+typedef struct Camera
+{
+	cl_float3 pos;
+	cl_float3 dir;
+	cl_float4 screenCoordinates; //defines where the screen begins in world space
+	// and some math stuff to help calculate rays
+	cl_float delta_x;
+	cl_float delta_y;
+	cl_float interpolation_x;
+	cl_float interpolation_y;
+}Camera;
+
 /* SceneInformation struct holds important information related to the 3D scene and
-	how it should be rendered.
-	Any change on this struct should be copied back to the device code on Raytracer.cl*/
+	how it should be rendered.*/
 typedef struct SceneInformation
 {
 	cl_int resolution;

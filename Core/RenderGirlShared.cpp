@@ -221,6 +221,11 @@ bool RenderGirlShared::Render(int resolution)
 	OCLMemoryObject<SceneInformation>* sceneInfoMem = context->CreateMemoryObjectWithData(1, &scene, true, ReadOnly);
 	sceneInfoMem->SyncHostToDevice();
 
+	/* TEMP SHIT*/
+	Camera* camera_l = new Camera[pixelCount];
+	OCLMemoryObject<Camera>* camera = context->CreateMemoryObjectWithData(pixelCount, camera_l, false);
+	kernel->SetArgument(5, camera);
+
 	// set remaining arguments
 	kernel->SetArgument(3, sceneInfoMem);
 	kernel->SetArgument(4, frame);
@@ -236,6 +241,7 @@ bool RenderGirlShared::Render(int resolution)
 	Log::Message("Rendering complete!");
 
 	frame->SyncDeviceToHost();
+	camera->SyncDeviceToHost(); /* TEMP SHIT*/
 
 	return true;
 }
@@ -244,15 +250,17 @@ void RenderGirlShared::ReleaseDevice()
 {
 	assert(selectedDevice != NULL);
 
-	if (program != NULL)
-	{
-		delete program;
-		program = NULL;
-	}
+	Log::Message("Freeing resources on device " + selectedDevice->GetName());
+
 	if (kernel != NULL)
 	{
 		delete kernel;
 		kernel = NULL;
+	}
+	if (program != NULL)
+	{
+		delete program;
+		program = NULL;
 	}
 	if (frame != NULL)
 	{

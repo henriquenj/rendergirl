@@ -53,14 +53,14 @@ public:
 	}
 
 	/* Get the OCLContext associated with this program */
-	inline OCLContext*  GetContext()const
+	inline const OCLContext*  GetContext()const
 	{
 		return context;
 	}
 
 private:
 	// the contex on where this program is running
-	OCLContext* context;
+	const OCLContext* context;
 	// the OpenCL program
 	cl_program program;
 

@@ -138,6 +138,8 @@ void OCLContext::ReleaseContext()
 	memList.clear();
 
 	// release OpenCL stuff
+	clReleaseCommandQueue(queue); 
 	clReleaseContext(context);
-	clReleaseCommandQueue(queue);
+	/* Deleting the queue after deleting the context is considered a memory leak
+		by gDEBugger, weird */
 }
