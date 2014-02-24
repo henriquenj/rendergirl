@@ -71,4 +71,9 @@
       <Filter>Source Files\OpenCL Wrapper</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Core\Raytracer.cl">
+      <Filter>Source Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>

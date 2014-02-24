@@ -40,6 +40,9 @@
     <ClCompile Include="..\Core\OCLProgram.cpp" />
     <ClCompile Include="..\Core\RenderGirlShared.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Core\Raytracer.cl" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1110E5D3-904D-46B6-99F2-91BF554C3EC4}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
