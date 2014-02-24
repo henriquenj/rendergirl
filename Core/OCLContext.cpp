@@ -59,9 +59,6 @@ bool OCLContext::InitContext(const OCLDevice *device)
 		}
 	}
 
-	Log::Message("Context was created without errors.");
-	Log::Message("Creating command queue on " + device->GetName());
-
 	queue = clCreateCommandQueue(context, device->GetID(), NULL, &error);
 
 	if (error != CL_SUCCESS)
@@ -77,6 +74,8 @@ bool OCLContext::InitContext(const OCLDevice *device)
 			return false;
 		}
 	}
+
+	Log::Message("Context was created without errors.");
 
 	isReady = true;
 	return true;

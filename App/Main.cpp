@@ -71,11 +71,11 @@ int main()
 		// start raytracing
 		RenderGirlShared::Set3DScene(scene);
 		delete scene;
-		if (RenderGirlShared::Render(128))
+		if (RenderGirlShared::Render(512))
 		{
 			// dump image on a file
-			BYTE* frame = UChar4ToBYTE(RenderGirlShared::GetFrame(), 128, 128);
-			SaveBMP("image.bmp", 128, 128, frame);
+			BYTE* frame = UChar4ToBYTE(RenderGirlShared::GetFrame(), 512, 512);
+			SaveBMP("image.bmp", 512, 512, frame);
 			delete frame;
 		}
 

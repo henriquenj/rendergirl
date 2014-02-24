@@ -211,6 +211,7 @@ bool RenderGirlShared::Render(int resolution)
 	frame = context->CreateMemoryObject<cl_uchar3>(pixelCount, WriteOnly, &error);
 	if (error)
 		return false;
+
 	cl_uchar3* frameRaw = new cl_uchar3[pixelCount];
 	frame->SetData(frameRaw,false);
 
@@ -220,11 +221,6 @@ bool RenderGirlShared::Render(int resolution)
 	
 	OCLMemoryObject<SceneInformation>* sceneInfoMem = context->CreateMemoryObjectWithData(1, &scene, true, ReadOnly);
 	sceneInfoMem->SyncHostToDevice();
-
-	/* TEMP SHIT*/
-	Camera* camera_l = new Camera[pixelCount];
-	OCLMemoryObject<Camera>* camera = context->CreateMemoryObjectWithData(pixelCount, camera_l, false);
-	kernel->SetArgument(5, camera);
 
 	// set remaining arguments
 	kernel->SetArgument(3, sceneInfoMem);
@@ -241,7 +237,6 @@ bool RenderGirlShared::Render(int resolution)
 	Log::Message("Rendering complete!");
 
 	frame->SyncDeviceToHost();
-	camera->SyncDeviceToHost(); /* TEMP SHIT*/
 
 	return true;
 }

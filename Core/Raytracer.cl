@@ -74,8 +74,8 @@ int Intersect(float* dist, float3* origin, float3* dir,float3* point,int indexFa
 	v = tri[2] - tri[0];
 	*normal = cross(u,v);
 	float3 zero = (float3)(0.0,0.0,0.0);
-	//if (all(*normal == zero))
-	//	return -1; // triangle is degenerate, not deal with this case
+	if (all(*normal == zero))
+		return -1; // triangle is degenerate, not deal with this case
 					
 	w0 = (*origin) - tri[0];
 	a = -dot(*normal,w0);
@@ -123,7 +123,7 @@ int Intersect(float* dist, float3* origin, float3* dir,float3* point,int indexFa
 
 /* Here starts the raytracer*/
 __kernel void Raytrace(__global float3* vertices,__global float3* normal, __global int3* faces,
-						__global SceneInformation* sceneInfo, __global uchar3* frame, __global Camera* camera_p) 
+						__global SceneInformation* sceneInfo, __global uchar3* frame)
     { 
 		int id = get_global_id(0);
 		// grab XY coordinate of this instance
@@ -141,7 +141,7 @@ __kernel void Raytrace(__global float3* vertices,__global float3* normal, __glob
 		camera.pos = (float3)(0.0,0.0,-10.0);
 		// compute values for shooting the rays
 		// screen plane in world space coordinates
-		camera.screenCoordinates.x = -4;
+		camera.screenCoordinates.x = camera.interpolation_x = -4;
 		camera.screenCoordinates.y = 4;
 		camera.screenCoordinates.z = camera.interpolation_y = 4;
 		camera.screenCoordinates.w = -4;
@@ -149,19 +149,11 @@ __kernel void Raytrace(__global float3* vertices,__global float3* normal, __glob
 		camera.delta_x = (camera.screenCoordinates.y - camera.screenCoordinates.x) / sceneInfo->resolution;
 		camera.delta_y = (camera.screenCoordinates.w - camera.screenCoordinates.z) / sceneInfo->resolution;
 		camera.interpolation_y += 20 * camera.delta_y;
+		camera.interpolation_x += 20 * camera.delta_x;
 		
 		/* calculate interpolation for this pixel */
 		camera.interpolation_x += camera.delta_x * x;
 		camera.interpolation_y += camera.delta_y * y;
-		
-		/*TEMP SHIT*/
-		camera_p[id].interpolation_x = camera.interpolation_x;
-		camera_p[id].interpolation_y = camera.interpolation_y;
-		camera_p[id].delta_x = camera.delta_x;
-		camera_p[id].delta_y = camera.delta_y;
-		camera_p[id].pos = camera.pos;
-		camera_p[id].dir = camera.dir;
-		camera_p[id].screenCoordinates = camera.screenCoordinates;
 		
 		/* build direction of the ray based on camera and the current pixel*/
 		float3 ray_dir = (float3)(camera.interpolation_x,camera.interpolation_y,0) - camera.pos;
