@@ -18,6 +18,7 @@
 
 
 #include "RenderGirlShared.h"
+#include <chrono>
 
 std::vector<OCLPlatform>	RenderGirlShared::platforms;
 OCLDevice*					RenderGirlShared::selectedDevice = NULL;
@@ -167,6 +168,7 @@ bool RenderGirlShared::Set3DScene(Scene3D* pscene)
 	if (error)
 		return false;
 
+
 	vertices->SetData(pscene->vertices);
 	normals->SetData(pscene->normal);
 	faces->SetData(pscene->faces);
@@ -222,19 +224,51 @@ bool RenderGirlShared::Render(int resolution)
 	OCLMemoryObject<SceneInformation>* sceneInfoMem = context->CreateMemoryObjectWithData(1, &scene, true, ReadOnly);
 	sceneInfoMem->SyncHostToDevice();
 
+	/* Precompute some camera stuff*/
+	Camera camera;
+	camera.pos.s[0] = 0.0f;
+	camera.pos.s[1] = 0.0f;
+	camera.pos.s[2] = -10.0f;
+
+	camera.dir.s[0] = 0.0f;
+	camera.dir.s[1] = 0.0f;
+	camera.dir.s[2] = 0.0f;
+
+	camera.screenCoordinates.s[0] = -4;
+	camera.screenCoordinates.s[1] = 4;
+	camera.screenCoordinates.s[2] = 4;
+	camera.screenCoordinates.s[3] = -4;
+	// calculate deltas for interpolation
+	camera.delta_x = (camera.screenCoordinates.s[1] - camera.screenCoordinates.s[0]) / scene.resolution;
+	camera.delta_y = (camera.screenCoordinates.s[3] - camera.screenCoordinates.s[2]) / scene.resolution;
+
+	OCLMemoryObject<Camera>* m_cam = context->CreateMemoryObjectWithData(1, &camera, true, ReadOnly);
+	m_cam->SyncHostToDevice();
+
 	// set remaining arguments
 	kernel->SetArgument(3, sceneInfoMem);
 	kernel->SetArgument(4, frame);
+	kernel->SetArgument(5, m_cam);
 
 	kernel->SetGlobalWorkSize(pixelCount); // one work-iten per pixel
+
+	Log::Message("Rendering...");
+
+	// start counter
+	auto pretime = std::chrono::high_resolution_clock::now();
+
 	if (!kernel->EnqueueExecution())
 		return false;
 
-	Log::Message("Rendering...");
 	if (!context->ExecuteCommands())
 		return false;
 
-	Log::Message("Rendering complete!");
+
+	// finish timer
+	// got that from here http://stackoverflow.com/questions/1487695/c-cross-platform-high-resolution-timer
+	auto postime = std::chrono::high_resolution_clock::now();
+	std::chrono::nanoseconds ns = std::chrono::duration_cast<std::chrono::nanoseconds>(postime - pretime);
+	Log::Message("Rendering took " + std::to_string((float)(ns.count() / 1000000000.0f)) + " seconds.");
 
 	frame->SyncDeviceToHost();
 

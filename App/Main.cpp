@@ -68,6 +68,7 @@ int main()
 	if (path != NULL)
 	{
 		Scene3D* scene = LoadOBJ(path);
+
 		// start raytracing
 		RenderGirlShared::Set3DScene(scene);
 		delete scene;

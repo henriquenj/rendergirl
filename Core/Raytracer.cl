@@ -29,8 +29,6 @@ typedef struct Camera
 	// and some math stuff to help calculate rays
 	float delta_x;
     float delta_y; 
-    float interpolation_x; 
-    float interpolation_y;
 }Camera;
 
 /*SceneInformation struct holds important information related to the 3D scene and
@@ -44,9 +42,18 @@ typedef struct SceneInformation
 	int facesSize;
 } SceneInformation;
 
+/*Struct to control material properties */
+typedef struct Material
+{
+	float3 ambientColor; //KA
+	float3 diffuseColor; //KD
+	float3 specularColor;//KS
+}Material;
+
+
 
 /* Intersect function test collision with triangles only, based on a function provided by Rossana Baptista Queiroz */
-int Intersect(float* dist, float3* origin, float3* dir,float3* point,int indexFace,float3* normal, 
+int Intersect(float* dist,__global float3* origin,float3* dir,float3* point,int indexFace,float3* normal, 
 				__global int3* faces, __global float3* vertices)
 {
 	// get position of the three vertices of the triangle
@@ -123,7 +130,7 @@ int Intersect(float* dist, float3* origin, float3* dir,float3* point,int indexFa
 
 /* Here starts the raytracer*/
 __kernel void Raytrace(__global float3* vertices,__global float3* normal, __global int3* faces,
-						__global SceneInformation* sceneInfo, __global uchar3* frame)
+						__global SceneInformation* sceneInfo, __global uchar3* frame,__global Camera* camera)
     { 
 		int id = get_global_id(0);
 		// grab XY coordinate of this instance
@@ -135,28 +142,14 @@ __kernel void Raytrace(__global float3* vertices,__global float3* normal, __glob
 		
 		
 		/*compute some camera stuff */
-		// define observer
-		Camera camera;
-		camera.dir = (float3)(0.0,0.0,0.0);
-		camera.pos = (float3)(0.0,0.0,-10.0);
-		// compute values for shooting the rays
-		// screen plane in world space coordinates
-		camera.screenCoordinates.x = camera.interpolation_x = -4;
-		camera.screenCoordinates.y = 4;
-		camera.screenCoordinates.z = camera.interpolation_y = 4;
-		camera.screenCoordinates.w = -4;
-		// calculate deltas for interpolation
-		camera.delta_x = (camera.screenCoordinates.y - camera.screenCoordinates.x) / sceneInfo->resolution;
-		camera.delta_y = (camera.screenCoordinates.w - camera.screenCoordinates.z) / sceneInfo->resolution;
-		camera.interpolation_y += 20 * camera.delta_y;
-		camera.interpolation_x += 20 * camera.delta_x;
-		
+		float interpolation_x = camera->screenCoordinates.x;
+		float interpolation_y = camera->screenCoordinates.z;
 		/* calculate interpolation for this pixel */
-		camera.interpolation_x += camera.delta_x * x;
-		camera.interpolation_y += camera.delta_y * y;
+		interpolation_x += camera->delta_x * x;
+		interpolation_y += camera->delta_y * y;
 		
 		/* build direction of the ray based on camera and the current pixel*/
-		float3 ray_dir = (float3)(camera.interpolation_x,camera.interpolation_y,0) - camera.pos;
+		float3 ray_dir = (float3)(interpolation_x,interpolation_y,0) - camera->pos;
 		ray_dir = normalize(ray_dir);
 		
 		float distance = 1000000.0f; // high value for the first ray
@@ -171,7 +164,7 @@ __kernel void Raytrace(__global float3* vertices,__global float3* normal, __glob
 			float3 temp_point; // temporary intersection point
 			float3 temp_normal;// temporary normal vector
 			
-           result = Intersect(&distance,&camera.pos,&ray_dir,&temp_point,k,&temp_normal,faces,vertices);
+           result = Intersect(&distance,&camera->pos,&ray_dir,&temp_point,k,&temp_normal,faces,vertices);
 		   
 		   if (result > 0) 
 		   {
