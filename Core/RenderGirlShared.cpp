@@ -153,6 +153,7 @@ bool RenderGirlShared::Set3DScene(Scene3D* pscene)
 	scene.facesSize = pscene->facesSize;
 	scene.normalSize = pscene->normalSize;
 	scene.verticesSize = pscene->verticesSize;
+	scene.materiaslSize = pscene->materialSize;
 
 	OCLContext* context = selectedDevice->GetContext();
 
@@ -164,7 +165,10 @@ bool RenderGirlShared::Set3DScene(Scene3D* pscene)
 	OCLMemoryObject<cl_float3>* normals = context->CreateMemoryObject<cl_float3>(scene.normalSize, ReadOnly, &error);
 	if (error)
 		return false;
-	OCLMemoryObject<cl_int3>* faces = context->CreateMemoryObject<cl_int3>(scene.facesSize, ReadOnly, &error);
+	OCLMemoryObject<cl_int4>* faces = context->CreateMemoryObject<cl_int4>(scene.facesSize, ReadOnly, &error);
+	if (error)
+		return false;
+	OCLMemoryObject<Material>* materials = context->CreateMemoryObject<Material>(scene.materiaslSize, ReadOnly, &error);
 	if (error)
 		return false;
 
@@ -172,6 +176,7 @@ bool RenderGirlShared::Set3DScene(Scene3D* pscene)
 	vertices->SetData(pscene->vertices);
 	normals->SetData(pscene->normal);
 	faces->SetData(pscene->faces);
+	materials->SetData(pscene->materials);
 
 	if (!context->SyncAllMemoryHostToDevice())
 		return false;
@@ -182,6 +187,8 @@ bool RenderGirlShared::Set3DScene(Scene3D* pscene)
 	if (!kernel->SetArgument(1, normals))
 		return false;
 	if (!kernel->SetArgument(2, faces))
+		return false;
+	if (!kernel->SetArgument(3, materials))
 		return false;
 
 	sceneLoaded = true;
@@ -246,9 +253,9 @@ bool RenderGirlShared::Render(int resolution)
 	m_cam->SyncHostToDevice();
 
 	// set remaining arguments
-	kernel->SetArgument(3, sceneInfoMem);
-	kernel->SetArgument(4, frame);
-	kernel->SetArgument(5, m_cam);
+	kernel->SetArgument(4, sceneInfoMem);
+	kernel->SetArgument(5, frame);
+	kernel->SetArgument(6, m_cam);
 
 	kernel->SetGlobalWorkSize(pixelCount); // one work-iten per pixel
 

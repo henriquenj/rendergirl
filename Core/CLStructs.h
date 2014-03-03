@@ -36,6 +36,16 @@ typedef struct Camera
 	cl_float delta_y;
 }Camera;
 
+/* Stores the concept of a light */
+typedef struct Light
+{
+	cl_float3 pos;
+	cl_float3 color;
+
+	cl_float Ks; // amount of specular
+	cl_float Ka; // amount of ambient
+}Light;
+
 /* SceneInformation struct holds important information related to the 3D scene and
 	how it should be rendered.*/
 typedef struct SceneInformation
@@ -45,6 +55,7 @@ typedef struct SceneInformation
 	cl_int verticesSize;
 	cl_int normalSize;
 	cl_int facesSize;
+	cl_int materiaslSize;
 } SceneInformation;
 
 /*Struct to control material properties */
@@ -73,7 +84,7 @@ public:
 	cl_float3* vertices;
 	cl_int verticesSize;
 
-	cl_int3* faces; // only triangulated meshs are supported
+	cl_int4* faces; // only triangulated meshs are supported, the final component is for the material
 	cl_int facesSize;
 
 	cl_float3* normal;

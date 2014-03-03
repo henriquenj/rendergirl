@@ -39,30 +39,32 @@ bool OCLProgram::LoadProgramWithSource(const std::string &sourceFile)
 {
 	this->sourceFile = sourceFile;
 	// load kernel code from file
-	FILE* kernelCodeFile = fopen(sourceFile.c_str(), "r");
+	FILE* kernelCodeFile = fopen(sourceFile.c_str(), "rb");
 	if (kernelCodeFile == NULL)
 	{
 		Log::Error("The program couldn't find the source file " + sourceFile);
 		return false;
 	}
-
+	
 	// look for file size
-	fseek(kernelCodeFile, 0, SEEK_END);
+	fseek(kernelCodeFile, 0L, SEEK_END);
 	long size = ftell(kernelCodeFile);
-	fseek(kernelCodeFile, 0, SEEK_SET);
+	fseek(kernelCodeFile, 0L, SEEK_SET);
 
 	//alloc enough memory
-	const char* kernelCode = new char[size];
+	char* kernelCode = new char[size+1]; // +1 for the null-terminanting character
 	memset((char*)kernelCode, 0, size);
 	fread((char*)kernelCode, sizeof(char), size, kernelCodeFile);
 	// end file stuff
 	fclose(kernelCodeFile);
 
+	kernelCode[size] = '\0'; // we need this null terminating string otherwise we the OpenCL loader goes nuts
+
 
 	cl_int error;
 
 	// send source code to OpenCL
-	program = clCreateProgramWithSource(context->GetCLContext(), 1, &kernelCode, NULL, &error);
+	program = clCreateProgramWithSource(context->GetCLContext(), 1, (const char**)&kernelCode, NULL, &error);
 	if (error != CL_SUCCESS)
 	{
 		Log::Error("There was an error when sending the source code to the OpenCL implementation.");

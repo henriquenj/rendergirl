@@ -47,7 +47,6 @@ public:
 
 int main()
 {
-
 	LogOutput* listenerOutput = new LogOutput();
 	Log::AddListener(listenerOutput);
 	

@@ -41,6 +41,7 @@ void SaveBMP(const char* path, const int width, const int height, const BYTE* pi
 	bmih.biSizeImage = width * height * 3;
 	bmih.biXPelsPerMeter = 2835;
 	bmih.biYPelsPerMeter = 2835;
+	bmih.biCompression = BI_RGB;
 	// write file
 	FILE* bmpImageFile = fopen(path, "w");
 	fwrite(&bmfh, sizeof (BITMAPFILEHEADER), 1, bmpImageFile);
@@ -53,14 +54,14 @@ void SaveBMP(const char* path, const int width, const int height, const BYTE* pi
 /* Workaround method to convert the data, this method make a copy,
 	so you have to delete it after using. 
 	Oh shit this is a really uggly name for a function*/
-BYTE* UChar4ToBYTE(const cl_uchar4* originalData, int x, int y)
+BYTE* UChar4ToBYTE(const cl_uchar3* originalData, int x, int y)
 {
 	BYTE* newData = new BYTE[x * y * 3];
 	for (int t = 0, i = 0; t < x * y; t+=1,i+=3)
 	{
-		newData[i] = originalData[t].s[2];
+		newData[i] = originalData[t].s[0];
 		newData[i + 1] = originalData[t].s[1];
-		newData[i + 2] = originalData[t].s[0];
+		newData[i + 2] = originalData[t].s[2];
 	}
 
 	return newData;
