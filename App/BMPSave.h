@@ -54,7 +54,7 @@ void SaveBMP(const char* path, const int width, const int height, const BYTE* pi
 /* Workaround method to convert the data, this method make a copy,
 	so you have to delete it after using. 
 	Oh shit this is a really uggly name for a function*/
-BYTE* UChar4ToBYTE(const cl_uchar3* originalData, int x, int y)
+BYTE* UChar4ToBYTE(const cl_uchar4* originalData, int x, int y)
 {
 	BYTE* newData = new BYTE[x * y * 3];
 	for (int t = 0, i = 0; t < x * y; t+=1,i+=3)

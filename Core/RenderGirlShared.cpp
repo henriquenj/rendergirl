@@ -26,7 +26,7 @@ OCLProgram*					RenderGirlShared::program = NULL;
 OCLKernel*					RenderGirlShared::kernel = NULL;
 SceneInformation			RenderGirlShared::scene;
 bool						RenderGirlShared::sceneLoaded = false;
-OCLMemoryObject<cl_uchar3>*	RenderGirlShared::frame = NULL;
+OCLMemoryObject<cl_uchar4>*	RenderGirlShared::frame = NULL;
 
 
 bool RenderGirlShared::InitPlatforms()
@@ -213,15 +213,15 @@ bool RenderGirlShared::Render(int resolution)
 	// delete old frame
 	if (frame != NULL)
 	{
-		context->DeleteMemoryObject<cl_uchar3>(frame);
+		context->DeleteMemoryObject<cl_uchar4>(frame);
 		frame = NULL;
 	}
 
-	frame = context->CreateMemoryObject<cl_uchar3>(pixelCount, WriteOnly, &error);
+	frame = context->CreateMemoryObject<cl_uchar4>(pixelCount, WriteOnly, &error);
 	if (error)
 		return false;
 
-	cl_uchar3* frameRaw = new cl_uchar3[pixelCount];
+	cl_uchar4* frameRaw = new cl_uchar4[pixelCount];
 	frame->SetData(frameRaw,false);
 
 	/* Setup render info */

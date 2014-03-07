@@ -152,9 +152,9 @@ __kernel void Raytrace(__global float3* vertices, __global float3* normals, __gl
 		So use the XYZ to access the members of any vector types */
 
 	Light light;
-	light.pos[0] = light.pos[1] = 1.0f;
-	light.pos[2] = -10.0f;
-	light.color[0] = light.color[1] = light.color[2] = 1.0f;
+	light.pos.x = light.pos.y = 1.0f;
+	light.pos.z = -10.0f;
+	light.color.x = light.color.y = light.color.z = 1.0f;
 	light.Ka = 0.0f;
 	light.Ks = 0.2f;
 
@@ -213,9 +213,9 @@ __kernel void Raytrace(__global float3* vertices, __global float3* normals, __gl
 		float dot_r = dot(normal, L);
 		if (dot_r > 0)
 		{
-			float Kd = ((materials[indexMaterial].diffuseColor[0]
-				+ materials[indexMaterial].diffuseColor[1]
-				+ materials[indexMaterial].diffuseColor[2]) / 3);
+			float Kd = ((materials[indexMaterial].diffuseColor.x
+				+ materials[indexMaterial].diffuseColor.y
+				+ materials[indexMaterial].diffuseColor.z) / 3);
 			float dif = dot_r * Kd;
 			//put diffuse component
 			amount_color += dif * materials[indexMaterial].diffuseColor * light.color;
@@ -247,12 +247,14 @@ __kernel void Raytrace(__global float3* vertices, __global float3* normals, __gl
 		frame[id].x = (final_c.x * 255);
 		frame[id].y = (final_c.y * 255);
 		frame[id].z = (final_c.z * 255);
+		//frame[id].w = 255; // full alpha
 	}
 	else
 	{
-		// no collision, put black pixel
+		// no collision, put transparent pixel
 		frame[id].x = 0;
 		frame[id].y = 0;
 		frame[id].z = 0;
+		//frame[id].w = 0; // zero alpha
 	}
 }

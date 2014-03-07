@@ -81,7 +81,6 @@ int main()
 
 	}
 
-
 	RenderGirlShared::ReleaseDevice();
 
 	system("pause");

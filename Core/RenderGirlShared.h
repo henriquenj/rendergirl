@@ -74,7 +74,7 @@ public:
 	}
 
 	/* Get rendered buffer. This memory belongs to the renderer, so don't delete it.*/
-	static inline const cl_uchar3* GetFrame()
+	static inline const cl_uchar4* GetFrame()
 	{
 		return frame->GetData();
 	}
@@ -98,7 +98,7 @@ private:
 	static OCLKernel* kernel;
 	static SceneInformation scene;
 	static bool sceneLoaded;
-	static OCLMemoryObject<cl_uchar3>* frame;
+	static OCLMemoryObject<cl_uchar4>* frame;
 };
 
 
