@@ -22,6 +22,7 @@
 #include <Windows.h>
 #include <iostream>
 
+#include "glut.h"
 #include "OBJLoader.h"
 #include "BMPSave.h"
 
@@ -47,6 +48,9 @@ public:
 
 int main()
 {
+
+	
+
 	LogOutput* listenerOutput = new LogOutput();
 	Log::AddListener(listenerOutput);
 	

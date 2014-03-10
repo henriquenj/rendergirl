@@ -22,7 +22,7 @@
 
 
 // callback function to capture errors on this context
-static void ImplementationError(const char* errinfo, const void* private_info, size_t cb, void* user_data)
+static void __stdcall ImplementationError(const char* errinfo, const void* private_info, size_t cb, void* user_data)
 {
 	OCLContext* context = (OCLContext*)user_data;
 	Log::Error("OpenCL context on device " + context->GetDevice()->GetName() + " report the following error: " + errinfo);

@@ -247,7 +247,7 @@ __kernel void Raytrace(__global float3* vertices, __global float3* normals, __gl
 		frame[id].x = (final_c.x * 255);
 		frame[id].y = (final_c.y * 255);
 		frame[id].z = (final_c.z * 255);
-		//frame[id].w = 255; // full alpha
+		frame[id].w = 255; // full alpha
 	}
 	else
 	{
@@ -255,6 +255,6 @@ __kernel void Raytrace(__global float3* vertices, __global float3* normals, __gl
 		frame[id].x = 0;
 		frame[id].y = 0;
 		frame[id].z = 0;
-		//frame[id].w = 0; // zero alpha
+		frame[id].w = 0; // zero alpha
 	}
 }
