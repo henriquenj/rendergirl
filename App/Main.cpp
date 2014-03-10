@@ -22,7 +22,11 @@
 #include <Windows.h>
 #include <iostream>
 
-//#include "glut.h"
+#ifdef WIN32
+#include "glut.h"
+bool rendered;
+#endif
+
 #include "OBJLoader.h"
 #include "BMPSave.h"
 
@@ -46,6 +50,68 @@ public:
 	}
 };
 
+#ifndef _WIN64
+
+void DisplayCallback(void)
+{
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	if (rendered)
+	{
+		glRasterPos2i(128, 128);
+		//glRasterPos2i(0,  1);
+
+		BYTE* frame = UChar4ToBYTE(RenderGirlShared::GetFrame(), 512, 512);
+		glDrawPixels(512, 512, GL_RGB, GL_UNSIGNED_BYTE, frame);
+		delete frame;
+	}
+
+	glFlush();
+	glutSwapBuffers();
+}
+
+void KeyboardCallback(unsigned char key, int x, int y)
+{
+	switch (key)
+	{
+	case 27: // esc key
+		exit(0);
+		break;
+	}
+}
+
+void Menu(int option)
+{
+	if (option == 0)
+	{
+		const char * path = ShowFileDialog(0, DialogOpen, "OBJ Files (*.obj)", "*.obj");
+		if (path != NULL)
+		{
+			Scene3D* scene = LoadOBJ(path);
+
+			// start raytracing
+			RenderGirlShared::Set3DScene(scene);
+			delete scene;
+			if (RenderGirlShared::Render(512))
+			{
+				rendered = true;
+				glutPostRedisplay();
+			}
+
+		}
+	}
+}
+
+void Terminate()
+{
+	RenderGirlShared::ReleaseDevice();
+}
+
+
+#endif //_WIN64
+
+
+
 int main()
 {
 
@@ -62,8 +128,9 @@ int main()
 	// select this
 	RenderGirlShared::SelectDevice(&devices[0]);
 
-	RenderGirlShared::PrepareRaytracer();
+	bool error = RenderGirlShared::PrepareRaytracer();
 
+#ifdef _WIN64
 
 	const char * path = ShowFileDialog(0, DialogOpen, "OBJ Files (*.obj)", "*.obj");
 	if (path != NULL)
@@ -83,6 +150,41 @@ int main()
 
 	}
 
+#else // make glut init procedures here
+
+	if (!error)
+	{
+		RenderGirlShared::ReleaseDevice();
+		exit(0);
+	}
+
+	rendered = false;
+
+
+	char *my_argv[] = { "rendergirl", NULL };
+	int   my_argc = 1;
+	glutInit(&my_argc, my_argv);
+
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+	glutInitWindowSize(1024, 1024);
+	glutCreateWindow("RenderGirl");
+	glutDisplayFunc(DisplayCallback);
+	glutKeyboardFunc(KeyboardCallback);
+	atexit(Terminate);
+
+	// menus
+	int menu = glutCreateMenu(Menu);
+	glutAddMenuEntry("Load OBJ and render", 0);
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
+
+	glutMainLoop();
+
+
+
+#endif
+
+
+	// in glut mode, never gets here
 	RenderGirlShared::ReleaseDevice();
 
 	system("pause");
