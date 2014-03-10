@@ -22,7 +22,7 @@
 #include <Windows.h>
 #include <iostream>
 
-#include "glut.h"
+//#include "glut.h"
 #include "OBJLoader.h"
 #include "BMPSave.h"
 
@@ -49,8 +49,6 @@ public:
 int main()
 {
 
-	
-
 	LogOutput* listenerOutput = new LogOutput();
 	Log::AddListener(listenerOutput);
 	
@@ -60,7 +58,7 @@ int main()
 	// select a device
 	std::vector<OCLPlatform> platforms = RenderGirlShared::ReturnPlatforms();
 	// get the first one
-	std::vector<OCLDevice> devices = platforms[0].GetDevices();
+	std::vector<OCLDevice> devices = platforms[1].GetDevices();
 	// select this
 	RenderGirlShared::SelectDevice(&devices[0]);
 
@@ -79,7 +77,7 @@ int main()
 		{
 			// dump image on a file
 			BYTE* frame = UChar4ToBYTE(RenderGirlShared::GetFrame(), 512, 512);
-			SaveBMP("image.bmp", 512, 512, frame);
+			SaveBMP("image.bmp", 512, 512, frame); 
 			delete frame;
 		}
 
