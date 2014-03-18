@@ -22,17 +22,15 @@
 #include <Windows.h>
 #include <iostream>
 
-#ifdef WIN32
+#ifndef _WIN64
 #include "glut.h"
+	#pragma comment (lib, "glut32.lib")
+	#pragma comment (lib, "OpenGL32.lib")
 bool rendered;
 #endif
 
 #include "OBJLoader.h"
 #include "BMPSave.h"
-
-
-/* App project will consist on a stand alone interface for the raytracer using the wxWidgets toolkit */
-
 
 class LogOutput : public LogListener
 {
@@ -124,7 +122,7 @@ int main()
 	// select a device
 	std::vector<OCLPlatform> platforms = RenderGirlShared::ReturnPlatforms();
 	// get the first one
-	std::vector<OCLDevice> devices = platforms[1].GetDevices();
+	std::vector<OCLDevice> devices = platforms[0].GetDevices();
 	// select this
 	RenderGirlShared::SelectDevice(&devices[0]);
 
