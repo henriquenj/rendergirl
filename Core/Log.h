@@ -20,6 +20,7 @@
 #define __LOG_CLASS__
 
 #include <vector>
+#include <assert.h>
 
 class LogListener;
 

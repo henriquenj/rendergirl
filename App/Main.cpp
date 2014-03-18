@@ -22,6 +22,8 @@
 #include <Windows.h>
 #include <iostream>
 
+#define TEST_RESOLUTION 512
+
 #ifndef _WIN64
 #include "glut.h"
 	#pragma comment (lib, "glut32.lib")
@@ -56,11 +58,11 @@ void DisplayCallback(void)
 
 	if (rendered)
 	{
-		glRasterPos2i(128, 128);
+		//glRasterPos2i(128, 128);
 		//glRasterPos2i(0,  1);
 
-		BYTE* frame = UChar4ToBYTE(RenderGirlShared::GetFrame(), 512, 512);
-		glDrawPixels(512, 512, GL_RGB, GL_UNSIGNED_BYTE, frame);
+		BYTE* frame = UChar4ToBYTE(RenderGirlShared::GetFrame(), TEST_RESOLUTION, TEST_RESOLUTION);
+		glDrawPixels(TEST_RESOLUTION, TEST_RESOLUTION, GL_RGB, GL_UNSIGNED_BYTE, frame);
 		delete frame;
 	}
 
@@ -90,7 +92,7 @@ void Menu(int option)
 			// start raytracing
 			RenderGirlShared::Set3DScene(scene);
 			delete scene;
-			if (RenderGirlShared::Render(512))
+			if (RenderGirlShared::Render(TEST_RESOLUTION))
 			{
 				rendered = true;
 				glutPostRedisplay();
@@ -103,6 +105,7 @@ void Menu(int option)
 void Terminate()
 {
 	RenderGirlShared::ReleaseDevice();
+	Log::RemoveAllListeners();
 }
 
 
@@ -115,6 +118,7 @@ int main()
 
 	LogOutput* listenerOutput = new LogOutput();
 	Log::AddListener(listenerOutput);
+	
 	
 	RenderGirlShared::InitPlatforms();
 	RenderGirlShared::InitDevices();
@@ -138,11 +142,11 @@ int main()
 		// start raytracing
 		RenderGirlShared::Set3DScene(scene);
 		delete scene;
-		if (RenderGirlShared::Render(512))
+		if (RenderGirlShared::Render(TEST_RESOLUTION))
 		{
 			// dump image on a file
-			BYTE* frame = UChar4ToBYTE(RenderGirlShared::GetFrame(), 512, 512);
-			SaveBMP("image.bmp", 512, 512, frame); 
+			BYTE* frame = UChar4ToBYTE(RenderGirlShared::GetFrame(), TEST_RESOLUTION, TEST_RESOLUTION);
+			SaveBMP("image.bmp", TEST_RESOLUTION, TEST_RESOLUTION, frame); 
 			delete frame;
 		}
 
@@ -163,8 +167,8 @@ int main()
 	int   my_argc = 1;
 	glutInit(&my_argc, my_argv);
 
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
-	glutInitWindowSize(1024, 1024);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
+	glutInitWindowSize(TEST_RESOLUTION, TEST_RESOLUTION);
 	glutCreateWindow("RenderGirl");
 	glutDisplayFunc(DisplayCallback);
 	glutKeyboardFunc(KeyboardCallback);
@@ -184,6 +188,7 @@ int main()
 
 	// in glut mode, never gets here
 	RenderGirlShared::ReleaseDevice();
+	Log::RemoveAllListeners();
 
 	system("pause");
 

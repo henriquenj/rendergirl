@@ -39,6 +39,8 @@ void Log::RemoveAllListeners()
 
 void Log::RemoveListener(LogListener* listener)
 {
+	assert((std::find(logListeners.begin(), logListeners.end(), listener) != logListeners.end())
+		&& "This listener is not registred with the log class");
 	//search for the listener inside the vector
 	int size = logListeners.size();
 	for (int a = 0; a < size; a++)
