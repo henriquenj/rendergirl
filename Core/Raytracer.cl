@@ -14,7 +14,7 @@
 
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
-	*/
+*/
 
 #define SMALL_NUM  0.00000001f // anything that avoids division overflow
 
@@ -154,7 +154,7 @@ __kernel void Raytrace(__global float3* vertices, __global float3* normals, __gl
 	Light light;
 	light.pos.x = light.pos.y = 1.0f;
 	light.pos.z = -10.0f;
-	light.color.x = light.color.y = light.color.z = 1.0f;
+	light.color = (float3)(1.0f,1.0f,1.0f);
 	light.Ka = 0.0f;
 	light.Ks = 0.2f;
 
@@ -200,7 +200,7 @@ __kernel void Raytrace(__global float3* vertices, __global float3* normals, __gl
 	if (face_i != -1)
 	{
 		// now that we have the face, calculate illumination
-		float3 amount_color; //final amunt of color that goes to each pixel
+		float3 amount_color = (float3)(0.0f,0.0f,0.0f); //final amount of color that goes to each pixel
 
 		// get direction vector of light based on the intersection point
 
@@ -216,10 +216,10 @@ __kernel void Raytrace(__global float3* vertices, __global float3* normals, __gl
 		{
 			float Kd = ((materials[indexMaterial].diffuseColor.x
 				+ materials[indexMaterial].diffuseColor.y
-				+ materials[indexMaterial].diffuseColor.z) / 3);
+				+ materials[indexMaterial].diffuseColor.z) / 3.0f);
 			float dif = dot_r * Kd;
 			//put diffuse component
-			amount_color += dif * materials[indexMaterial].diffuseColor * light.color;
+			amount_color += materials[indexMaterial].diffuseColor * light.color * dif;
 		}
 		//specular
 		//glm::vec3 R = glm::cross(2.0f * glm::dot(L,normal) * normal,L);
@@ -227,7 +227,7 @@ __kernel void Raytrace(__global float3* vertices, __global float3* normals, __gl
 		dot_r = dot(ray_dir, R);
 		if (dot_r > 0)
 		{
-			float spec = pown(dot_r, 20) * light.Ks;
+			float spec = pown(dot_r, 20.0f) * light.Ks;
 			// put specular component
 			amount_color += spec * light.color;
 		}
@@ -238,17 +238,17 @@ __kernel void Raytrace(__global float3* vertices, __global float3* normals, __gl
 		final_c.y = (amount_color.y) + (light.color.y * light.Ka);
 		final_c.z = (amount_color.z) + (light.color.z * light.Ka);
 
-		if (final_c.x > 1.0) 
-			final_c.x = 1.0;
-		if (final_c.y > 1.0) 
-			final_c.y = 1.0;
-		if (final_c.z > 1.0) 
-			final_c.z = 1.0;
+		if (final_c.x > 1.0f) 
+			final_c.x = 1.0f;
+		if (final_c.y > 1.0f) 
+			final_c.y = 1.0f;
+		if (final_c.z > 1.0f) 
+			final_c.z = 1.0f;
 
-		frame[id].x = (final_c.x * 255);
-		frame[id].y = (final_c.y * 255);
-		frame[id].z = (final_c.z * 255);
-		//frame[id].w = 255; // full alpha
+		frame[id].x = (final_c.x * 255.0f);
+		frame[id].y = (final_c.y * 255.0f);
+		frame[id].z = (final_c.z * 255.0f);
+		frame[id].w = 255; // full alpha
 	}
 	else
 	{
@@ -256,6 +256,6 @@ __kernel void Raytrace(__global float3* vertices, __global float3* normals, __gl
 		frame[id].x = 0;
 		frame[id].y = 0;
 		frame[id].z = 0;
-		//frame[id].w = 0; // zero alpha
+		frame[id].w = 0; // zero alpha
 	}
 }
