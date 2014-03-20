@@ -107,7 +107,7 @@ public:
 			Log::Error("Couldn't alloc enough memory on " + context->GetDevice()->GetName() + " device");
 			return false;
 		}
-
+		
 		return true;
 	}
 	/* Copy memory from device to host, this causes an intrinsic flush on the command queue.

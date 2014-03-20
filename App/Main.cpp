@@ -58,12 +58,10 @@ void DisplayCallback(void)
 
 	if (rendered)
 	{
-		//glRasterPos2i(128, 128);
-		//glRasterPos2i(0,  1);
-
-		BYTE* frame = UChar4ToBYTE(RenderGirlShared::GetFrame(), TEST_RESOLUTION, TEST_RESOLUTION);
-		glDrawPixels(TEST_RESOLUTION, TEST_RESOLUTION, GL_RGB, GL_UNSIGNED_BYTE, frame);
-		delete frame;
+		//BYTE* frame = UChar4ToBYTE(RenderGirlShared::GetFrame(), TEST_RESOLUTION, TEST_RESOLUTION);
+		//glDrawPixels(TEST_RESOLUTION, TEST_RESOLUTION, GL_RGB, GL_UNSIGNED_BYTE, frame);
+		glDrawPixels(TEST_RESOLUTION, TEST_RESOLUTION, GL_RGBA, GL_UNSIGNED_BYTE, RenderGirlShared::GetFrame());
+		//delete[] frame;
 	}
 
 	glFlush();
@@ -94,6 +92,7 @@ void Menu(int option)
 			delete scene;
 			if (RenderGirlShared::Render(TEST_RESOLUTION))
 			{
+				// update screen
 				rendered = true;
 				glutPostRedisplay();
 			}
@@ -147,7 +146,7 @@ int main()
 			// dump image on a file
 			BYTE* frame = UChar4ToBYTE(RenderGirlShared::GetFrame(), TEST_RESOLUTION, TEST_RESOLUTION);
 			SaveBMP("image.bmp", TEST_RESOLUTION, TEST_RESOLUTION, frame); 
-			delete frame;
+			delete[] frame;
 		}
 
 	}

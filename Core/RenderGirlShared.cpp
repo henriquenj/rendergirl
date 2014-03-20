@@ -60,7 +60,7 @@ bool RenderGirlShared::InitPlatforms()
 	Log::Message(std::to_string(platSize) + " platforms were found.");
 
 	// put all in the platforms vector
-	for (int a = 0; a < platSize; a++)
+	for (unsigned int a = 0; a < platSize; a++)
 	{
 		Log::Message("");
 		Log::Message("Platform " + std::to_string(a + 1) + " created using the specs below: ");

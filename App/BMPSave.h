@@ -43,6 +43,7 @@ void SaveBMP(const char* path, const int width, const int height, const BYTE* pi
 	bmih.biYPelsPerMeter = 2835;
 	bmih.biCompression = BI_RGB;
 	// write file
+	//TODO: make a proper BMP writer
 	FILE* bmpImageFile = fopen(path, "w");
 	fwrite(&bmfh, sizeof (BITMAPFILEHEADER), 1, bmpImageFile);
 	fwrite(&bmih, sizeof (BITMAPINFOHEADER), 1, bmpImageFile);

@@ -29,7 +29,8 @@ Log::~Log()
 void Log::RemoveAllListeners()
 {
 	// delete all listeners
-	for (int a = 0; a < logListeners.size(); a++)
+	unsigned int size = logListeners.size();
+	for (int a = 0; a < size; a++)
 	{
 		LogListener* listener = logListeners[a];
 		delete listener;

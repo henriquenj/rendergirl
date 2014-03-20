@@ -68,7 +68,7 @@ bool OCLPlatform::InitDevices(OCLDevice::DeviceType type)
 		return false;
 	}
 
-	for (int a = 0; a < deviceSize; a++)
+	for (unsigned int a = 0; a < deviceSize; a++)
 	{
 		Log::Message("");
 		Log::Message("Device " + std::to_string(a + 1) + " created on platform " + name);

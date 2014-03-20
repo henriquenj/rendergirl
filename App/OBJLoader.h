@@ -225,12 +225,12 @@ Material* LoadMTL(std::vector<std::string>& materialName, const char* file)
 
 	// put into a pure C-array
 	Material* r_material = new Material[materialName.size()];
-	for (int p = 0; p < materialName.size(); p++)
+	for (unsigned int p = 0; p < materialName.size(); p++)
 	{
 		memcpy(r_material + p, &materials[p],sizeof(Material));
 	}
 
-	delete mtlContent;
+	delete[] mtlContent;
 	return r_material;
 }
 
@@ -423,7 +423,7 @@ Scene3D* LoadOBJ(const char* fileName)
 			{
 				t_Name.push_back(objContent[counter + p]);
 			}
-			for (int p = 0; p < materialNames.size(); p++)
+			for (unsigned int p = 0; p < materialNames.size(); p++)
 			{
 				// compare strings until find this particular material
 				if (t_Name.compare(materialNames[p]) == 0)
@@ -475,7 +475,7 @@ Scene3D* LoadOBJ(const char* fileName)
 
 	}
 	
-	delete objContent;
+	delete[] objContent;
 	return scene;
 
 }
