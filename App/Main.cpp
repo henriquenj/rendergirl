@@ -18,18 +18,12 @@
 
 
 #include "RenderGirlCore.h"
+#include "wx\wx.h"
 
 #include <Windows.h>
 #include <iostream>
 
 #define TEST_RESOLUTION 512
-
-#ifndef _WIN64
-#include "glut.h"
-	#pragma comment (lib, "glut32.lib")
-	#pragma comment (lib, "OpenGL32.lib")
-bool rendered;
-#endif
 
 #include "OBJLoader.h"
 #include "BMPSave.h"
@@ -50,68 +44,6 @@ public:
 	}
 };
 
-#ifndef _WIN64
-
-void DisplayCallback(void)
-{
-	glClear(GL_COLOR_BUFFER_BIT);
-
-	if (rendered)
-	{
-		//BYTE* frame = UChar4ToBYTE(RenderGirlShared::GetFrame(), TEST_RESOLUTION, TEST_RESOLUTION);
-		//glDrawPixels(TEST_RESOLUTION, TEST_RESOLUTION, GL_RGB, GL_UNSIGNED_BYTE, frame);
-		glDrawPixels(TEST_RESOLUTION, TEST_RESOLUTION, GL_RGBA, GL_UNSIGNED_BYTE, RenderGirlShared::GetFrame());
-		//delete[] frame;
-	}
-
-	glFlush();
-	glutSwapBuffers();
-}
-
-void KeyboardCallback(unsigned char key, int x, int y)
-{
-	switch (key)
-	{
-	case 27: // esc key
-		exit(0);
-		break;
-	}
-}
-
-void Menu(int option)
-{
-	if (option == 0)
-	{
-		const char * path = ShowFileDialog(0, DialogOpen, "OBJ Files (*.obj)", "*.obj");
-		if (path != NULL)
-		{
-			Scene3D* scene = LoadOBJ(path);
-
-			// start raytracing
-			RenderGirlShared::Set3DScene(scene);
-			delete scene;
-			if (RenderGirlShared::Render(TEST_RESOLUTION))
-			{
-				// update screen
-				rendered = true;
-				glutPostRedisplay();
-			}
-
-		}
-	}
-}
-
-void Terminate()
-{
-	RenderGirlShared::ReleaseDevice();
-	Log::RemoveAllListeners();
-}
-
-
-#endif //_WIN64
-
-
-
 int main()
 {
 
@@ -131,8 +63,6 @@ int main()
 
 	bool error = RenderGirlShared::PrepareRaytracer();
 
-#ifdef _WIN64
-
 	const char * path = ShowFileDialog(0, DialogOpen, "OBJ Files (*.obj)", "*.obj");
 	if (path != NULL)
 	{
@@ -150,40 +80,6 @@ int main()
 		}
 
 	}
-
-#else // make glut init procedures here
-
-	if (!error)
-	{
-		RenderGirlShared::ReleaseDevice();
-		exit(0);
-	}
-
-	rendered = false;
-
-
-	char *my_argv[] = { "rendergirl", NULL };
-	int   my_argc = 1;
-	glutInit(&my_argc, my_argv);
-
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
-	glutInitWindowSize(TEST_RESOLUTION, TEST_RESOLUTION);
-	glutCreateWindow("RenderGirl");
-	glutDisplayFunc(DisplayCallback);
-	glutKeyboardFunc(KeyboardCallback);
-	atexit(Terminate);
-
-	// menus
-	int menu = glutCreateMenu(Menu);
-	glutAddMenuEntry("Load OBJ and render", 0);
-	glutAttachMenu(GLUT_RIGHT_BUTTON);
-
-	glutMainLoop();
-
-
-
-#endif
-
 
 	// in glut mode, never gets here
 	RenderGirlShared::ReleaseDevice();
