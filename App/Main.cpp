@@ -44,48 +44,83 @@ public:
 	}
 };
 
-int main()
+class MainFrame : public wxFrame
 {
+public:
 
-	LogOutput* listenerOutput = new LogOutput();
-	Log::AddListener(listenerOutput);
-	
-	
-	RenderGirlShared::InitPlatforms();
-	RenderGirlShared::InitDevices();
-
-	// select a device
-	std::vector<OCLPlatform> platforms = RenderGirlShared::ReturnPlatforms();
-	// get the first one
-	std::vector<OCLDevice> devices = platforms[0].GetDevices();
-	// select this
-	RenderGirlShared::SelectDevice(&devices[0]);
-
-	bool error = RenderGirlShared::PrepareRaytracer();
-
-	const char * path = ShowFileDialog(0, DialogOpen, "OBJ Files (*.obj)", "*.obj");
-	if (path != NULL)
+	MainFrame(const wxString& title) : wxFrame(NULL, wxID_ANY, title)
 	{
-		Scene3D* scene = LoadOBJ(path);
-
-		// start raytracing
-		RenderGirlShared::Set3DScene(scene);
-		delete scene;
-		if (RenderGirlShared::Render(TEST_RESOLUTION))
-		{
-			// dump image on a file
-			BYTE* frame = UChar4ToBYTE(RenderGirlShared::GetFrame(), TEST_RESOLUTION, TEST_RESOLUTION);
-			SaveBMP("image.bmp", TEST_RESOLUTION, TEST_RESOLUTION, frame); 
-			delete[] frame;
-		}
 
 	}
 
-	// in glut mode, never gets here
-	RenderGirlShared::ReleaseDevice();
-	Log::RemoveAllListeners();
+	void OnQuit(wxCommandEvent& WXUNUSED(event))
+	{
+		this->Close(true);
+	}
+};
 
-	system("pause");
+class RenderGirlApp : public wxApp
+{
 
-	return 0;
-}
+public:
+
+	virtual bool OnInit()
+	{
+		if (!wxApp::OnInit())
+			return false;
+
+		MainFrame* frame = new MainFrame("RenderGirl");
+
+		frame->Show(true);
+
+		return true;
+	}
+};
+
+IMPLEMENT_APP(RenderGirlApp)
+//
+//int main()
+//{
+//
+//	LogOutput* listenerOutput = new LogOutput();
+//	Log::AddListener(listenerOutput);
+//	
+//	
+//	RenderGirlShared::InitPlatforms();
+//	RenderGirlShared::InitDevices();
+//
+//	// select a device
+//	std::vector<OCLPlatform> platforms = RenderGirlShared::ReturnPlatforms();
+//	// get the first one
+//	std::vector<OCLDevice> devices = platforms[0].GetDevices();
+//	// select this
+//	RenderGirlShared::SelectDevice(&devices[0]);
+//
+//	bool error = RenderGirlShared::PrepareRaytracer();
+//
+//	const char * path = ShowFileDialog(0, DialogOpen, "OBJ Files (*.obj)", "*.obj");
+//	if (path != NULL)
+//	{
+//		Scene3D* scene = LoadOBJ(path);
+//
+//		// start raytracing
+//		RenderGirlShared::Set3DScene(scene);
+//		delete scene;
+//		if (RenderGirlShared::Render(TEST_RESOLUTION))
+//		{
+//			// dump image on a file
+//			BYTE* frame = UChar4ToBYTE(RenderGirlShared::GetFrame(), TEST_RESOLUTION, TEST_RESOLUTION);
+//			SaveBMP("image.bmp", TEST_RESOLUTION, TEST_RESOLUTION, frame); 
+//			delete[] frame;
+//		}
+//
+//	}
+//
+//	// in glut mode, never gets here
+//	RenderGirlShared::ReleaseDevice();
+//	Log::RemoveAllListeners();
+//
+//	system("pause");
+//
+//	return 0;
+//}
