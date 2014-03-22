@@ -23,8 +23,5 @@
     <ClInclude Include="..\App\OBJLoader.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\App\BMPSave.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>
