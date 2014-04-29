@@ -40,7 +40,7 @@ public:
 	static bool InitDevices(OCLDevice::DeviceType type = OCLDevice::All);
 
 	/* Prepare a given device for executing the OpenCL program, return FALSE if there's an error with device*/
-	static bool SelectDevice(OCLDevice* select);
+	static bool SelectDevice(const OCLDevice* select);
 
 	/* PrepareRaytracer function prepare the OpenCL raytracer to work on the selected device.
 		You got to have a selected device to call this. Return FALSE if there's an error with the device. */
@@ -60,17 +60,16 @@ public:
 	/* Release the selected device from use, deallocing all memory used */
 	static void ReleaseDevice();
 
-	/* Return selected device */
+	/* Return selected device, return NULL for no device */
 	static const OCLDevice* GetSelectedDevice()
 	{
-		assert(selectedDevice != NULL && "There's no selected device to get!");
 		return selectedDevice;
 	}
 
 	/* return list of avaiable platforms */ 
-	static inline const std::vector<OCLPlatform>& ReturnPlatforms()
+	static const inline std::vector<OCLPlatform>* ReturnPlatforms()
 	{
-		return platforms;
+		return &platforms;
 	}
 
 	/* Get rendered buffer. This memory belongs to the renderer, so don't delete it.*/

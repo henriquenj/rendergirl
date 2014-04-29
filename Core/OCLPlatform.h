@@ -79,9 +79,9 @@ public:
 	}
 
 	// Get devices of this platform
-	inline const std::vector<OCLDevice>& GetDevices()
+	inline const std::vector<OCLDevice>* GetDevices()const
 	{
-		return devices;
+		return &devices;
 	}
 
 	// Get the amount of devices on this platform

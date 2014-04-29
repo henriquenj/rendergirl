@@ -86,7 +86,7 @@ bool RenderGirlShared::InitDevices(OCLDevice::DeviceType type)
 	return allOk;
 }
 
-bool RenderGirlShared::SelectDevice(OCLDevice* select)
+bool RenderGirlShared::SelectDevice(const OCLDevice* select)
 {
 	assert(select != NULL);
 
@@ -96,7 +96,7 @@ bool RenderGirlShared::SelectDevice(OCLDevice* select)
 		RenderGirlShared::ReleaseDevice();
 	}
 
-	selectedDevice = select;
+	selectedDevice = const_cast<OCLDevice*>(select);
 	if (!selectedDevice->IsReady())
 	{
 		// prepare this device
@@ -140,6 +140,7 @@ bool RenderGirlShared::PrepareRaytracer()
 		return false;
 	}
 
+	Log::Message("Device ready for execution.");
 	return true;
 }
 

@@ -20,8 +20,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\App\Main.cpp" />
+    <ClCompile Include="..\App\MainFrame.cpp" />
+    <ClCompile Include="..\App\MainPanel.cpp" />
+    <ClCompile Include="..\App\OBJLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\App\AppLog.h" />
+    <ClInclude Include="..\App\MainFrame.h" />
+    <ClInclude Include="..\App\MainPanel.h" />
     <ClInclude Include="..\App\OBJLoader.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

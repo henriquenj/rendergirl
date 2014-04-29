@@ -16,24 +16,27 @@
 	License along with this program.
 */
 
-#ifndef __OBJLOADER__
-#define __OBJLOADER__
 
-#include <string>
-#include <vector>
-#include "CLStructs.h"
+#ifndef __RENDERGIRLAPP_MAINPANEL__
+#define __RENDERGIRLAPP_MAINPANEL__
 
-// strip a path string from the file name (the last name)
-void RemoveFileName(std::string &path);
+#include "wx\wx.h"
 
 
-/* Load materials with names from a MTL file, the amount of materials on the returning pointer
-	is the size of the vector of strings, not very pretty I know*/
-Material* LoadMTL(std::vector<std::string>& materialName, const char* file);
+/* Main panel that organize most part of the interface inside the main frame */
+class MainPanel : public wxPanel
+{
+public:
 
-/* Loads an obj file providing a path. WARNING: it's your responsability to delete this memory. 
-	This loader does not implements the full specification of the format. Return NULL for an error. */
-Scene3D* LoadOBJ(const char* fileName);
+	MainPanel(wxWindow *parent,
+				wxWindowID winid = wxID_ANY,
+				const wxPoint& pos = wxDefaultPosition,
+				const wxSize& size = wxDefaultSize,
+				long style = wxTAB_TRAVERSAL | wxNO_BORDER,
+				const wxString& name = wxPanelNameStr);
+
+	virtual ~MainPanel();
+};
 
 
-#endif // __OBJLOADER__
+#endif // __RENDERGIRLAPP_MAINPANEL__

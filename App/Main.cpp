@@ -17,46 +17,13 @@
 */
 
 
-#include "RenderGirlCore.h"
-#include "wx\wx.h"
+/* App project implements an interface with the Core using the wxWidgets toolkit */
 
-#include <Windows.h>
 #include <iostream>
 
-#define TEST_RESOLUTION 512
+#include "wx\wx.h"
 
-#include "OBJLoader.h"
-
-class LogOutput : public LogListener
-{
-public:
-	void PrintLog(const char * message)
-	{
-		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
-		std::cout << message << std::endl;
-	}
-	void PrintError(const char * error)
-	{
-		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),BACKGROUND_RED);
-		std::cout << error << std::endl;
-		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
-	}
-};
-
-class MainFrame : public wxFrame
-{
-public:
-
-	MainFrame(const wxString& title) : wxFrame(NULL, wxID_ANY, title)
-	{
-
-	}
-
-	void OnQuit(wxCommandEvent& WXUNUSED(event))
-	{
-		this->Close(true);
-	}
-};
+#include "MainFrame.h"
 
 class RenderGirlApp : public wxApp
 {
@@ -68,58 +35,31 @@ public:
 		if (!wxApp::OnInit())
 			return false;
 
-		MainFrame* frame = new MainFrame("RenderGirl");
+		MainFrame* frame = new MainFrame("RenderGirl", wxDefaultPosition, wxSize(500,600), wxMINIMIZE_BOX | wxSYSTEM_MENU | wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN);
+
+		// create listener for log details
+		LogOutput* listener = new LogOutput();
+		Log::AddListener(listener);
+
+		/* search for OpenCL capable devices on all platforms */
+		RenderGirlShared::InitPlatforms();
+		RenderGirlShared::InitDevices();
+
+		frame->UpdateDevicesInterface();
 
 		frame->Show(true);
 
 		return true;
 	}
+
+	virtual ~RenderGirlApp()
+	{
+		// dealloc the OpenCL driver and all memory used in the process.
+		if (RenderGirlShared::GetSelectedDevice())
+		RenderGirlShared::ReleaseDevice();
+
+		Log::RemoveAllListeners();
+	}
 };
 
 IMPLEMENT_APP(RenderGirlApp)
-//
-//int main()
-//{
-//
-//	LogOutput* listenerOutput = new LogOutput();
-//	Log::AddListener(listenerOutput);
-//	
-//	
-//	RenderGirlShared::InitPlatforms();
-//	RenderGirlShared::InitDevices();
-//
-//	// select a device
-//	std::vector<OCLPlatform> platforms = RenderGirlShared::ReturnPlatforms();
-//	// get the first one
-//	std::vector<OCLDevice> devices = platforms[0].GetDevices();
-//	// select this
-//	RenderGirlShared::SelectDevice(&devices[0]);
-//
-//	bool error = RenderGirlShared::PrepareRaytracer();
-//
-//	const char * path = ShowFileDialog(0, DialogOpen, "OBJ Files (*.obj)", "*.obj");
-//	if (path != NULL)
-//	{
-//		Scene3D* scene = LoadOBJ(path);
-//
-//		// start raytracing
-//		RenderGirlShared::Set3DScene(scene);
-//		delete scene;
-//		if (RenderGirlShared::Render(TEST_RESOLUTION))
-//		{
-//			// dump image on a file
-//			BYTE* frame = UChar4ToBYTE(RenderGirlShared::GetFrame(), TEST_RESOLUTION, TEST_RESOLUTION);
-//			SaveBMP("image.bmp", TEST_RESOLUTION, TEST_RESOLUTION, frame); 
-//			delete[] frame;
-//		}
-//
-//	}
-//
-//	// in glut mode, never gets here
-//	RenderGirlShared::ReleaseDevice();
-//	Log::RemoveAllListeners();
-//
-//	system("pause");
-//
-//	return 0;
-//}
