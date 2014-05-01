@@ -24,20 +24,12 @@
 #include "OBJLoader.h"
 #include "wx\wx.h"
 #include "MainPanel.h"
+#include "RenderFrame.h"
 #include "AppLog.h"
 #include "wx\valnum.h"
 
 #include "RenderGirlCore.h"
-
-enum MainFrameEvents /* Event processing for this frame */
-{
-	ZeroEvent = wxID_HIGHEST,
-	ChoiceSelectPlatform,
-	ChoiceSelectDevice,
-	SelectDevicePress,
-	LoadModelPress,
-	RenderPress
-};
+#include "WindowsIDs.h"
 
 
 /* Main frame of the application */
@@ -45,9 +37,7 @@ class MainFrame : public wxFrame
 {
 public:
 
-	MainFrame(const wxString& title, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxDEFAULT_FRAME_STYLE);
-
-	void OnQuit(wxCommandEvent& event);
+	MainFrame(const wxString& title, const wxPoint& pos, const wxSize& size, long style);
 
 	virtual ~MainFrame();
 
@@ -55,7 +45,15 @@ public:
 	// update menus listing devices and platforms, reseting the interface
 	void UpdateDevicesInterface();
 
+	/* Checks or uncheck a given item in the "show" menu */
+	void inline CheckWindowMenu(int itemid, bool check)
+	{
+		m_windowMenu->Check(itemid, check);
+	}
+
 private:
+
+	RenderFrame* m_renderFrame;
 	// log target for this application
 	AppLog *m_logTarget;
 
@@ -67,6 +65,9 @@ private:
 	wxButton* m_changeDeviceButton;
 	wxButton* m_loadModelButton;
 	wxButton* m_renderButton;
+	wxButton* m_releaseButton;
+	/* menus */
+	wxMenu* m_windowMenu;
 
 	wxTextCtrl* resolutionField;
 
@@ -79,6 +80,8 @@ private:
 	void OnSelectButtonPressed(wxCommandEvent& event);
 	void OnLoadModel(wxCommandEvent& event);
 	void OnRenderButton(wxCommandEvent& event);
+	void OnReleaseButton(wxCommandEvent& event);
+	void OnShowRenderFrame(wxCommandEvent& event);
 };
 
 

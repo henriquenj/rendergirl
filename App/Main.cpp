@@ -35,10 +35,12 @@ public:
 		if (!wxApp::OnInit())
 			return false;
 
-		MainFrame* frame = new MainFrame("RenderGirl", wxDefaultPosition, wxSize(500,600), wxMINIMIZE_BOX | wxSYSTEM_MENU | wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN);
+		wxInitAllImageHandlers();
 
+		MainFrame* frame = new MainFrame("RenderGirl " + _(RENDERGIRL_ARCH), wxDefaultPosition, wxSize(600, 600), wxMINIMIZE_BOX | wxSYSTEM_MENU | wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN);
+		
 		// create listener for log details
-		LogOutput* listener = new LogOutput();
+		LogOutputWx* listener = new LogOutputWx();
 		Log::AddListener(listener);
 
 		/* search for OpenCL capable devices on all platforms */

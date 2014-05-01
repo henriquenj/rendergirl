@@ -140,8 +140,8 @@ int Intersect(float* dist, __global float3* origin, float3* dir, float3* point, 
 }
 
 /* Here starts the raytracer*/
-__kernel void Raytrace(__global float3* vertices, __global float3* normals, __global int4* faces, __global Material* materials,
-	__global SceneInformation* sceneInfo, __global uchar4* frame, __global Camera* camera)
+__kernel void Raytrace(read_only __global float3* vertices, read_only __global float3* normals, read_only __global int4* faces, read_only __global Material* materials,
+	read_only __global SceneInformation* sceneInfo, write_only __global uchar4* frame, read_only __global Camera* camera)
 {
 	int id = get_global_id(0);
 	// grab XY coordinate of this instance

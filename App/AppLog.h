@@ -67,7 +67,7 @@ private:
 
 
 // custom loglistener tasked to send the RenderGirl messages to the wxwidgets interface
-class LogOutput : public LogListener
+class LogOutputWx : public LogListener
 {
 public:
 	void PrintLog(const char* message)

@@ -198,6 +198,13 @@ bool RenderGirlShared::Set3DScene(Scene3D* pscene)
 
 bool RenderGirlShared::Render(int resolution)
 {
+
+	if (resolution < 1)
+	{
+		Log::Error("You have to choose a positive resolution");
+		return false;
+	}
+
 	if (!sceneLoaded)
 	{
 		Log::Error("Cannot render since there's no loaded scene!");

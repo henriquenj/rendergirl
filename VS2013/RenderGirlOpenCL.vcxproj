@@ -23,12 +23,15 @@
     <ClCompile Include="..\App\MainFrame.cpp" />
     <ClCompile Include="..\App\MainPanel.cpp" />
     <ClCompile Include="..\App\OBJLoader.cpp" />
+    <ClCompile Include="..\App\RenderFrame.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\App\AppLog.h" />
     <ClInclude Include="..\App\MainFrame.h" />
     <ClInclude Include="..\App\MainPanel.h" />
     <ClInclude Include="..\App\OBJLoader.h" />
+    <ClInclude Include="..\App\RenderFrame.h" />
+    <ClInclude Include="..\App\WindowsIDs.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{118A0C67-BB56-4918-AD2B-FB5882F23DF8}</ProjectGuid>

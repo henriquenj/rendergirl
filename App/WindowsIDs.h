@@ -16,24 +16,31 @@
 	License along with this program.
 */
 
-#ifndef __OBJLOADER__
-#define __OBJLOADER__
 
-#include <string>
-#include <vector>
-#include "RenderGirlShared.h"
-
-// strip a path string from the file name (the last name)
-void RemoveFileName(std::string &path);
+#ifndef __RENDERGIRLEVENTS__
+#define __RENDERGIRLEVENTS__
 
 
-/* Load materials with names from a MTL file, the amount of materials on the returning pointer
-	is the size of the vector of strings, not very pretty I know*/
-Material* LoadMTL(std::vector<std::string>& materialName, const char* file);
+#include "wx\wx.h"
 
-/* Loads an obj file providing a path. WARNING: it's your responsability to delete this memory. 
-	This loader does not implements the full specification of the format. Return NULL for an error. */
-Scene3D* LoadOBJ(const char* fileName);
+/* Header for all the custom window identifiers used by the wx app */
+
+enum MainFrameEvents /* Window identifiers for MainFrame */
+{
+	ChoiceSelectPlatform = wxID_HIGHEST,
+	ChoiceSelectDevice,
+	SelectDeviceButton,
+	LoadModelButton,
+	ReleaseButton,
+	RenderButton,
+	ShowRenderViewMenu
+};
 
 
-#endif // __OBJLOADER__
+enum RenderFrameEvents /* Window identifiers for render frame */
+{
+	StartID = RenderButton + 1 // id of render frame window starts where the main frame ids ends
+};
+
+
+#endif // __RENDERGIRLEVENTS__

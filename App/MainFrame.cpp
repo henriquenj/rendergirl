@@ -22,11 +22,25 @@
 
 MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& size, long style)
 : wxFrame(NULL, wxID_ANY, title, pos, size, style)
-{
+{	
 
 	scene = NULL;
 
-	/* Create botton menu bar */
+	/* create top menu bar*/
+	wxMenuBar* topBar = new wxMenuBar();
+	this->SetMenuBar(topBar);
+	/* window menu */
+	m_windowMenu = new wxMenu;
+	m_windowMenu->Append(ShowRenderViewMenu, "Render View", "Show render view frame", true);
+	m_windowMenu->Check(ShowRenderViewMenu, false);
+	topBar->Append(m_windowMenu, "Show");
+
+	/* put render frame at the right of the main frame*/
+	wxPoint posRender(this->GetPosition().x + this->GetSize().x,this->GetPosition().y);
+	/* create render window */
+	m_renderFrame = new RenderFrame(this, "Render View", posRender, wxDefaultSize, wxSYSTEM_MENU | wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN | wxFRAME_NO_TASKBAR);
+
+	/* Create botton bar */
 	this->CreateStatusBar();
 	this->SetStatusText("RenderGirl not ready, select a device to perform the rendering");
 
@@ -59,14 +73,17 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
 	m_platformChoice = new wxChoice(panel, ChoiceSelectPlatform);
 	m_deviceChoice = new wxChoice(panel, ChoiceSelectDevice);
 	m_deviceChoice->Disable();
-	m_selectButton = new wxButton(panel, SelectDevicePress, "Select");
+	m_selectButton = new wxButton(panel, SelectDeviceButton, "Select");
 	m_selectButton->Disable();// disabled until the user picks a device
+	m_releaseButton = new wxButton(panel, ReleaseButton, "Release");
+	m_releaseButton->Disable();
 
 	deviceSizer->Add(platformsChoiceText);
 	deviceSizer->Add(m_platformChoice);
 	deviceSizer->Add(devicesChoiceText);
 	deviceSizer->Add(m_deviceChoice);
 	deviceSizer->Add(m_selectButton,0,wxALL,10);
+	deviceSizer->Add(m_releaseButton, 0, wxALL, 10);
 
 
 	// sizer for loading model button
@@ -74,13 +91,13 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
 	topSizer->Add(loadFileSizer, 1, wxEXPAND);
 
 	// load model button
-	m_loadModelButton = new wxButton(panel, LoadModelPress, "Load OBJ file",wxDefaultPosition,wxSize(100,30));
+	m_loadModelButton = new wxButton(panel, LoadModelButton, "Load OBJ file", wxDefaultPosition, wxSize(100, 30));
 	m_loadModelButton->Disable();
 	loadFileSizer->Add(m_loadModelButton,0,wxCENTER,10);
 
 	// render area sizer
 	wxBoxSizer* renderAreaSizer = new wxStaticBoxSizer(new wxStaticBox(panel, wxID_ANY, "Render"), wxHORIZONTAL);
-	m_renderButton = new wxButton(panel,RenderPress,"Render",wxDefaultPosition,wxSize(300,100));
+	m_renderButton = new wxButton(panel, RenderButton, "Render", wxDefaultPosition, wxSize(300, 100));
 	m_renderButton->Disable();
 	renderAreaSizer->Add(m_renderButton,0,wxCENTER);
 	
@@ -88,7 +105,7 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
 	renderAreaSizer->Add(resoSizer, 0, wxALL,30);
 	// create validador to prevent the user of typing letters
 	wxIntegerValidator<int> val;
-	resolutionField = new wxTextCtrl(panel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(50,30), 0L,val);
+	resolutionField = new wxTextCtrl(panel, wxID_ANY, "512", wxDefaultPosition, wxSize(50,30), 0L,val);
 	resoSizer->Add(resolutionField);
 
 	// sizer for log
@@ -110,9 +127,13 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
 	// connect events
 	this->Connect(ChoiceSelectPlatform, wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler(MainFrame::OnPlatformSelect));
 	this->Connect(ChoiceSelectDevice, wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler(MainFrame::OnDeviceSelect));
-	this->Connect(SelectDevicePress, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(MainFrame::OnSelectButtonPressed));
-	this->Connect(LoadModelPress, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(MainFrame::OnLoadModel));
-	this->Connect(RenderPress, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(MainFrame::OnRenderButton));
+	this->Connect(SelectDeviceButton, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(MainFrame::OnSelectButtonPressed));
+	this->Connect(LoadModelButton, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(MainFrame::OnLoadModel));
+	this->Connect(RenderButton, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(MainFrame::OnRenderButton));
+	this->Connect(ReleaseButton, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(MainFrame::OnReleaseButton));
+	this->Connect(ShowRenderViewMenu, wxEVT_MENU, wxCommandEventHandler(MainFrame::OnShowRenderFrame));
+
+	panel->SetBestFittingSize();
 }
 
 MainFrame::~MainFrame()
@@ -121,16 +142,13 @@ MainFrame::~MainFrame()
 	wxLog::DontCreateOnDemand();
 }
 
-void MainFrame::OnQuit(wxCommandEvent& WXUNUSED(event))
-{
-	this->Close();
-}
-
 void MainFrame::UpdateDevicesInterface()
 {
 
 	m_selectButton->Disable();
 	m_loadModelButton->Disable();
+	m_releaseButton->Disable();
+	m_renderButton->Disable();
 	m_platformChoice->Clear();
 	m_deviceChoice->Clear();
 	m_platformChoice->Enable();
@@ -196,6 +214,7 @@ void MainFrame::OnSelectButtonPressed(wxCommandEvent& WXUNUSED(event))
 	// got here, no errors
 	this->SetStatusText("RenderGirl ready!");
 	m_loadModelButton->Enable();
+	m_releaseButton->Enable();
 }
 
 void MainFrame::OnLoadModel(wxCommandEvent& WXUNUSED(event))
@@ -227,9 +246,36 @@ void MainFrame::OnRenderButton(wxCommandEvent& WXUNUSED(event))
 		return;
 
 	// render
-	if (RenderGirlShared::Render(resolution))
+	if (!RenderGirlShared::Render(resolution))
 		return;
 
 	// get data back
 	RenderGirlShared::GetFrame();
+
+	/* prepare render window*/
+	if (resolution < 128) // minimum size of the render frame is 128
+		resolution = 128;
+
+	m_renderFrame->SetSize(wxSize(resolution, resolution));
+	m_renderFrame->Show();
+	m_renderFrame->Raise();
+	m_windowMenu->Check(ShowRenderViewMenu, true);
+}
+
+void MainFrame::OnReleaseButton(wxCommandEvent& WXUNUSED(event))
+{
+	//release this device
+	RenderGirlShared::ReleaseDevice();
+	
+	this->SetStatusText("RenderGirl not ready, select a device to perform the rendering");
+	this->UpdateDevicesInterface();
+}
+
+void MainFrame::OnShowRenderFrame(wxCommandEvent& WXUNUSED(event))
+{
+	/* Show or hide the render view frame bases on the current state*/
+	if (!m_renderFrame->IsShown())
+		m_renderFrame->Show();
+	else
+		m_renderFrame->Hide();
 }

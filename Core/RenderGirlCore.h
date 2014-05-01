@@ -22,6 +22,21 @@
 
 // Master include file for RenderGirlCore
 
+
+/* Compiler dependent macros (if this gets too long, move to a dedicated header) */
+#if defined(_MSC_VER)
+#ifdef _M_IX86
+	#define RENDERGIRL_ARCH "x86"
+#elif _M_X64
+	#define RENDERGIRL_ARCH "x64"
+#endif
+#else
+# error Another compiler detect, please include the proper macros
+#endif
+
+#define RENDERGIRLCORE_VERSION "0.0.1"
+#define RENDERGIRLCORE_COMPILED_DATE __DATE__
+
 /* Core project contains only the core renderer and the OpenCL wrappers.
 	Interfaces will be put on another projects */
 
