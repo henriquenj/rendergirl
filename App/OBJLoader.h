@@ -35,5 +35,16 @@ Material* LoadMTL(std::vector<std::string>& materialName, const char* file);
 	This loader does not implements the full specification of the format. Return NULL for an error. */
 Scene3D* LoadOBJ(const char* fileName);
 
+/*
+Analyse the definition of a face and return the proper face definition.
+OBJ file format has 4 different types of face definitions:
+0 = unidentified
+1 = f v1			(vertex only)
+2 = f v1/vt1		(vertex and texture)
+3 = f v1//vn1		(vertex and normal)
+4 = f v1/vt1/vn1	(vertex, texture and normal)
+*/
+int GetFaceDefinition(char* objContent, int counter);
+
 
 #endif // __OBJLOADER__

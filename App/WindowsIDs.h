@@ -39,7 +39,7 @@ enum MainFrameEvents /* Window identifiers for MainFrame */
 
 enum RenderFrameEvents /* Window identifiers for render frame */
 {
-	StartID = RenderButton + 1 // id of render frame window starts where the main frame ids ends
+	// = RenderButton + 1 // id of render frame window starts where the main frame ids ends
 };
 
 

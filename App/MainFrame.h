@@ -20,13 +20,14 @@
 #ifndef __RENDERGIRLAPP_MAINFRAME__
 #define __RENDERGIRLAPP_MAINFRAME__
 
+#include "wx\wx.h"
+#include "wx\valnum.h"
 
 #include "OBJLoader.h"
-#include "wx\wx.h"
 #include "MainPanel.h"
 #include "RenderFrame.h"
+#include "AboutDialog.h"
 #include "AppLog.h"
-#include "wx\valnum.h"
 
 #include "RenderGirlCore.h"
 #include "WindowsIDs.h"
@@ -82,6 +83,7 @@ private:
 	void OnRenderButton(wxCommandEvent& event);
 	void OnReleaseButton(wxCommandEvent& event);
 	void OnShowRenderFrame(wxCommandEvent& event);
+	void OnAbout(wxCommandEvent& event);
 };
 
 

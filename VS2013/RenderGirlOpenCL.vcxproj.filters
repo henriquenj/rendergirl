@@ -26,6 +26,9 @@
     <ClCompile Include="..\App\RenderFrame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\App\AboutDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\App\OBJLoader.h">
@@ -44,6 +47,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\App\WindowsIDs.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\App\AboutDialog.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

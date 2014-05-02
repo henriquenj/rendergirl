@@ -35,10 +35,14 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
 	m_windowMenu->Check(ShowRenderViewMenu, false);
 	topBar->Append(m_windowMenu, "Show");
 
+	wxMenu* helpMenu = new wxMenu;
+	helpMenu->Append(wxID_ABOUT, "About", "About RenderGirl", false);
+	topBar->Append(helpMenu, "Help");
+
 	/* put render frame at the right of the main frame*/
 	wxPoint posRender(this->GetPosition().x + this->GetSize().x,this->GetPosition().y);
 	/* create render window */
-	m_renderFrame = new RenderFrame(this, "Render View", posRender, wxDefaultSize, wxSYSTEM_MENU | wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN | wxFRAME_NO_TASKBAR);
+	m_renderFrame = new RenderFrame(this, "Render View", posRender, wxDefaultSize, wxSYSTEM_MENU | wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN);
 
 	/* Create botton bar */
 	this->CreateStatusBar();
@@ -92,7 +96,6 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
 
 	// load model button
 	m_loadModelButton = new wxButton(panel, LoadModelButton, "Load OBJ file", wxDefaultPosition, wxSize(100, 30));
-	m_loadModelButton->Disable();
 	loadFileSizer->Add(m_loadModelButton,0,wxCENTER,10);
 
 	// render area sizer
@@ -132,6 +135,7 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
 	this->Connect(RenderButton, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(MainFrame::OnRenderButton));
 	this->Connect(ReleaseButton, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(MainFrame::OnReleaseButton));
 	this->Connect(ShowRenderViewMenu, wxEVT_MENU, wxCommandEventHandler(MainFrame::OnShowRenderFrame));
+	this->Connect(wxID_ABOUT, wxEVT_MENU, wxCommandEventHandler(MainFrame::OnAbout));
 
 	panel->SetBestFittingSize();
 }
@@ -146,7 +150,6 @@ void MainFrame::UpdateDevicesInterface()
 {
 
 	m_selectButton->Disable();
-	m_loadModelButton->Disable();
 	m_releaseButton->Disable();
 	m_renderButton->Disable();
 	m_platformChoice->Clear();
@@ -212,9 +215,13 @@ void MainFrame::OnSelectButtonPressed(wxCommandEvent& WXUNUSED(event))
 	}
 
 	// got here, no errors
-	this->SetStatusText("RenderGirl ready!");
-	m_loadModelButton->Enable();
 	m_releaseButton->Enable();
+	if (scene != NULL)
+	{
+		this->SetStatusText("RenderGirl ready!");
+		m_renderButton->Enable();
+	}
+
 }
 
 void MainFrame::OnLoadModel(wxCommandEvent& WXUNUSED(event))
@@ -227,11 +234,12 @@ void MainFrame::OnLoadModel(wxCommandEvent& WXUNUSED(event))
 		return; // the user has pressed cancel
 
 	if (scene != NULL)
-	{
 		delete scene;
-	}
+	
 	scene = LoadOBJ(openFileDialog.GetPath());
-	m_renderButton->Enable();
+
+	if (RenderGirlShared::GetSelectedDevice())
+		m_renderButton->Enable();
 
 
 }
@@ -250,13 +258,9 @@ void MainFrame::OnRenderButton(wxCommandEvent& WXUNUSED(event))
 		return;
 
 	// get data back
-	RenderGirlShared::GetFrame();
+	const cl_uchar4* frame = RenderGirlShared::GetFrame();
 
-	/* prepare render window*/
-	if (resolution < 128) // minimum size of the render frame is 128
-		resolution = 128;
-
-	m_renderFrame->SetSize(wxSize(resolution, resolution));
+	m_renderFrame->SetImage(frame, wxSize(resolution, resolution));
 	m_renderFrame->Show();
 	m_renderFrame->Raise();
 	m_windowMenu->Check(ShowRenderViewMenu, true);
@@ -278,4 +282,12 @@ void MainFrame::OnShowRenderFrame(wxCommandEvent& WXUNUSED(event))
 		m_renderFrame->Show();
 	else
 		m_renderFrame->Hide();
+}
+
+void MainFrame::OnAbout(wxCommandEvent& WXUNUSED(event))
+{
+	// create about dialog
+	AboutDialog a_dialog(this, wxID_ANY, "RenderGirl", wxDefaultPosition, wxSize(340, 200));
+
+	a_dialog.ShowModal();
 }

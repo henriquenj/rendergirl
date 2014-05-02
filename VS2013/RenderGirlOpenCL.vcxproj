@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\App\AboutDialog.cpp" />
     <ClCompile Include="..\App\Main.cpp" />
     <ClCompile Include="..\App\MainFrame.cpp" />
     <ClCompile Include="..\App\MainPanel.cpp" />
@@ -26,6 +27,7 @@
     <ClCompile Include="..\App\RenderFrame.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\App\AboutDialog.h" />
     <ClInclude Include="..\App\AppLog.h" />
     <ClInclude Include="..\App\MainFrame.h" />
     <ClInclude Include="..\App\MainPanel.h" />

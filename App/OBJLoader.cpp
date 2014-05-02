@@ -163,16 +163,6 @@ Scene3D* LoadOBJ(const char* fileName)
 	Scene3D* scene = new Scene3D();
 	memset(scene, 0, sizeof(Scene3D));
 
-	// OBJ file format has 3 different types of face definitions
-	/*
-	0 = unidentified
-	1 = f v1			(vertex only)
-	2 = f v1/vt1		(vertex and texture)
-	3 = f v1//vn1		(vertex and normal)
-	4 = f v1/vt1/vn1	(vertex, texture and normal)
-	*/
-	int faceDefinition = 0;
-
 	/* First pass, count objects */
 	int counter = 0;
 	while (counter < size)
@@ -182,44 +172,6 @@ Scene3D* LoadOBJ(const char* fileName)
 		else if (objContent[counter] == 'f')
 		{
 			scene->facesSize++;
-			// ..also checks which definition type
-			if (faceDefinition == 0)
-			{
-				counter += 2;
-				// keep walking until finds something to checks the face definition type
-				for (int p = counter;; p++)
-				{
-					if (objContent[p] == ' ') // vertex only
-					{
-						faceDefinition = 1;
-						break;
-					}
-					else if (objContent[p] == '/' && objContent[p + 1] == '/')//vertex and normal mode
-					{
-						faceDefinition = 3;
-						break;
-					}
-					else if (objContent[p] == '/')
-					{
-						while (true)
-						{
-							p++;
-							if (objContent[p] == '/') // vertex, texture and normal mode
-							{
-								faceDefinition = 4;
-								break;
-							}
-							else if (objContent[p] == ' ') //vertex and texture
-							{
-								faceDefinition = 2;
-								break;
-							}
-						}
-						break;
-					}
-
-				}
-			}
 		}
 		else if (objContent[counter] == 'v' && objContent[counter + 1] == ' ')
 			scene->verticesSize++;
@@ -264,6 +216,8 @@ Scene3D* LoadOBJ(const char* fileName)
 		// faces
 		else if (objContent[counter] == 'f')
 		{
+			/* check face defintion on each new face (some programs output with all kinds of face definitons)*/
+			int faceDefinition = GetFaceDefinition(objContent, counter);
 			counter += 2;
 			cl_int temp = 0; // to fill with descarted data
 
@@ -377,5 +331,46 @@ Scene3D* LoadOBJ(const char* fileName)
 
 	delete[] objContent;
 	return scene;
+
+}
+
+
+int GetFaceDefinition(char* objContent, int counter)
+{
+
+	counter += 2;
+	// keep walking until finds something to checks the face definition type
+	for (int p = counter;; p++)
+	{
+		if (objContent[p] == ' ') // vertex only
+		{
+			return 1;
+			break;
+		}
+		else if (objContent[p] == '/' && objContent[p + 1] == '/')//vertex and normal mode
+		{
+			return 3;
+			break;
+		}
+		else if (objContent[p] == '/')
+		{
+			while (true)
+			{
+				p++;
+				if (objContent[p] == '/') // vertex, texture and normal mode
+				{
+					return 4;
+					break;
+				}
+				else if (objContent[p] == ' ') //vertex and texture
+				{
+					return 2;
+					break;
+				}
+			}
+			break;
+		}
+
+	}
 
 }

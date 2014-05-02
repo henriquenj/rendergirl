@@ -23,6 +23,7 @@
 
 #include "wx\wx.h"
 #include "WindowsIDs.h"
+#include "CL\cl.h"
 
 /* RenderFrame creates another window to show the final rendered image to the user */
 class RenderFrame : public wxFrame
@@ -36,12 +37,16 @@ public:
 	void OnClose(wxCloseEvent& event);
 	void OnPaint(wxPaintEvent& event);
 
-	/* Set a image to render on the frame */
-	void SetImage();
+	/* Set a image to render on the frame and update the UI, this function will make a copy of the frame */
+	void SetImage(const cl_uchar4 *frame, wxSize& resolution);
 
 private:
+
+	void OnSaveImage(wxCommandEvent& event);
+
+	wxMenu* m_imageMenu;
 	// the generated image
-	wxBitmap m_render;
+	wxImage m_render;
 	// sizer to calculate the best fitting size
 	wxBoxSizer* m_sizer;
 	/* boolean control when there's a image to render */

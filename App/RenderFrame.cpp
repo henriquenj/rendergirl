@@ -37,12 +37,18 @@ RenderFrame::RenderFrame(wxWindow* parent, const wxString& title, const wxPoint&
 
 	/* menus on top part */
 	wxMenuBar* menuBar = new wxMenuBar();
-	wxMenu* imageMenu = new wxMenu();
-	menuBar->Append(imageMenu, "Image");
+	m_imageMenu = new wxMenu();
+	m_imageMenu->Append(wxID_SAVE, "Save image", "Save image on hard drive", false);
+	m_imageMenu->Enable(wxID_SAVE, false);
+	
+	menuBar->Append(m_imageMenu, "Image");
 	this->SetMenuBar(menuBar);
 
 	/* set best size based on image resolution */
 	this->SetBestFittingSize();
+
+
+	this->Connect(wxID_SAVE, wxEVT_MENU, wxCommandEventHandler(RenderFrame::OnSaveImage));
 
 }
 
@@ -62,9 +68,54 @@ void RenderFrame::OnClose(wxCloseEvent& WXUNUSED(event))
 
 void RenderFrame::OnPaint(wxPaintEvent& event)
 {
-	if (isThereImage)
+	wxPaintDC dc(this);
+	/* draw black background of the size of render view */
+	wxImage blackBackground(m_sizer->GetSize());
+	dc.DrawBitmap(blackBackground, 0, 0);
+
+	if (m_render.IsOk())
+		dc.DrawBitmap(m_render, 0, 0);
+}
+
+
+void RenderFrame::SetImage(const cl_uchar4 *frame, wxSize& resolution)
+{
+	if (m_render.IsOk())
+		m_render.Destroy(); /* delete previously image */
+
+
+	m_imageMenu->Enable(wxID_SAVE, true);
+
+	/* copy to local data */
+	long size = resolution.x * resolution.y;
+	unsigned char* frameRGBData = (unsigned char*)malloc(size * 3);
+	unsigned char* frameAlphaData = (unsigned char*)malloc(size);
+	
+	for (unsigned int a = 0; a < size; a++)
 	{
-		wxPaintDC dc(this);
-		dc.DrawBitmap(m_render, 0, 0, false);
+		frameRGBData[a*3] = frame[a].s[0];
+		frameRGBData[a*3 +1] = frame[a].s[1];
+		frameRGBData[a*3 + 2] = frame[a].s[2];
+		frameAlphaData[a] = frame[a].s[3];
 	}
+
+	m_render.Create(resolution, frameRGBData, frameAlphaData, true);
+
+	/* resize screen to best fit the image */
+	m_sizer->SetMinSize(resolution);
+	this->SetBestFittingSize();
+	this->Refresh();
+	
+}
+
+void RenderFrame::OnSaveImage(wxCommandEvent& WXUNUSED(event))
+{
+	/* ask for the user to select a file name and a file format to save */
+	wxFileDialog saveFileDialog(this, _("Save image file"), "", "render.png", "PNG(*.png)|*.png;|JPEG(*.jpg)|*.jpg;|BMP(*.bmp)|*.bmp;|TGA(*.tga)|*.tga", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+
+	if (saveFileDialog.ShowModal() == wxID_CANCEL)
+		return; // the user has pressed cancel
+
+	//..got here, save image
+	m_render.SaveFile(saveFileDialog.GetPath());
 }
