@@ -71,13 +71,14 @@ private:
 	wxMenu* m_windowMenu;
 
 	/* fields to type */
-	wxTextCtrl* m_resolutionField;
+	wxTextCtrl* m_widthField;
+	/*wxTextCtrl* m_heightField;*/
 	wxTextCtrl* m_cameraPosXField;
 	wxTextCtrl* m_cameraPosYField;
 	wxTextCtrl* m_cameraPosZField;
-	wxTextCtrl* m_cameraDirXField;
-	wxTextCtrl* m_cameraDirYField;
-	wxTextCtrl* m_cameraDirZField;
+	wxTextCtrl* m_cameraLookXField;
+	wxTextCtrl* m_cameraLookYField;
+	wxTextCtrl* m_cameraLookZField;
 
 	// loaded scene
 	Scene3D* scene;

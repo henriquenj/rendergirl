@@ -55,7 +55,7 @@ public:
 		This is a blocking call.
 		Param resolution is the resolution of the resulting image.
 		Return FALSE for an error */
-	static bool Render(int resolution, Camera &camera, Light &light);
+	static bool Render(int width, int height, Camera &camera, Light &light);
 
 	/* Release the selected device from use, deallocing all memory used */
 	static void ReleaseDevice();

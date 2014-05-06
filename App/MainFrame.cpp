@@ -111,8 +111,10 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
 	renderAreaSizer->Add(resoSizer, 0, wxALL);
 	// create validador to prevent the user of typing letters
 	wxIntegerValidator<int> val;
-	m_resolutionField = new wxTextCtrl(panel, wxID_ANY, "512", wxDefaultPosition, wxSize(50,30), 0L,val);
-	resoSizer->Add(m_resolutionField);
+	m_widthField = new wxTextCtrl(panel, wxID_ANY, "512", wxDefaultPosition, wxSize(50, 30), 0L, val);
+	resoSizer->Add(m_widthField);
+	/*m_heightField = new wxTextCtrl(panel, wxID_ANY, "512", wxDefaultPosition, wxSize(50, 30), 0L, val);
+	resoSizer->Add(m_heightField);*/
 
 	//camera options
 	wxBoxSizer* cameraSizer = new wxStaticBoxSizer(new wxStaticBox(panel, wxID_ANY, "Camera"), wxVERTICAL);
@@ -125,23 +127,23 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
 	// another validador allowing only floating point values
 	wxFloatingPointValidator<float> valFloat;
 	m_cameraPosXField = new wxTextCtrl(panel, wxID_ANY, "0.000000", wxDefaultPosition, wxSize(60, 30), 0L, valFloat);
-	cameraPositionSizer->Add(m_cameraPosXField,0,wxLEFT,10);
+	cameraPositionSizer->Add(m_cameraPosXField,0,wxLEFT,5);
 	m_cameraPosYField = new wxTextCtrl(panel, wxID_ANY, "0.000000", wxDefaultPosition, wxSize(60, 30), 0L, valFloat);
 	cameraPositionSizer->Add(m_cameraPosYField);
 	m_cameraPosZField = new wxTextCtrl(panel, wxID_ANY, "-10.000000", wxDefaultPosition, wxSize(60, 30), 0L, valFloat);
 	cameraPositionSizer->Add(m_cameraPosZField);
 	// camera direction sizer
-	wxBoxSizer* cameraDirectionSizer = new wxBoxSizer(wxHORIZONTAL);
-	cameraSizer->Add(cameraDirectionSizer);
-	wxStaticText* camDirectionText = new wxStaticText(panel, wxID_ANY, "Direction");
-	cameraDirectionSizer->Add(camDirectionText);
+	wxBoxSizer* cameraLookAtSizer = new wxBoxSizer(wxHORIZONTAL);
+	cameraSizer->Add(cameraLookAtSizer);
+	wxStaticText* camLookText = new wxStaticText(panel, wxID_ANY, "Look At");
+	cameraLookAtSizer->Add(camLookText);
 	// fields to type the direction
-	m_cameraDirXField = new wxTextCtrl(panel, wxID_ANY, "0.000000", wxDefaultPosition, wxSize(60, 30), 0L, valFloat);
-	cameraDirectionSizer->Add(m_cameraDirXField,0,wxLEFT,5);
-	m_cameraDirYField = new wxTextCtrl(panel, wxID_ANY, "0.000000", wxDefaultPosition, wxSize(60, 30), 0L, valFloat);
-	cameraDirectionSizer->Add(m_cameraDirYField);
-	m_cameraDirZField = new wxTextCtrl(panel, wxID_ANY, "0.000000", wxDefaultPosition, wxSize(60, 30), 0L, valFloat);
-	cameraDirectionSizer->Add(m_cameraDirZField);
+	m_cameraLookXField = new wxTextCtrl(panel, wxID_ANY, "0.000000", wxDefaultPosition, wxSize(60, 30), 0L, valFloat);
+	cameraLookAtSizer->Add(m_cameraLookXField, 0, wxLEFT, 7);
+	m_cameraLookYField = new wxTextCtrl(panel, wxID_ANY, "0.000000", wxDefaultPosition, wxSize(60, 30), 0L, valFloat);
+	cameraLookAtSizer->Add(m_cameraLookYField);
+	m_cameraLookZField = new wxTextCtrl(panel, wxID_ANY, "0.000000", wxDefaultPosition, wxSize(60, 30), 0L, valFloat);
+	cameraLookAtSizer->Add(m_cameraLookZField);
 
 	// sizer for log
 	wxSizer *sizerLog = new wxStaticBoxSizer(new wxStaticBox(panel, wxID_ANY, wxT("&Log window")),wxVERTICAL);
@@ -278,8 +280,10 @@ void MainFrame::OnLoadModel(wxCommandEvent& WXUNUSED(event))
 
 void MainFrame::OnRenderButton(wxCommandEvent& WXUNUSED(event))
 {
-	long resolution = 32;
-	m_resolutionField->GetValue().ToLong(&resolution);
+	long width = 32;
+	m_widthField->GetValue().ToLong(&width);
+	/*long height = 32;
+	m_heightField->GetValue().ToLong(&height);*/
 	/* Send data to OpenCL implementation */
 
 	if (!RenderGirlShared::Set3DScene(scene))
@@ -297,13 +301,19 @@ void MainFrame::OnRenderButton(wxCommandEvent& WXUNUSED(event))
 	camera.pos.s[2] = position;
 
 	double direction = 0.0;
-	m_cameraDirXField->GetValue().ToCDouble(&direction);
+	m_cameraLookXField->GetValue().ToCDouble(&direction);
 	camera.lookAt.s[0] = direction;
-	m_cameraDirYField->GetValue().ToCDouble(&direction);
+	m_cameraLookYField->GetValue().ToCDouble(&direction);
 	camera.lookAt.s[1] = direction;
-	m_cameraDirZField->GetValue().ToCDouble(&direction);
+	m_cameraLookZField->GetValue().ToCDouble(&direction);
 	camera.lookAt.s[2] = direction;
 
+	// set up vector to the be just pointing up
+	camera.up.s[0] = 0.0f;
+	camera.up.s[1] = 1.0f;
+	camera.up.s[2] = 0.0f;
+
+	/* temp stuff */
 	/* set light*/
 	Light light;
 	light.pos.s[0] = light.pos.s[1] = 1.0f;
@@ -315,13 +325,13 @@ void MainFrame::OnRenderButton(wxCommandEvent& WXUNUSED(event))
 	// here ends temp stuff
 
 	// render
-	if (!RenderGirlShared::Render(resolution, camera, light))
+	if (!RenderGirlShared::Render(width, width, camera, light))
 		return;
 
 	// get data back
 	const cl_uchar4* frame = RenderGirlShared::GetFrame();
 
-	m_renderFrame->SetImage(frame, wxSize(resolution, resolution));
+	m_renderFrame->SetImage(frame, wxSize(width, width));
 	m_renderFrame->Show();
 	m_renderFrame->Raise();
 	m_windowMenu->Check(ShowRenderViewMenu, true);

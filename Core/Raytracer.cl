@@ -26,10 +26,8 @@ typedef struct Camera
 	float3 pos;
 	float3 dir;
 	float3 lookAt;
-	float4 screenCoordinates; //defines where the screen begins in world space
-	// and some math stuff to help calculate rays
-	float delta_x;
-	float delta_y;
+	float3 up; // upvector
+	float3 right;
 }Camera;
 
 /* Stores the concept of a light */
@@ -43,10 +41,11 @@ typedef struct Light
 }Light;
 
 /*SceneInformation struct holds important information related to the 3D scene and
-	how it should be rendered.*/
+how it should be rendered.*/
 typedef struct SceneInformation
 {
-	int resolution;
+	int width;
+	int height;
 	int pixelCount;
 	int verticesSize;
 	int normalSize;
@@ -141,26 +140,22 @@ int Intersect(float* dist, __global float3* origin, float3* dir, float3* point, 
 }
 
 /* Here starts the raytracer*/
-__kernel void Raytrace(__global float3* vertices, read_only __global float3* normals, __global int4* faces, __global Material* materials,
+__kernel void Raytrace(__global float3* vertices, __global float3* normals, __global int4* faces, __global Material* materials,
 	__global SceneInformation* sceneInfo, __global uchar4* frame, __global Camera* camera, __global Light* light)
 {
 	int id = get_global_id(0);
 	// grab XY coordinate of this instance
-	int x = id % sceneInfo->resolution;
-	int y = id / sceneInfo->resolution;
+	int x = id % sceneInfo->width;
+	int y = id / sceneInfo->height;
 
 	/* Using the syntax frame[x][y] produces different behaviour on different platforms (doesn't work on NVIDIA GPUS)
-		So use the XYZ to access the members of any vector types */
+	So use the XYZ to access the members of any vector types */
 
-	/*compute some camera stuff */
-	float interpolation_x = camera->screenCoordinates.x;
-	float interpolation_y = camera->screenCoordinates.z;
-	/* calculate interpolation for this pixel */
-	interpolation_x += camera->delta_x * x;
-	interpolation_y += camera->delta_y * y;
+	/* build direction of the ray based on camera and the current pixel */
+	float normalized_i = (float)((float)x / (float)(sceneInfo->width)) - 0.5f;
+	float normalized_j = (float)((float)y / (float)(sceneInfo->height)) - 0.5f;
+	float3 ray_dir = (float3)(camera->right * normalized_i) + (float3)(camera->up * normalized_j)  + camera->dir;
 
-	/* build direction of the ray based on camera and the current pixel*/
-	float3 ray_dir = (float3)(interpolation_x, interpolation_y, 0) - camera->pos;
 	ray_dir = normalize(ray_dir);
 
 	float distance = 1000000.0f; // high value for the first ray
@@ -193,7 +188,7 @@ __kernel void Raytrace(__global float3* vertices, read_only __global float3* nor
 	if (face_i != -1)
 	{
 		// now that we have the face, calculate illumination
-		float3 amount_color = (float3)(0.0f,0.0f,0.0f); //final amount of color that goes to each pixel
+		float3 amount_color = (float3)(0.0f, 0.0f, 0.0f); //final amount of color that goes to each pixel
 
 		// get direction vector of light based on the intersection point
 
@@ -231,11 +226,11 @@ __kernel void Raytrace(__global float3* vertices, read_only __global float3* nor
 		final_c.y = (amount_color.y) + (light->color.y * light->Ka);
 		final_c.z = (amount_color.z) + (light->color.z * light->Ka);
 
-		if (final_c.x > 1.0f) 
+		if (final_c.x > 1.0f)
 			final_c.x = 1.0f;
-		if (final_c.y > 1.0f) 
+		if (final_c.y > 1.0f)
 			final_c.y = 1.0f;
-		if (final_c.z > 1.0f) 
+		if (final_c.z > 1.0f)
 			final_c.z = 1.0f;
 
 		frame[id].x = (final_c.x * 255.0f);

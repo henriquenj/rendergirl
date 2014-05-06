@@ -18,6 +18,7 @@
 
 
 #include "RenderGirlShared.h"
+#include "CLMath.h"
 #include <chrono>
 
 std::vector<OCLPlatform>	RenderGirlShared::platforms;
@@ -196,10 +197,10 @@ bool RenderGirlShared::Set3DScene(Scene3D* pscene)
 	return true;
 }
 
-bool RenderGirlShared::Render(int resolution, Camera &camera, Light &light)
+bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &light)
 {
 
-	if (resolution < 1)
+	if (height < 1 || width < 1)
 	{
 		Log::Error("You have to choose a positive resolution");
 		return false;
@@ -216,7 +217,7 @@ bool RenderGirlShared::Render(int resolution, Camera &camera, Light &light)
 
 	/* Setup render frame */
 
-	int pixelCount = resolution * resolution; // total amount of pixels
+	int pixelCount = width * height; // total amount of pixels
 
 	// delete old frame
 	if (frame != NULL)
@@ -233,7 +234,8 @@ bool RenderGirlShared::Render(int resolution, Camera &camera, Light &light)
 	frame->SetData(frameRaw,false);
 
 	/* Setup render info */
-	scene.resolution = resolution;
+	scene.width = width;
+	scene.height = height;
 	scene.pixelCount = pixelCount;
 	
 	OCLMemoryObject<SceneInformation>* sceneInfoMem = context->CreateMemoryObjectWithData(1, &scene, true, ReadOnly);
@@ -242,15 +244,14 @@ bool RenderGirlShared::Render(int resolution, Camera &camera, Light &light)
 
 	OCLMemoryObject<Light>* mem_light = context->CreateMemoryObjectWithData(1, &light, true, ReadOnly);
 	mem_light->SyncHostToDevice();
-
+	
 	/* Precompute some camera stuff*/
-	camera.screenCoordinates.s[0] = -4;
-	camera.screenCoordinates.s[1] = 4;
-	camera.screenCoordinates.s[2] = 4;
-	camera.screenCoordinates.s[3] = -4;
-	// calculate deltas for interpolation
-	camera.delta_x = (camera.screenCoordinates.s[1] - camera.screenCoordinates.s[0]) / scene.resolution;
-	camera.delta_y = (camera.screenCoordinates.s[3] - camera.screenCoordinates.s[2]) / scene.resolution;
+	// based on the algorithm provided by this user here http://stackoverflow.com/a/13078758/1335511
+	camera.dir = subtract(camera.lookAt,camera.pos);
+	camera.dir = normalize(camera.dir);
+	camera.right = cross(camera.dir, camera.up);
+	camera.up = cross(camera.right, camera.dir); //This corrects for any slop in the choice of "up"
+	
 
 	OCLMemoryObject<Camera>* mem_cam = context->CreateMemoryObjectWithData(1, &camera, true, ReadOnly);
 	mem_cam->SyncHostToDevice();
