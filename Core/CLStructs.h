@@ -24,11 +24,12 @@
 
 //Any change on those structs should be copied back to the device code on Raytracer.cl* /
 
-/* Stores the concept of a Camera */
+/* Stores the concept of a Camera. The interface only needs to fill the pos and lookAt information. */
 typedef struct Camera
 {
-	cl_float3 pos;
+	cl_float4 pos;
 	cl_float3 dir;
+	cl_float4 lookAt;
 	cl_float4 screenCoordinates; //defines where the screen begins in world space
 	// and some math stuff to help calculate rays
 	cl_float delta_x;

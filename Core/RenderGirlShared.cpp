@@ -196,7 +196,7 @@ bool RenderGirlShared::Set3DScene(Scene3D* pscene)
 	return true;
 }
 
-bool RenderGirlShared::Render(int resolution)
+bool RenderGirlShared::Render(int resolution, Camera &camera, Light &light)
 {
 
 	if (resolution < 1)
@@ -239,16 +239,11 @@ bool RenderGirlShared::Render(int resolution)
 	OCLMemoryObject<SceneInformation>* sceneInfoMem = context->CreateMemoryObjectWithData(1, &scene, true, ReadOnly);
 	sceneInfoMem->SyncHostToDevice();
 
+
+	OCLMemoryObject<Light>* mem_light = context->CreateMemoryObjectWithData(1, &light, true, ReadOnly);
+	mem_light->SyncHostToDevice();
+
 	/* Precompute some camera stuff*/
-	Camera camera;
-	camera.pos.s[0] = 0.0f;
-	camera.pos.s[1] = 0.0f;
-	camera.pos.s[2] = -10.0f;
-
-	camera.dir.s[0] = 0.0f;
-	camera.dir.s[1] = 0.0f;
-	camera.dir.s[2] = 0.0f;
-
 	camera.screenCoordinates.s[0] = -4;
 	camera.screenCoordinates.s[1] = 4;
 	camera.screenCoordinates.s[2] = 4;
@@ -257,13 +252,14 @@ bool RenderGirlShared::Render(int resolution)
 	camera.delta_x = (camera.screenCoordinates.s[1] - camera.screenCoordinates.s[0]) / scene.resolution;
 	camera.delta_y = (camera.screenCoordinates.s[3] - camera.screenCoordinates.s[2]) / scene.resolution;
 
-	OCLMemoryObject<Camera>* m_cam = context->CreateMemoryObjectWithData(1, &camera, true, ReadOnly);
-	m_cam->SyncHostToDevice();
+	OCLMemoryObject<Camera>* mem_cam = context->CreateMemoryObjectWithData(1, &camera, true, ReadOnly);
+	mem_cam->SyncHostToDevice();
 
 	// set remaining arguments
 	kernel->SetArgument(4, sceneInfoMem);
 	kernel->SetArgument(5, frame);
-	kernel->SetArgument(6, m_cam);
+	kernel->SetArgument(6, mem_cam);
+	kernel->SetArgument(7, mem_light);
 
 	kernel->SetGlobalWorkSize(pixelCount); // one work-iten per pixel
 

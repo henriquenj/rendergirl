@@ -25,6 +25,7 @@ typedef struct Camera
 {
 	float3 pos;
 	float3 dir;
+	float3 lookAt;
 	float4 screenCoordinates; //defines where the screen begins in world space
 	// and some math stuff to help calculate rays
 	float delta_x;
@@ -140,8 +141,8 @@ int Intersect(float* dist, __global float3* origin, float3* dir, float3* point, 
 }
 
 /* Here starts the raytracer*/
-__kernel void Raytrace(read_only __global float3* vertices, read_only __global float3* normals, read_only __global int4* faces, read_only __global Material* materials,
-	read_only __global SceneInformation* sceneInfo, write_only __global uchar4* frame, read_only __global Camera* camera)
+__kernel void Raytrace(__global float3* vertices, read_only __global float3* normals, __global int4* faces, __global Material* materials,
+	__global SceneInformation* sceneInfo, __global uchar4* frame, __global Camera* camera, __global Light* light)
 {
 	int id = get_global_id(0);
 	// grab XY coordinate of this instance
@@ -150,14 +151,6 @@ __kernel void Raytrace(read_only __global float3* vertices, read_only __global f
 
 	/* Using the syntax frame[x][y] produces different behaviour on different platforms (doesn't work on NVIDIA GPUS)
 		So use the XYZ to access the members of any vector types */
-
-	Light light;
-	light.pos.x = light.pos.y = 1.0f;
-	light.pos.z = -10.0f;
-	light.color = (float3)(1.0f,1.0f,1.0f);
-	light.Ka = 0.0f;
-	light.Ks = 0.2f;
-
 
 	/*compute some camera stuff */
 	float interpolation_x = camera->screenCoordinates.x;
@@ -204,7 +197,7 @@ __kernel void Raytrace(read_only __global float3* vertices, read_only __global f
 
 		// get direction vector of light based on the intersection point
 
-		float3 L = light.pos - point_i;
+		float3 L = light->pos - point_i;
 		L = normalize(L);
 		normal = normalize(normal);
 
@@ -219,7 +212,7 @@ __kernel void Raytrace(read_only __global float3* vertices, read_only __global f
 				+ materials[indexMaterial].diffuseColor.z) / 3.0f);
 			float dif = dot_r * Kd;
 			//put diffuse component
-			amount_color += materials[indexMaterial].diffuseColor * light.color * dif;
+			amount_color += materials[indexMaterial].diffuseColor * light->color * dif;
 		}
 		//specular
 		//glm::vec3 R = glm::cross(2.0f * glm::dot(L,normal) * normal,L);
@@ -227,16 +220,16 @@ __kernel void Raytrace(read_only __global float3* vertices, read_only __global f
 		dot_r = dot(ray_dir, R);
 		if (dot_r > 0)
 		{
-			float spec = pown(dot_r, 20.0f) * light.Ks;
+			float spec = pown(dot_r, 20.0f) * light->Ks;
 			// put specular component
-			amount_color += spec * light.color;
+			amount_color += spec * light->color;
 		}
 
 		// build pixel
 		float3 final_c;
-		final_c.x = (amount_color.x) + (light.color.x * light.Ka); // put ambient
-		final_c.y = (amount_color.y) + (light.color.y * light.Ka);
-		final_c.z = (amount_color.z) + (light.color.z * light.Ka);
+		final_c.x = (amount_color.x) + (light->color.x * light->Ka); // put ambient
+		final_c.y = (amount_color.y) + (light->color.y * light->Ka);
+		final_c.z = (amount_color.z) + (light->color.z * light->Ka);
 
 		if (final_c.x > 1.0f) 
 			final_c.x = 1.0f;
