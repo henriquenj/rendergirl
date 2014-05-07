@@ -73,6 +73,9 @@ private:
 	/* fields to type */
 	wxTextCtrl* m_widthField;
 	/*wxTextCtrl* m_heightField;*/
+	wxTextCtrl* m_lightPosXField;
+	wxTextCtrl* m_lightPosYField;
+	wxTextCtrl* m_lightPosZField;
 	wxTextCtrl* m_cameraPosXField;
 	wxTextCtrl* m_cameraPosYField;
 	wxTextCtrl* m_cameraPosZField;

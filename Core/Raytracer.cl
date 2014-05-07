@@ -64,7 +64,7 @@ typedef struct Material
 
 
 /* Intersect function test collision with triangles only, based on a function provided by Rossana Baptista Queiroz */
-int Intersect(float* dist, __global float3* origin, float3* dir, float3* point, int indexFace, float3* normal,
+int Intersect(float* dist, float3* origin, float3* dir, float3* point, int indexFace, float3* normal,
 	__global int4* faces, __global float3* vertices)
 {
 	// get position of the three vertices of the triangle
@@ -101,7 +101,7 @@ int Intersect(float* dist, __global float3* origin, float3* dir, float3* point, 
 	if (fabs(b) < SMALL_NUM) // ray is parallel to triangle plane
 	{
 		if (a == 0)				// ray lies in triangle plane
-			return 2;
+			return 1;
 		else return 0;	// ray disjoint from plane
 	}
 
@@ -163,6 +163,7 @@ __kernel void Raytrace(__global float3* vertices, __global float3* normals, __gl
 	float maxDistance = 1000000.0f; //max distance, work as a far view point
 	float3 point_i; // intersection point
 	float3 normal; // face normal
+	float3 l_origin = camera->pos; // local copy of origin of rays (camera/eye)
 	// for each face, look for intersections with the ray
 	for (unsigned int k = 0; k < sceneInfo->facesSize; k++)
 	{
@@ -170,7 +171,7 @@ __kernel void Raytrace(__global float3* vertices, __global float3* normals, __gl
 		float3 temp_point; // temporary intersection point
 		float3 temp_normal;// temporary normal vector
 
-		result = Intersect(&distance, &camera->pos, &ray_dir, &temp_point, k, &temp_normal, faces, vertices);
+		result = Intersect(&distance, &l_origin, &ray_dir, &temp_point, k, &temp_normal, faces, vertices);
 
 		if (result > 0)
 		{
@@ -187,11 +188,30 @@ __kernel void Raytrace(__global float3* vertices, __global float3* normals, __gl
 	// paint pixel
 	if (face_i != -1)
 	{
+
+		/* shot secondary ray directed to the light and see if we have a shadow */
+		//float3 rayToLight = light->pos - point_i;
+		//rayToLight = normalize(rayToLight);
+		//int temp; // info to be discarted
+		//for (unsigned int p = 0; p < sceneInfo->facesSize; p++)
+		//{
+		//	if (p != face_i)
+		//	{
+		//		if (Intersect(&distance, &point_i, &rayToLight, &temp, p, &temp, faces, vertices) > 0)
+		//		{
+		//			frame[id].x = 0;
+		//			frame[id].y = 0;
+		//			frame[id].z = 0;
+		//			frame[id].w = 255;
+		//			return;
+		//		}
+		//	}
+		//}
+
 		// now that we have the face, calculate illumination
 		float3 amount_color = (float3)(0.0f, 0.0f, 0.0f); //final amount of color that goes to each pixel
 
 		// get direction vector of light based on the intersection point
-
 		float3 L = light->pos - point_i;
 		L = normalize(L);
 		normal = normalize(normal);

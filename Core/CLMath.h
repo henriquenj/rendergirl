@@ -49,7 +49,7 @@ cl_float3 subtract(cl_float3& a, cl_float3& b)
 	return result;
 }
 
-inline double length(cl_float3& v)
+inline float length(cl_float3& v)
 {
 	return sqrt((v.s[0] * v.s[0]) + (v.s[1] * v.s[1]) + (v.s[2] * v.s[2]));
 }

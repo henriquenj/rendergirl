@@ -54,7 +54,10 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
 		- Main sizer
 			- Top sizer
 				- device sizer
-				- load file sizer
+				- scene sizer
+					- light sizer
+						- light position sizer
+						- light color sizer
 			- Render Sizer
 				- resolution sizer
 				- camera sizer
@@ -94,12 +97,27 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
 
 
 	// sizer for loading model button
-	wxBoxSizer* loadFileSizer = new wxStaticBoxSizer(new wxStaticBox(panel, wxID_ANY, "Scene"), wxVERTICAL);
-	topSizer->Add(loadFileSizer, 1, wxEXPAND);
+	wxBoxSizer* sceneSizer = new wxStaticBoxSizer(new wxStaticBox(panel, wxID_ANY, "Scene"), wxVERTICAL);
+	topSizer->Add(sceneSizer, 1, wxEXPAND);
 
 	// load model button
 	m_loadModelButton = new wxButton(panel, LoadModelButton, "Load OBJ file", wxDefaultPosition, wxSize(100, 30));
-	loadFileSizer->Add(m_loadModelButton,0,wxCENTER,10);
+	sceneSizer->Add(m_loadModelButton, 0, wxCENTER, 10);
+
+	/* light fields interface */
+	wxBoxSizer* lightSizer = new wxStaticBoxSizer(new wxStaticBox(panel, wxID_ANY, "Light"), wxVERTICAL);
+	sceneSizer->Add(lightSizer, 0, wxCENTER);
+	// validador allowing only floating point values
+	wxFloatingPointValidator<float> valFloat;
+	wxStaticText* lightPosText = new wxStaticText(panel, wxID_ANY, "Position");
+	lightSizer->Add(lightPosText);
+	m_lightPosXField = new wxTextCtrl(panel, wxID_ANY, "1.000000", wxDefaultPosition, wxSize(60, 30), 0L, valFloat);
+	lightSizer->Add(m_lightPosXField);
+	m_lightPosYField = new wxTextCtrl(panel, wxID_ANY, "1.000000", wxDefaultPosition, wxSize(60, 30), 0L, valFloat);
+	lightSizer->Add(m_lightPosYField);
+	m_lightPosZField = new wxTextCtrl(panel, wxID_ANY, "10.000000", wxDefaultPosition, wxSize(60, 30), 0L, valFloat);
+	lightSizer->Add(m_lightPosZField);
+	
 
 	// render area sizer
 	wxBoxSizer* renderAreaSizer = new wxStaticBoxSizer(new wxStaticBox(panel, wxID_ANY, "Render"), wxHORIZONTAL);
@@ -124,8 +142,7 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
 	cameraSizer->Add(cameraPositionSizer,0,wxALL);
 	wxStaticText* camPositionText = new wxStaticText(panel, wxID_ANY, "Position");
 	cameraPositionSizer->Add(camPositionText);
-	// another validador allowing only floating point values
-	wxFloatingPointValidator<float> valFloat;
+
 	m_cameraPosXField = new wxTextCtrl(panel, wxID_ANY, "0.000000", wxDefaultPosition, wxSize(60, 30), 0L, valFloat);
 	cameraPositionSizer->Add(m_cameraPosXField,0,wxLEFT,5);
 	m_cameraPosYField = new wxTextCtrl(panel, wxID_ANY, "0.000000", wxDefaultPosition, wxSize(60, 30), 0L, valFloat);
@@ -300,27 +317,32 @@ void MainFrame::OnRenderButton(wxCommandEvent& WXUNUSED(event))
 	m_cameraPosZField->GetValue().ToCDouble(&position);
 	camera.pos.s[2] = position;
 
-	double direction = 0.0;
-	m_cameraLookXField->GetValue().ToCDouble(&direction);
-	camera.lookAt.s[0] = direction;
-	m_cameraLookYField->GetValue().ToCDouble(&direction);
-	camera.lookAt.s[1] = direction;
-	m_cameraLookZField->GetValue().ToCDouble(&direction);
-	camera.lookAt.s[2] = direction;
+	double l_double = 0.0;
+	m_cameraLookXField->GetValue().ToCDouble(&l_double);
+	camera.lookAt.s[0] = l_double;
+	m_cameraLookYField->GetValue().ToCDouble(&l_double);
+	camera.lookAt.s[1] = l_double;
+	m_cameraLookZField->GetValue().ToCDouble(&l_double);
+	camera.lookAt.s[2] = l_double;
 
 	// set up vector to the be just pointing up
 	camera.up.s[0] = 0.0f;
 	camera.up.s[1] = 1.0f;
 	camera.up.s[2] = 0.0f;
 
-	/* temp stuff */
 	/* set light*/
 	Light light;
-	light.pos.s[0] = light.pos.s[1] = 1.0f;
-	light.pos.s[2] = -10.0f;
+	m_lightPosXField->GetValue().ToCDouble(&l_double);
+	light.pos.s[0] = l_double;
+	m_lightPosYField->GetValue().ToCDouble(&l_double);
+	light.pos.s[1] = l_double;
+	m_lightPosZField->GetValue().ToCDouble(&l_double);
+	light.pos.s[2] = l_double;
+
+	/* temp stuff */
 	light.color.s[0] = light.color.s[1] = light.color.s[2] = 1.0f;
-	light.Ka = 0.0f;
 	light.Ks = 0.2f;
+	light.Ka = 0.0f;
 
 	// here ends temp stuff
 
