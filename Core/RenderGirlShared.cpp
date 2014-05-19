@@ -161,10 +161,10 @@ bool RenderGirlShared::Set3DScene(Scene3D* pscene)
 
 	cl_bool error = false;
 	/* Send data to the OpenCL device*/
-	OCLMemoryObject<cl_float3>* vertices = context->CreateMemoryObject<cl_float3>(scene.verticesSize, ReadOnly, &error);
+	OCLMemoryObject<cl_double3>* vertices = context->CreateMemoryObject<cl_double3>(scene.verticesSize, ReadOnly, &error);
 	if (error)
 		return false;
-	OCLMemoryObject<cl_float3>* normals = context->CreateMemoryObject<cl_float3>(scene.normalSize, ReadOnly, &error);
+	OCLMemoryObject<cl_double3>* normals = context->CreateMemoryObject<cl_double3>(scene.normalSize, ReadOnly, &error);
 	if (error)
 		return false;
 	OCLMemoryObject<cl_int4>* faces = context->CreateMemoryObject<cl_int4>(scene.facesSize, ReadOnly, &error);

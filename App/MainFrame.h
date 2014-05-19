@@ -83,6 +83,9 @@ private:
 	wxTextCtrl* m_cameraLookYField;
 	wxTextCtrl* m_cameraLookZField;
 
+	/* light's color*/
+	wxColor m_lightColor;
+
 	// loaded scene
 	Scene3D* scene;
 
@@ -93,6 +96,7 @@ private:
 	void OnLoadModel(wxCommandEvent& event);
 	void OnRenderButton(wxCommandEvent& event);
 	void OnReleaseButton(wxCommandEvent& event);
+	void OnSetColorButton(wxCommandEvent& event);
 	void OnShowRenderFrame(wxCommandEvent& event);
 	void OnAbout(wxCommandEvent& event);
 };

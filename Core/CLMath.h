@@ -27,9 +27,9 @@
 /* cl math header contains math functions that receives the cl types as arguments, mimicking their OpenCL C counterparts */
 
 
-cl_float3 cross(cl_float3& a, cl_float3& b)
+cl_double3 cross(cl_double3& a, cl_double3& b)
 {
-	cl_float3 result;
+	cl_double3 result;
 
 	result.s[0] = (a.s[1] * b.s[2]) - (a.s[2] * b.s[1]);
 	result.s[1] = (a.s[2] * b.s[0]) - (a.s[0] * b.s[2]);
@@ -38,9 +38,9 @@ cl_float3 cross(cl_float3& a, cl_float3& b)
 	return result;
 }
 
-cl_float3 subtract(cl_float3& a, cl_float3& b)
+cl_double3 subtract(cl_double3& a, cl_double3& b)
 {
-	cl_float3 result;
+	cl_double3 result;
 
 	result.s[0] = a.s[0] - b.s[0];
 	result.s[1] = a.s[1] - b.s[1];
@@ -49,14 +49,14 @@ cl_float3 subtract(cl_float3& a, cl_float3& b)
 	return result;
 }
 
-inline float length(cl_float3& v)
+inline double length(cl_double3& v)
 {
 	return sqrt((v.s[0] * v.s[0]) + (v.s[1] * v.s[1]) + (v.s[2] * v.s[2]));
 }
 
-cl_float3 normalize(cl_float3& v)
+cl_double3 normalize(cl_double3& v)
 {
-	cl_float3 result;
+	cl_double3 result;
 	double l_length = length(v);
 	result.s[0] = v.s[0] / l_length;
 	result.s[1] = v.s[1] / l_length;

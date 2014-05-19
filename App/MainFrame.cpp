@@ -18,6 +18,7 @@
 
 
 #include "MainFrame.h"
+#include "wx/colordlg.h"
 
 
 MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& size, long style)
@@ -56,8 +57,6 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
 				- device sizer
 				- scene sizer
 					- light sizer
-						- light position sizer
-						- light color sizer
 			- Render Sizer
 				- resolution sizer
 				- camera sizer
@@ -101,27 +100,31 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
 	topSizer->Add(sceneSizer, 1, wxEXPAND);
 
 	// load model button
-	m_loadModelButton = new wxButton(panel, LoadModelButton, "Load OBJ file", wxDefaultPosition, wxSize(100, 30));
+	m_loadModelButton = new wxButton(panel, LoadModelButton, "Load OBJ file");
 	sceneSizer->Add(m_loadModelButton, 0, wxCENTER, 10);
 
 	/* light fields interface */
 	wxBoxSizer* lightSizer = new wxStaticBoxSizer(new wxStaticBox(panel, wxID_ANY, "Light"), wxVERTICAL);
 	sceneSizer->Add(lightSizer, 0, wxCENTER);
 	// validador allowing only floating point values
-	wxFloatingPointValidator<float> valFloat;
+	wxFloatingPointValidator<double> valDouble;
 	wxStaticText* lightPosText = new wxStaticText(panel, wxID_ANY, "Position");
 	lightSizer->Add(lightPosText);
-	m_lightPosXField = new wxTextCtrl(panel, wxID_ANY, "1.000000", wxDefaultPosition, wxSize(60, 30), 0L, valFloat);
+	m_lightPosXField = new wxTextCtrl(panel, wxID_ANY, "1.000000", wxDefaultPosition, wxDefaultSize, 0L, valDouble);
 	lightSizer->Add(m_lightPosXField);
-	m_lightPosYField = new wxTextCtrl(panel, wxID_ANY, "1.000000", wxDefaultPosition, wxSize(60, 30), 0L, valFloat);
+	m_lightPosYField = new wxTextCtrl(panel, wxID_ANY, "1.000000", wxDefaultPosition, wxDefaultSize, 0L, valDouble);
 	lightSizer->Add(m_lightPosYField);
-	m_lightPosZField = new wxTextCtrl(panel, wxID_ANY, "10.000000", wxDefaultPosition, wxSize(60, 30), 0L, valFloat);
+	m_lightPosZField = new wxTextCtrl(panel, wxID_ANY, "-10.000000", wxDefaultPosition, wxDefaultSize, 0L, valDouble);
 	lightSizer->Add(m_lightPosZField);
-	
+	// set color button
+	wxButton* setColorButton = new wxButton(panel, wxID_SELECT_COLOR, "Set Color");
+	lightSizer->Add(setColorButton);
+	// put default color on light
+	m_lightColor.Set(255,255,255);
 
 	// render area sizer
 	wxBoxSizer* renderAreaSizer = new wxStaticBoxSizer(new wxStaticBox(panel, wxID_ANY, "Render"), wxHORIZONTAL);
-	m_renderButton = new wxButton(panel, RenderButton, "Render", wxDefaultPosition, wxSize(250, 100));
+	m_renderButton = new wxButton(panel, RenderButton, "Render");
 	m_renderButton->Disable();
 	renderAreaSizer->Add(m_renderButton,0,wxCENTER,20);
 	
@@ -129,7 +132,7 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
 	renderAreaSizer->Add(resoSizer, 0, wxALL);
 	// create validador to prevent the user of typing letters
 	wxIntegerValidator<int> val;
-	m_widthField = new wxTextCtrl(panel, wxID_ANY, "512", wxDefaultPosition, wxSize(50, 30), 0L, val);
+	m_widthField = new wxTextCtrl(panel, wxID_ANY, "512", wxDefaultPosition, wxDefaultSize, 0L, val);
 	resoSizer->Add(m_widthField);
 	/*m_heightField = new wxTextCtrl(panel, wxID_ANY, "512", wxDefaultPosition, wxSize(50, 30), 0L, val);
 	resoSizer->Add(m_heightField);*/
@@ -143,11 +146,11 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
 	wxStaticText* camPositionText = new wxStaticText(panel, wxID_ANY, "Position");
 	cameraPositionSizer->Add(camPositionText);
 
-	m_cameraPosXField = new wxTextCtrl(panel, wxID_ANY, "0.000000", wxDefaultPosition, wxSize(60, 30), 0L, valFloat);
+	m_cameraPosXField = new wxTextCtrl(panel, wxID_ANY, "0.000000", wxDefaultPosition, wxDefaultSize, 0L, valDouble);
 	cameraPositionSizer->Add(m_cameraPosXField,0,wxLEFT,5);
-	m_cameraPosYField = new wxTextCtrl(panel, wxID_ANY, "0.000000", wxDefaultPosition, wxSize(60, 30), 0L, valFloat);
+	m_cameraPosYField = new wxTextCtrl(panel, wxID_ANY, "0.000000", wxDefaultPosition, wxDefaultSize, 0L, valDouble);
 	cameraPositionSizer->Add(m_cameraPosYField);
-	m_cameraPosZField = new wxTextCtrl(panel, wxID_ANY, "-10.000000", wxDefaultPosition, wxSize(60, 30), 0L, valFloat);
+	m_cameraPosZField = new wxTextCtrl(panel, wxID_ANY, "-10.000000", wxDefaultPosition, wxDefaultSize, 0L, valDouble);
 	cameraPositionSizer->Add(m_cameraPosZField);
 	// camera direction sizer
 	wxBoxSizer* cameraLookAtSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -155,11 +158,11 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
 	wxStaticText* camLookText = new wxStaticText(panel, wxID_ANY, "Look At");
 	cameraLookAtSizer->Add(camLookText);
 	// fields to type the direction
-	m_cameraLookXField = new wxTextCtrl(panel, wxID_ANY, "0.000000", wxDefaultPosition, wxSize(60, 30), 0L, valFloat);
+	m_cameraLookXField = new wxTextCtrl(panel, wxID_ANY, "0.000000", wxDefaultPosition, wxDefaultSize, 0L, valDouble);
 	cameraLookAtSizer->Add(m_cameraLookXField, 0, wxLEFT, 7);
-	m_cameraLookYField = new wxTextCtrl(panel, wxID_ANY, "0.000000", wxDefaultPosition, wxSize(60, 30), 0L, valFloat);
+	m_cameraLookYField = new wxTextCtrl(panel, wxID_ANY, "0.000000", wxDefaultPosition, wxDefaultSize, 0L, valDouble);
 	cameraLookAtSizer->Add(m_cameraLookYField);
-	m_cameraLookZField = new wxTextCtrl(panel, wxID_ANY, "0.000000", wxDefaultPosition, wxSize(60, 30), 0L, valFloat);
+	m_cameraLookZField = new wxTextCtrl(panel, wxID_ANY, "0.000000", wxDefaultPosition, wxDefaultSize, 0L, valDouble);
 	cameraLookAtSizer->Add(m_cameraLookZField);
 
 	// sizer for log
@@ -185,16 +188,20 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
 	this->Connect(LoadModelButton, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(MainFrame::OnLoadModel));
 	this->Connect(RenderButton, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(MainFrame::OnRenderButton));
 	this->Connect(ReleaseButton, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(MainFrame::OnReleaseButton));
+	this->Connect(wxID_SELECT_COLOR, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(MainFrame::OnSetColorButton));
 	this->Connect(ShowRenderViewMenu, wxEVT_MENU, wxCommandEventHandler(MainFrame::OnShowRenderFrame));
 	this->Connect(wxID_ABOUT, wxEVT_MENU, wxCommandEventHandler(MainFrame::OnAbout));
 
 	panel->SetBestFittingSize();
+	this->SetBestFittingSize();
 }
 
 MainFrame::~MainFrame()
 {
 	delete m_logTarget;
 	wxLog::DontCreateOnDemand();
+	if (scene)
+		delete scene;
 }
 
 void MainFrame::UpdateDevicesInterface()
@@ -214,7 +221,7 @@ void MainFrame::UpdateDevicesInterface()
 	{
 		m_platformChoice->Append((*platforms)[a].GetName());
 	}
-
+	m_platformChoice->SetBestFittingSize();
 	m_deviceChoice->SetBestFittingSize();
 }
 
@@ -326,9 +333,9 @@ void MainFrame::OnRenderButton(wxCommandEvent& WXUNUSED(event))
 	camera.lookAt.s[2] = l_double;
 
 	// set up vector to the be just pointing up
-	camera.up.s[0] = 0.0f;
-	camera.up.s[1] = 1.0f;
-	camera.up.s[2] = 0.0f;
+	camera.up.s[0] = 0.0;
+	camera.up.s[1] = 1.0;
+	camera.up.s[2] = 0.0;
 
 	/* set light*/
 	Light light;
@@ -339,12 +346,12 @@ void MainFrame::OnRenderButton(wxCommandEvent& WXUNUSED(event))
 	m_lightPosZField->GetValue().ToCDouble(&l_double);
 	light.pos.s[2] = l_double;
 
-	/* temp stuff */
-	light.color.s[0] = light.color.s[1] = light.color.s[2] = 1.0f;
-	light.Ks = 0.2f;
-	light.Ka = 0.0f;
-
-	// here ends temp stuff
+	// set color
+	light.color.s[0] = m_lightColor.Red() / 255.0;
+	light.color.s[1] = m_lightColor.Green() / 255.0;
+	light.color.s[2] = m_lightColor.Blue() / 255.0;
+	light.Ks = 0.2;
+	light.Ka = 0.0;
 
 	// render
 	if (!RenderGirlShared::Render(width, width, camera, light))
@@ -380,7 +387,21 @@ void MainFrame::OnShowRenderFrame(wxCommandEvent& WXUNUSED(event))
 void MainFrame::OnAbout(wxCommandEvent& WXUNUSED(event))
 {
 	// create about dialog
-	AboutDialog a_dialog(this, wxID_ANY, "RenderGirl", wxDefaultPosition, wxSize(340, 200));
+	AboutDialog a_dialog(this, wxID_ANY, "RenderGirl", wxDefaultPosition);
 
 	a_dialog.ShowModal();
+}
+
+void MainFrame::OnSetColorButton(wxCommandEvent& WXUNUSED(event))
+{
+	wxColourData data;
+
+	// show color picker
+	wxColourDialog colorPicker(this, &data);
+
+	if (colorPicker.ShowModal() == wxID_OK)
+	{
+		data = colorPicker.GetColourData();
+		m_lightColor = data.GetColour();
+	}
 }

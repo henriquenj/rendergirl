@@ -37,7 +37,7 @@ public:
 
 		wxInitAllImageHandlers();
 
-		MainFrame* frame = new MainFrame("RenderGirl " + _(RENDERGIRL_ARCH), wxDefaultPosition, wxSize(600, 600), wxMINIMIZE_BOX | wxSYSTEM_MENU | wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN);
+		MainFrame* frame = new MainFrame("RenderGirl " + _(RENDERGIRL_ARCH), wxDefaultPosition, wxDefaultSize, wxRESIZE_BORDER | wxMINIMIZE_BOX | wxSYSTEM_MENU | wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN);
 		
 		// create listener for log details
 		LogOutputWx* listener = new LogOutputWx();
@@ -58,7 +58,7 @@ public:
 	{
 		// dealloc the OpenCL driver and all memory used in the process.
 		if (RenderGirlShared::GetSelectedDevice())
-		RenderGirlShared::ReleaseDevice();
+			RenderGirlShared::ReleaseDevice();
 
 		Log::RemoveAllListeners();
 	}

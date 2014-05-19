@@ -27,21 +27,21 @@
 /* Stores the concept of a Camera. The interface only needs to fill the pos, lookAt and the up information. */
 typedef struct Camera
 {
-	cl_float3 pos;
-	cl_float3 dir;
-	cl_float3 lookAt;
-	cl_float3 up; // upvector
-	cl_float3 right;
+	cl_double3 pos;
+	cl_double3 dir;
+	cl_double3 lookAt;
+	cl_double3 up; // upvector
+	cl_double3 right;
 }Camera;
 
 /* Stores the concept of a light */
 typedef struct Light
 {
-	cl_float3 pos;
-	cl_float3 color;
+	cl_double3 pos;
+	cl_double3 color;
 
-	cl_float Ks; // amount of specular
-	cl_float Ka; // amount of ambient
+	cl_double Ks; // amount of specular
+	cl_double Ka; // amount of ambient
 }Light;
 
 /* SceneInformation struct holds important information related to the 3D scene and
@@ -60,9 +60,9 @@ typedef struct SceneInformation
 /*Struct to control material properties */
 typedef struct Material
 {
-	cl_float3 ambientColor; //KA
-	cl_float3 diffuseColor; //KD
-	cl_float3 specularColor;//KS
+	cl_double3 ambientColor; //KA
+	cl_double3 diffuseColor; //KD
+	cl_double3 specularColor;//KS
 }Material;
 
 /*here ends the cl structures*/
@@ -80,13 +80,13 @@ public:
 		materials = NULL;
 	};
 
-	cl_float3* vertices;
+	cl_double3* vertices;
 	cl_int verticesSize;
 
 	cl_int4* faces; // only triangulated meshs are supported, the final component is for the material
 	cl_int facesSize;
 
-	cl_float3* normal;
+	cl_double3* normal;
 	cl_int normalSize;
 
 	Material* materials;
