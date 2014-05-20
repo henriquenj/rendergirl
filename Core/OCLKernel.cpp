@@ -26,28 +26,28 @@ OCLKernel::OCLKernel(OCLProgram* program,const std::string &name)
 	assert(program->IsCompiled() && "Must be a valid program object");
 	assert(!name.empty() && "Kernel name should not be empty");
 
-	this->program = program;
-	this->name = name;
+	this->m_program = program;
+	this->m_name = name;
 
 	cl_int error;
-	kernel = clCreateKernel(program->GetCLProgram(), name.c_str(), &error);
+	m_kernel = clCreateKernel(program->GetCLProgram(), name.c_str(), &error);
 	
 	if (error != CL_SUCCESS)
 	{
 		Log::Error("There was an error while creating an OpenCL kernel.");
 		if (error == CL_INVALID_KERNEL_NAME)
 			Log::Error("There's no kernel called " + name);
-		kernelOk = false;
+		m_kernelOk = false;
 		return;
 	}
 
-	clGetKernelInfo(kernel, CL_KERNEL_NUM_ARGS, sizeof(cl_uint), (void*)&argumentSize, NULL);
+	clGetKernelInfo(m_kernel, CL_KERNEL_NUM_ARGS, sizeof(cl_uint), (void*)&m_argumentSize, NULL);
 
 	// init variables to kernel dispatch
-	workDim = 1;
-	globalWorkSize = 1;
+	m_workDim = 1;
+	m_globalWorkSize = 1;
 
-	kernelOk = true;
+	m_kernelOk = true;
 }
 
 bool OCLKernel::EnqueueExecution()
@@ -56,17 +56,17 @@ bool OCLKernel::EnqueueExecution()
 
 	cl_int error = CL_SUCCESS;
 
-	assert(kernelOk && "Kernel must be ready to execution");
+	assert(m_kernelOk && "Kernel must be ready to execution");
 
-	error = clEnqueueNDRangeKernel(program->GetContext()->GetCLQueue(), kernel, workDim,
+	error = clEnqueueNDRangeKernel(m_program->GetContext()->GetCLQueue(), m_kernel, m_workDim,
 			NULL, // should always be NULL, this is from the OpenCL specification
-			&globalWorkSize, // the total amount of threads (work-itens)
+			&m_globalWorkSize, // the total amount of threads (work-itens)
 			NULL, // passing NULL on the size of the work-groups, OpenCL will hopefully pick the proper size
 			0,NULL, NULL); // events syncronization stuff
 
 	if (error != CL_SUCCESS)
 	{
-		std::string errorString = "Kernel being executed on " + program->GetContext()->GetDevice()->GetName()
+		std::string errorString = "Kernel being executed on " + m_program->GetContext()->GetDevice()->GetName()
 			+ " report the following error: ";
 		// print the error codes, I'm not taking care of all of them
 		switch (error)
@@ -103,6 +103,6 @@ bool OCLKernel::EnqueueExecution()
 
 OCLKernel::~OCLKernel()
 {
-	clReleaseKernel(kernel);
+	clReleaseKernel(m_kernel);
 }
 

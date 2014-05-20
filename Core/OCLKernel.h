@@ -41,13 +41,13 @@ public:
 	{
 		// lots of asserts
 		assert(object != NULL && "Object cannot be null");
-		assert(index < argumentSize && "index cannot be higher than argument size");
+		assert(index < m_argumentSize && "index cannot be higher than argument size");
 
 		const cl_mem memory = object->GetDeviceMemory();
-		cl_int error = clSetKernelArg(kernel, index, sizeof(cl_mem), &memory);
+		cl_int error = clSetKernelArg(m_kernel, index, sizeof(cl_mem), &memory);
 		if (error != CL_SUCCESS)
 		{
-			Log::Error("Couldn't set kernel argument on " + name);
+			Log::Error("Couldn't set kernel argument on " + m_name);
 			return false;
 		}
 
@@ -57,41 +57,41 @@ public:
 	// return FALSE is the kernel was not ok (probrably there's no such kernel in this progrm)
 	inline bool GetOk()const
 	{
-		return kernelOk;
+		return m_kernelOk;
 	}
 
 	// Set the total amount of work-itens in all work-groups for this kernel
 	inline void SetGlobalWorkSize(const size_t size)
 	{
 		assert(size > 0 && "Work itens should be bigger than 0!");
-		globalWorkSize = size;
+		m_globalWorkSize = size;
 	}
 
 	// get the total amount of work-itens in all work-groups for this kernel
 	inline int const GetGlobalWorkSize() const
 	{
-		return globalWorkSize;
+		return m_globalWorkSize;
 	}
 
 
 private:
 	// the program that this kernel will execute
-	OCLProgram* program;
+	OCLProgram* m_program;
 	// OpenCL kernel pointer
-	cl_kernel kernel;
+	cl_kernel m_kernel;
 	// kernel name
-	std::string name;
+	std::string m_name;
 	// is this kernel Ok?
-	bool kernelOk;
+	bool m_kernelOk;
 	// number of kernel arguments
-	int argumentSize;
+	int m_argumentSize;
 
 	/* variable to control kernel execution*/
 
 	// the size of the work dimention, default 1 for now
-	int workDim;
+	int m_workDim;
 	// the total amount of work-itens in all work-groups
-	size_t globalWorkSize;
+	size_t m_globalWorkSize;
 
 };
 

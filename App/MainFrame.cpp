@@ -214,12 +214,14 @@ void MainFrame::UpdateDevicesInterface()
 	m_deviceChoice->Clear();
 	m_platformChoice->Enable();
 
-	const std::vector<OCLPlatform>* platforms = RenderGirlShared::ReturnPlatforms();
+
+	RenderGirlShared& shared = RenderGirlShared::GetRenderGirlShared();
+	const std::vector<OCLPlatform*>& platforms = shared.ReturnPlatforms();
 
 	// update wxChoice
-	for (int a = 0; a < platforms->size(); a++)
+	for (int a = 0; a < platforms.size(); a++)
 	{
-		m_platformChoice->Append((*platforms)[a].GetName());
+		m_platformChoice->Append(platforms[a]->GetName());
 	}
 	m_platformChoice->SetBestFittingSize();
 	m_deviceChoice->SetBestFittingSize();
@@ -229,17 +231,18 @@ void MainFrame::OnPlatformSelect(wxCommandEvent& event)
 {
 	int selected = event.GetSelection();
 	/* search for all devices on this platform */
-	const std::vector<OCLPlatform>* platforms = RenderGirlShared::ReturnPlatforms();
+	RenderGirlShared& shared = RenderGirlShared::GetRenderGirlShared();
+	const std::vector<OCLPlatform*>& platforms = shared.ReturnPlatforms();
 
-	const std::vector<OCLDevice>* devices = (*platforms)[selected].GetDevices();
+	const std::vector<OCLDevice*>& devices = platforms[selected]->GetDevices();
 	// update second wxChocie
 	// reset it 
 	m_deviceChoice->Clear();
 	m_deviceChoice->Enable();
 	m_selectButton->Disable();
-	for (int a = 0; a < devices->size(); a++)
+	for (int a = 0; a < devices.size(); a++)
 	{
-		m_deviceChoice->Append((*devices)[a].GetName());
+		m_deviceChoice->Append(devices[a]->GetName());
 	}
 	m_deviceChoice->SetBestFittingSize();
 }
@@ -261,13 +264,14 @@ void MainFrame::OnSelectButtonPressed(wxCommandEvent& WXUNUSED(event))
 	int currentDevice = m_deviceChoice->GetCurrentSelection();
 	int currentPlatform = m_platformChoice->GetCurrentSelection();
 
-	const std::vector<OCLPlatform>* platforms = RenderGirlShared::ReturnPlatforms();
-	const std::vector<OCLDevice>* devices = (*platforms)[currentPlatform].GetDevices();
-	RenderGirlShared::SelectDevice(&(*devices)[currentDevice]);
-	if (!RenderGirlShared::PrepareRaytracer())
+	RenderGirlShared& shared = RenderGirlShared::GetRenderGirlShared();
+	const std::vector<OCLPlatform*>& platforms = shared.ReturnPlatforms();
+	const std::vector<OCLDevice*>& devices = platforms[currentPlatform]->GetDevices();
+	shared.SelectDevice(devices[currentDevice]);
+	if (!shared.PrepareRaytracer())
 	{
 		// error, get out
-		RenderGirlShared::ReleaseDevice();
+		shared.ReleaseDevice();
 		this->UpdateDevicesInterface();
 		return;
 	}
@@ -296,7 +300,8 @@ void MainFrame::OnLoadModel(wxCommandEvent& WXUNUSED(event))
 	
 	scene = LoadOBJ(openFileDialog.GetPath());
 
-	if (RenderGirlShared::GetSelectedDevice())
+	RenderGirlShared& shared = RenderGirlShared::GetRenderGirlShared();
+	if (shared.GetSelectedDevice())
 		m_renderButton->Enable();
 
 
@@ -304,13 +309,15 @@ void MainFrame::OnLoadModel(wxCommandEvent& WXUNUSED(event))
 
 void MainFrame::OnRenderButton(wxCommandEvent& WXUNUSED(event))
 {
+	RenderGirlShared& shared = RenderGirlShared::GetRenderGirlShared();
+
 	long width = 32;
 	m_widthField->GetValue().ToLong(&width);
 	/*long height = 32;
 	m_heightField->GetValue().ToLong(&height);*/
 	/* Send data to OpenCL implementation */
 
-	if (!RenderGirlShared::Set3DScene(scene))
+	if (!shared.Set3DScene(scene))
 		return;
 
 	/* grab camera information from interface */
@@ -354,11 +361,11 @@ void MainFrame::OnRenderButton(wxCommandEvent& WXUNUSED(event))
 	light.Ka = 0.0;
 
 	// render
-	if (!RenderGirlShared::Render(width, width, camera, light))
+	if (!shared.Render(width, width, camera, light))
 		return;
 
 	// get data back
-	const cl_uchar4* frame = RenderGirlShared::GetFrame();
+	const cl_uchar4* frame = shared.GetFrame();
 
 	m_renderFrame->SetImage(frame, wxSize(width, width));
 	m_renderFrame->Show();
@@ -368,8 +375,9 @@ void MainFrame::OnRenderButton(wxCommandEvent& WXUNUSED(event))
 
 void MainFrame::OnReleaseButton(wxCommandEvent& WXUNUSED(event))
 {
+	RenderGirlShared& shared = RenderGirlShared::GetRenderGirlShared();
 	//release this device
-	RenderGirlShared::ReleaseDevice();
+	shared.ReleaseDevice();
 	
 	this->SetStatusText("RenderGirl not ready, select a device to perform the rendering");
 	this->UpdateDevicesInterface();

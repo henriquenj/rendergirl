@@ -29,75 +29,90 @@
 #include "OCLKernel.h"
 #include "CLStructs.h"
 
-// Static class encapsules the OpenCL status and the renderer status
+/* Singleton class encapsules the OpenCL status and the renderer status.
+	This singleton architecture was kindly sugested by Loki Astari at
+	http://stackoverflow.com/questions/270947/can-any-one-provide-me-a-sample-of-singleton-in-c/271104#271104
+	*/
 class RenderGirlShared
 {
 public:
+	/* get shared instance of this singleton */
+	static RenderGirlShared& GetRenderGirlShared()
+	{
+		static RenderGirlShared instance;
+		return instance;
+	}
+
+	~RenderGirlShared();
+
 	/*init OpenCL platforms, return TRUE for success or return FALSE for failure*/
-	static bool InitPlatforms();
+	bool InitPlatforms();
 	/* init all devices for all platforms, return FALSE if at least one device failed to initialize
 	   param type define which type of device will be initialized */
-	static bool InitDevices(OCLDevice::DeviceType type = OCLDevice::All);
+	bool InitDevices(OCLDevice::DeviceType type = OCLDevice::All);
 
 	/* Prepare a given device for executing the OpenCL program, return FALSE if there's an error with device*/
-	static bool SelectDevice(const OCLDevice* select);
+	bool SelectDevice(const OCLDevice* select);
 
 	/* PrepareRaytracer function prepare the OpenCL raytracer to work on the selected device.
 		You got to have a selected device to call this. Return FALSE if there's an error with the device. */
-	static bool PrepareRaytracer();
+	bool PrepareRaytracer();
 
 	/* Send 3D data to the renderer. This should be called after PrepareRaytracer.
 		The renderer will copy the data, so you are free to use it afterwards.
 		Return FALSE if there's an error */
-	static bool Set3DScene(Scene3D* pscene);
+	bool Set3DScene(Scene3D* pscene);
 
 	/* Render a frame. You should only call this with a kernel ready and a 3D scene.
 		This is a blocking call.
 		Param resolution is the resolution of the resulting image.
 		Return FALSE for an error */
-	static bool Render(int width, int height, Camera &camera, Light &light);
+	bool Render(int width, int height, Camera &camera, Light &light);
 
 	/* Release the selected device from use, deallocing all memory used */
-	static void ReleaseDevice();
+	void ReleaseDevice();
 
 	/* Return selected device, return NULL for no device */
-	static const OCLDevice* GetSelectedDevice()
+	const OCLDevice* GetSelectedDevice()
 	{
-		return selectedDevice;
+		return m_selectedDevice;
 	}
 
 	/* return list of avaiable platforms */ 
-	static const inline std::vector<OCLPlatform>* ReturnPlatforms()
+	const inline std::vector<OCLPlatform*>& ReturnPlatforms()
 	{
-		return &platforms;
+		return m_platforms;
 	}
 
 	/* Get rendered buffer. This memory belongs to the renderer, so don't delete it.*/
-	static inline const cl_uchar4* GetFrame()
+	inline const cl_uchar4* GetFrame()
 	{
-		return frame->GetData();
+		return m_frame->GetData();
 	}
 
 	/* return number of avaiable platforms */
-	static inline const int GetPlatformsSize()
+	inline const int GetPlatformsSize()
 	{
-		return platforms.size();
+		return m_platforms.size();
 	}
 
 private:
-	RenderGirlShared(){ ; }
+	RenderGirlShared();
+	// prevent copy by not implementing this methods
+	RenderGirlShared(RenderGirlShared const&);
+	void operator=(RenderGirlShared const&);
 
 	// OpenCL stuff for internal control
-	static std::vector<OCLPlatform> platforms;
+	std::vector<OCLPlatform*> m_platforms;
 
 	// device selected for doing the computation
-	static OCLDevice* selectedDevice;
+	OCLDevice* m_selectedDevice;
 
-	static OCLProgram* program;
-	static OCLKernel* kernel;
-	static SceneInformation scene;
-	static bool sceneLoaded;
-	static OCLMemoryObject<cl_uchar4>* frame;
+	OCLProgram* m_program;
+	OCLKernel* m_kernel;
+	SceneInformation m_scene;
+	bool m_sceneLoaded;
+	OCLMemoryObject<cl_uchar4>* m_frame;
 };
 
 

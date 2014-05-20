@@ -32,9 +32,10 @@ class OCLPlatform
 public:
 
 	~OCLPlatform();
+	
+	// init a platform passing the platform ID
+	OCLPlatform(cl_platform_id id);
 
-	// init this platform
-	void Init(cl_platform_id id);
 	/* query for devices on this platform and init them
 		DeviceType parameter can be CPU, GPU, All, Accelerator or Default
 		if at least one device failed to initialized, return FALSE
@@ -45,27 +46,27 @@ public:
 	// Get name of this platform
 	inline const std::string& GetName()const
 	{
-		return name;
+		return m_name;
 	}
 	// get vendor name
 	inline const std::string& GetVendor() const
 	{
-		return vendor;
+		return m_vendor;
 	}
 	// get extensions list, return empty string if there's no known extensions
 	inline const std::string& GetExtensions() const
 	{
-		return extensions;
+		return m_extensions;
 	}
 	// Get OpenCL version of this platform
 	inline const std::string& GetVersion()const
 	{
-		return version;
+		return m_version;
 	}
 	// get profile type, TRUE for FULL_PROFILE and FALSE for EMBEDDED PROFILE
 	inline const bool GetProfileType() const
 	{
-		if (profile.compare("FULL_PROFILE") == 0)
+		if (m_profile.compare("FULL_PROFILE") == 0)
 		{
 			return true;
 		}
@@ -73,36 +74,36 @@ public:
 	}
 
 	// get platform ID
-	inline const cl_platform_id& GetID() const
+	inline const cl_platform_id& GetID()const
 	{
-		return id;
+		return m_id;
 	}
 
 	// Get devices of this platform
-	inline const std::vector<OCLDevice>* GetDevices()const
+	inline const std::vector<OCLDevice*>& GetDevices()const
 	{
-		return &devices;
+		return m_devices;
 	}
 
 	// Get the amount of devices on this platform
 	inline const int GetDeviceAmount()const
 	{
-		return devices.size();
+		return m_devices.size();
 	}
 private:
 
 	// helper function to query information about platforms (thanks QT project for this hint)
 	const std::string GetStringFromPlatform(cl_platform_info name);
 
-	std::string name;
-	std::string vendor;
-	std::string extensions;
-	std::string profile;
-	std::string version;
+	std::string m_name;
+	std::string m_vendor;
+	std::string m_extensions;
+	std::string m_profile;
+	std::string m_version;
 
-	cl_platform_id id;
+	cl_platform_id m_id;
 
-	std::vector<OCLDevice> devices;
+	std::vector<OCLDevice*> m_devices;
 };
 
 

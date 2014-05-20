@@ -94,11 +94,11 @@ public:
 
 	~Scene3D()
 	{
-		delete vertices;
-		delete faces;
-		delete normal;
+		delete[] vertices;
+		delete[] faces;
+		delete[] normal;
 		if (materials != NULL)
-			delete materials;
+			delete[] materials;
 	}
 };
 

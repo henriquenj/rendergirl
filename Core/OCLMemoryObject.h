@@ -59,37 +59,37 @@ public:
 		If there's another data previously loaded, the old one will be DELETED*/
 	void SetData(T* data, bool copy = true)
 	{
-		if (data_host != NULL)
-			delete[] data_host; // delete old content
+		if (m_data_host != NULL)
+			delete[] m_data_host; // delete old content
 
 		if (copy)
 		{
-			data_host = new T[size];
+			m_data_host = new T[m_size];
 			// copy data
-			memcpy(data_host, data, sizeof(T)* size);
+			memcpy(m_data_host, data, sizeof(T)* m_size);
 		}
 		else
 		{
 			// copy pointer only
-			data_host = data;
+			m_data_host = data;
 		}
 	}
 	/* Get raw data currently on the host memory */
 	inline const T* GetData()const
 	{
-		return data_host;
+		return m_data_host;
 	}
 
 	/* Get number of elements on this memory */
 	inline const int GetSize()const
 	{
-		return size;
+		return m_size;
 	}
 
 	/* Get pointer to device memory */
 	inline const cl_mem GetDeviceMemory()const
 	{
-		return data_device;
+		return m_data_device;
 	}
 
 	/* Sync functions*/
@@ -99,12 +99,12 @@ public:
 		*/
 	bool SyncHostToDevice()
 	{
-		assert(data_host != NULL && "You must set this memory before syncing with the device");
+		assert(m_data_host != NULL && "You must set this memory before syncing with the device");
 		// add an command to the current command queue
 		//TODO: try using NON-blocking calls
-		if (clEnqueueWriteBuffer(queue, data_device, CL_TRUE, 0, sizeof(T)* size, data_host,0, NULL, NULL) != CL_SUCCESS)
+		if (clEnqueueWriteBuffer(m_queue, m_data_device, CL_TRUE, 0, sizeof(T)* m_size, m_data_host,0, NULL, NULL) != CL_SUCCESS)
 		{
-			Log::Error("Couldn't alloc enough memory on " + context->GetDevice()->GetName() + " device");
+			Log::Error("Couldn't alloc enough memory on " + m_context->GetDevice()->GetName() + " device");
 			return false;
 		}
 		
@@ -114,9 +114,9 @@ public:
 		return FALSE if the allocation failed*/
 	bool SyncDeviceToHost()
 	{
-		if (clEnqueueReadBuffer(queue, data_device, CL_TRUE, 0, sizeof(T)* size, data_host,0, NULL, NULL) != CL_SUCCESS)
+		if (clEnqueueReadBuffer(m_queue, m_data_device, CL_TRUE, 0, sizeof(T)* m_size, m_data_host,0, NULL, NULL) != CL_SUCCESS)
 		{
-			Log::Error("Couldn't read the memory on " + context->GetDevice()->GetName() + " device");
+			Log::Error("Couldn't read the memory on " + m_context->GetDevice()->GetName() + " device");
 			return false;
 		}
 
@@ -126,14 +126,14 @@ public:
 	~OCLMemoryObject()
 	{
 		// dealloc resources and free memory on both host and device
-		clReleaseMemObject(data_device);
-		if (data_host != NULL)
-		delete[] data_host;
+		clReleaseMemObject(m_data_device);
+		if (m_data_host != NULL)
+		delete[] m_data_host;
 	}
 
 	inline T &operator[](const int index)
 	{
-		return data_host[index];
+		return m_data_host[index];
 	}
 
 private:
@@ -145,13 +145,13 @@ private:
 		assert(size > 0 && "Size should be at least 1!");
 		cl_int l_error = false;
 
-		this->context = context;
-		this->queue = queue;
-		this->size = size;
+		this->m_context = context;
+		this->m_queue = queue;
+		this->m_size = size;
 
 
 		// create OpenCL memory
-		data_device = clCreateBuffer((context->GetCLContext()), type, size * sizeof(T), NULL, &l_error);
+		m_data_device = clCreateBuffer((context->GetCLContext()), type, size * sizeof(T), NULL, &l_error);
 
 		if (l_error != CL_SUCCESS)
 		{
@@ -165,21 +165,21 @@ private:
 		if (error != NULL)
 			*error = false;
 
-		data_host = NULL;
+		m_data_host = NULL;
 	}
 
 	friend class OCLContext;
 
 	// context to which this block of data is associated
-	const OCLContext* context;
-	cl_command_queue queue;
+	const OCLContext* m_context;
+	cl_command_queue m_queue;
 
 	// raw host data
-	T* data_host;
+	T* m_data_host;
 	// raw device data
-	cl_mem data_device;
+	cl_mem m_data_device;
 	// number of elements 
-	int size;
+	int m_size;
 
 };
 

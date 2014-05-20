@@ -29,8 +29,8 @@ static void __stdcall ImplementationError(const char* errinfo, const void* priva
 
 bool OCLContext::InitContext(const OCLDevice *device)
 {
-	isReady = false;
-	this->device = device;
+	m_isReady = false;
+	this->m_device = device;
 
 	Log::Message("");
 	Log::Message("Creating context on device "  + device->GetName());
@@ -42,7 +42,7 @@ bool OCLContext::InitContext(const OCLDevice *device)
 	cl_int error = CL_SUCCESS;
 
 	cl_device_id id_t = device->GetID();
-	context = clCreateContext(props, 1, &id_t, ImplementationError, this, &error);
+	m_context = clCreateContext(props, 1, &id_t, ImplementationError, this, &error);
 
 	if (error != CL_SUCCESS)
 	{
@@ -58,7 +58,7 @@ bool OCLContext::InitContext(const OCLDevice *device)
 		}
 	}
 
-	queue = clCreateCommandQueue(context, device->GetID(), NULL, &error);
+	m_queue = clCreateCommandQueue(m_context, device->GetID(), NULL, &error);
 
 	if (error != CL_SUCCESS)
 	{
@@ -76,19 +76,19 @@ bool OCLContext::InitContext(const OCLDevice *device)
 
 	Log::Message("Context was created without errors.");
 
-	isReady = true;
+	m_isReady = true;
 	return true;
 }
 
 bool OCLContext::ExecuteCommands()
 {
-	assert(isReady && "You cannot flush a queue if the context is not ready!");
+	assert(m_isReady && "You cannot flush a queue if the context is not ready!");
 
 	// the flush!
-	if (clFinish(queue) != CL_SUCCESS)
+	if (clFinish(m_queue) != CL_SUCCESS)
 	{
 		// host probrably out of mememory
-		Log::Error("Failed to flush the command queue on the device " + device->GetName());
+		Log::Error("Failed to flush the command queue on the device " + m_device->GetName());
 		return false;
 	}
 
@@ -99,7 +99,7 @@ bool OCLContext::SyncAllMemoryDeviceToHost()
 {
 	bool error = true;
 	std::list<OCLMemoryObjectBase*>::iterator it;
-	for (it = memList.begin(); it != memList.end(); it++)
+	for (it = m_memList.begin(); it != m_memList.end(); it++)
 	{
 		if (!(*it)->SyncDeviceToHost())
 		{
@@ -114,7 +114,7 @@ bool OCLContext::SyncAllMemoryHostToDevice()
 {
 	bool error = true;
 	std::list<OCLMemoryObjectBase*>::iterator it;
-	for (it = memList.begin(); it != memList.end(); it++)
+	for (it = m_memList.begin(); it != m_memList.end(); it++)
 	{
 		if (!(*it)->SyncHostToDevice())
 		{
@@ -129,15 +129,17 @@ void OCLContext::ReleaseContext()
 {
 	// dealloc all memory associated with this device
 	std::list<OCLMemoryObjectBase*>::iterator it;
-	for (it = memList.begin(); it != memList.end(); it++)
+	for (it = m_memList.begin(); it != m_memList.end(); it++)
 	{
 		delete *it;
 	}
-	memList.clear();
+	m_memList.clear();
 
 	// release OpenCL stuff
-	clReleaseCommandQueue(queue);
-	clReleaseContext(context);
+	clReleaseCommandQueue(m_queue);
+	clReleaseContext(m_context);
 	/* Deleting the queue after deleting the context is considered a memory leak
 		by gDEBugger, weird */
+
+	m_isReady = false;
 }

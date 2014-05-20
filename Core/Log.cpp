@@ -20,7 +20,7 @@
 #include "Log.h"
 
 
-std::vector<LogListener*> Log::logListeners;
+std::vector<LogListener*> Log::m_logListeners;
 
 Log::~Log()
 {
@@ -29,27 +29,27 @@ Log::~Log()
 void Log::RemoveAllListeners()
 {
 	// delete all listeners
-	unsigned int size = logListeners.size();
+	unsigned int size = m_logListeners.size();
 	for (int a = 0; a < size; a++)
 	{
-		LogListener* listener = logListeners[a];
+		LogListener* listener = m_logListeners[a];
 		delete listener;
 	}
-	logListeners.clear();
+	m_logListeners.clear();
 }
 
 void Log::RemoveListener(LogListener* listener)
 {
-	assert((std::find(logListeners.begin(), logListeners.end(), listener) != logListeners.end())
+	assert((std::find(m_logListeners.begin(), m_logListeners.end(), listener) != m_logListeners.end())
 		&& "This listener is not registred with the log class");
 	//search for the listener inside the vector
-	int size = logListeners.size();
+	int size = m_logListeners.size();
 	for (int a = 0; a < size; a++)
 	{
-		if (logListeners[a] == listener)
+		if (m_logListeners[a] == listener)
 		{
 			delete listener;
-			logListeners.erase(logListeners.begin() + a);
+			m_logListeners.erase(m_logListeners.begin() + a);
 			break;
 		}
 	}
@@ -57,25 +57,25 @@ void Log::RemoveListener(LogListener* listener)
 
 void Log::AddListener(LogListener* listener)
 {
-	logListeners.push_back(listener);
+	m_logListeners.push_back(listener);
 }
 
 void Log::Message(const std::string &message)
 {
 	// send to all listeners
-	int size = logListeners.size();
+	int size = m_logListeners.size();
 	for (int a = 0; a < size; a++)
 	{
-		logListeners[a]->PrintLog(message.c_str());
+		m_logListeners[a]->PrintLog(message.c_str());
 	}
 }
 
 void Log::Error(const std::string &error)
 {
 	// send to all listeners
-	int size = logListeners.size();
+	int size = m_logListeners.size();
 	for (int a = 0; a < size; a++)
 	{
-		logListeners[a]->PrintError(error.c_str());
+		m_logListeners[a]->PrintError(error.c_str());
 	}
 }

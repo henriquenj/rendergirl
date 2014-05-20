@@ -22,22 +22,22 @@
 OCLProgram::OCLProgram(OCLContext* context)
 {
 	assert(context != NULL);
-	this->context = context;
+	this->m_context = context;
 
 	assert(context->IsReady() && "Context must be ready to execute kernels!");
 
-	isCompiled = false;
-	isLoaded = false;
+	m_isCompiled = false;
+	m_isLoaded = false;
 }
 
 OCLProgram::~OCLProgram()
 {
-	clReleaseProgram(program);
+	clReleaseProgram(m_program);
 }
 
 bool OCLProgram::LoadProgramWithSource(const std::string &sourceFile)
 {
-	this->sourceFile = sourceFile;
+	this->m_sourceFile = sourceFile;
 	// load kernel code from file
 	FILE* kernelCodeFile = fopen(sourceFile.c_str(), "rb");
 	if (kernelCodeFile == NULL)
@@ -64,7 +64,7 @@ bool OCLProgram::LoadProgramWithSource(const std::string &sourceFile)
 	cl_int error;
 
 	// send source code to OpenCL
-	program = clCreateProgramWithSource(context->GetCLContext(), 1, (const char**)&kernelCode, NULL, &error);
+	m_program = clCreateProgramWithSource(m_context->GetCLContext(), 1, (const char**)&kernelCode, NULL, &error);
 	if (error != CL_SUCCESS)
 	{
 		Log::Error("There was an error when sending the source code to the OpenCL implementation.");
@@ -73,7 +73,7 @@ bool OCLProgram::LoadProgramWithSource(const std::string &sourceFile)
 
 	delete[] kernelCode;
 
-	isLoaded = true;
+	m_isLoaded = true;
 
 	return true;
 }
@@ -81,9 +81,9 @@ bool OCLProgram::LoadProgramWithSource(const std::string &sourceFile)
 bool OCLProgram::BuildProgram(const char* options)
 {
 	// now the building phase
-	Log::Message("Compiling " + sourceFile);
+	Log::Message("Compiling " + m_sourceFile);
 
-	cl_int error = clBuildProgram(program, 0, NULL, options, NULL, NULL);
+	cl_int error = clBuildProgram(m_program, 0, NULL, options, NULL, NULL);
 
 	if (error != CL_SUCCESS)
 	{
@@ -92,13 +92,13 @@ bool OCLProgram::BuildProgram(const char* options)
 		{
 			// Determine the size of the log
 			size_t log_size;
-			clGetProgramBuildInfo(program, context->GetDevice()->GetID(), CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
+			clGetProgramBuildInfo(m_program, m_context->GetDevice()->GetID(), CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
 
 			// Allocate memory for the log
 			char *log = (char *)malloc(log_size);
 
 			// Get the log
-			clGetProgramBuildInfo(program, context->GetDevice()->GetID(), CL_PROGRAM_BUILD_LOG, log_size, (void*)log, NULL);
+			clGetProgramBuildInfo(m_program, m_context->GetDevice()->GetID(), CL_PROGRAM_BUILD_LOG, log_size, (void*)log, NULL);
 
 			// Print the log
 			Log::Error("OpenCL compiler returned an error: " + std::string(log));
@@ -106,13 +106,13 @@ bool OCLProgram::BuildProgram(const char* options)
 		}
 		else
 		{
-			Log::Error("Error while compiling OpenCL code on file: " + sourceFile);
+			Log::Error("Error while compiling OpenCL code on file: " + m_sourceFile);
 		}
 		return false;
 	}
 
 	// ok, cool
-	isCompiled = true;
+	m_isCompiled = true;
 
 	return true;
 

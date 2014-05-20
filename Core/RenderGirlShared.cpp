@@ -21,20 +21,43 @@
 #include "CLMath.h"
 #include <chrono>
 
-std::vector<OCLPlatform>	RenderGirlShared::platforms;
-OCLDevice*					RenderGirlShared::selectedDevice = NULL;
-OCLProgram*					RenderGirlShared::program = NULL;
-OCLKernel*					RenderGirlShared::kernel = NULL;
-SceneInformation			RenderGirlShared::scene;
-bool						RenderGirlShared::sceneLoaded = false;
-OCLMemoryObject<cl_uchar4>*	RenderGirlShared::frame = NULL;
+RenderGirlShared::RenderGirlShared()
+{
+	m_selectedDevice = NULL;
+	m_program = NULL;
+	m_kernel = NULL;
+	m_sceneLoaded = false;
+	m_frame = NULL;
+}
+RenderGirlShared::~RenderGirlShared()
+{
+	if (m_selectedDevice != NULL)
+		this->ReleaseDevice();
 
-
+	int size = m_platforms.size();
+	for (unsigned int p = 0; p < size; p++)
+	{
+		delete m_platforms[p];
+	}
+	m_platforms.clear();
+}
 bool RenderGirlShared::InitPlatforms()
 {
+	
+	//delete previous selected device, if there's any
+	if (m_selectedDevice != NULL)
+		this->ReleaseDevice();
 
-	// do not query for new platforms if it has queried before
-	assert(platforms.empty());
+	// delete previous loaded platforms, if there's any
+	if (!m_platforms.empty())
+	{
+		int size = m_platforms.size();
+		for (unsigned int p = 0; p < size; p++)
+		{
+			delete m_platforms[p];
+		}
+		m_platforms.clear();
+	}
 
 	// create and init OpenCL
 	Log::Message("Initializing OpenCL platforms...");
@@ -65,9 +88,8 @@ bool RenderGirlShared::InitPlatforms()
 	{
 		Log::Message("");
 		Log::Message("Platform " + std::to_string(a + 1) + " created using the specs below: ");
-		OCLPlatform platform;
-		platform.Init(platforms_cl[a]);
-		platforms.push_back(platform);
+		OCLPlatform* platform = new OCLPlatform(platforms_cl[a]);
+		m_platforms.push_back(platform);
 	}
 
 	delete[] platforms_cl;
@@ -77,11 +99,15 @@ bool RenderGirlShared::InitPlatforms()
 
 bool RenderGirlShared::InitDevices(OCLDevice::DeviceType type)
 {
+	//delete previous selected device, if there's any
+	if (m_selectedDevice != NULL)
+		this->ReleaseDevice();
+
 	bool allOk = true;
-	int size = platforms.size();
+	int size = m_platforms.size();
 	for (int a = 0; a < size; a++)
 	{
-		allOk = platforms[a].InitDevices(type);
+		allOk = m_platforms[a]->InitDevices(type);
 	}
 
 	return allOk;
@@ -92,17 +118,17 @@ bool RenderGirlShared::SelectDevice(const OCLDevice* select)
 	assert(select != NULL);
 
 	bool error = true;
-	if (selectedDevice != NULL)
+	if (m_selectedDevice != NULL)
 	{
-		RenderGirlShared::ReleaseDevice();
+		this->ReleaseDevice();
 	}
 
-	selectedDevice = const_cast<OCLDevice*>(select);
-	if (!selectedDevice->IsReady())
+	m_selectedDevice = const_cast<OCLDevice*>(select);
+	if (!m_selectedDevice->IsReady())
 	{
 		// prepare this device
-		error = selectedDevice->CreateContext();
-		Log::Message("Selected device: " + selectedDevice->GetName());
+		error = m_selectedDevice->CreateContext();
+		Log::Message("Selected device: " + m_selectedDevice->GetName());
 	}
 
 	return error;
@@ -110,34 +136,34 @@ bool RenderGirlShared::SelectDevice(const OCLDevice* select)
 
 bool RenderGirlShared::PrepareRaytracer()
 {
-	assert(selectedDevice != NULL);
-	assert(program == NULL);
-	OCLContext* context = selectedDevice->GetContext();
+	assert(m_selectedDevice != NULL);
+	assert(m_program == NULL);
+	OCLContext* context = m_selectedDevice->GetContext();
 
 	/* Prepare this device compiling the OpenCL kernels*/
 
-	program = new OCLProgram(context);
-	if (!program->LoadProgramWithSource("Raytracer.cl"))
+	m_program = new OCLProgram(context);
+	if (!m_program->LoadProgramWithSource("Raytracer.cl"))
 	{
-		delete program;
-		program = NULL;
+		delete m_program;
+		m_program = NULL;
 		return false;
 	}
 
-	if (!program->BuildProgram())
+	if (!m_program->BuildProgram())
 	{
-		delete program;
-		program = NULL;
+		delete m_program;
+		m_program = NULL;
 		return false;
 	}
 
-	kernel = new OCLKernel(program, std::string("Raytrace"));
-	if (!kernel->GetOk())
+	m_kernel = new OCLKernel(m_program, std::string("Raytrace"));
+	if (!m_kernel->GetOk())
 	{
-		delete program;
-		delete kernel;
-		kernel = NULL;
-		program = NULL;
+		delete m_program;
+		delete m_kernel;
+		m_kernel = NULL;
+		m_program = NULL;
 		return false;
 	}
 
@@ -148,29 +174,29 @@ bool RenderGirlShared::PrepareRaytracer()
 bool RenderGirlShared::Set3DScene(Scene3D* pscene)
 {
 
-	assert(kernel != NULL);
-	assert(kernel->GetOk());
+	assert(m_kernel != NULL);
+	assert(m_kernel->GetOk());
 	assert(pscene != NULL);
 
-	scene.facesSize = pscene->facesSize;
-	scene.normalSize = pscene->normalSize;
-	scene.verticesSize = pscene->verticesSize;
-	scene.materiaslSize = pscene->materialSize;
+	m_scene.facesSize = pscene->facesSize;
+	m_scene.normalSize = pscene->normalSize;
+	m_scene.verticesSize = pscene->verticesSize;
+	m_scene.materiaslSize = pscene->materialSize;
 
-	OCLContext* context = selectedDevice->GetContext();
+	OCLContext* context = m_selectedDevice->GetContext();
 
 	cl_bool error = false;
 	/* Send data to the OpenCL device*/
-	OCLMemoryObject<cl_double3>* vertices = context->CreateMemoryObject<cl_double3>(scene.verticesSize, ReadOnly, &error);
+	OCLMemoryObject<cl_double3>* vertices = context->CreateMemoryObject<cl_double3>(m_scene.verticesSize, ReadOnly, &error);
 	if (error)
 		return false;
-	OCLMemoryObject<cl_double3>* normals = context->CreateMemoryObject<cl_double3>(scene.normalSize, ReadOnly, &error);
+	OCLMemoryObject<cl_double3>* normals = context->CreateMemoryObject<cl_double3>(m_scene.normalSize, ReadOnly, &error);
 	if (error)
 		return false;
-	OCLMemoryObject<cl_int4>* faces = context->CreateMemoryObject<cl_int4>(scene.facesSize, ReadOnly, &error);
+	OCLMemoryObject<cl_int4>* faces = context->CreateMemoryObject<cl_int4>(m_scene.facesSize, ReadOnly, &error);
 	if (error)
 		return false;
-	OCLMemoryObject<Material>* materials = context->CreateMemoryObject<Material>(scene.materiaslSize, ReadOnly, &error);
+	OCLMemoryObject<Material>* materials = context->CreateMemoryObject<Material>(m_scene.materiaslSize, ReadOnly, &error);
 	if (error)
 		return false;
 
@@ -184,16 +210,16 @@ bool RenderGirlShared::Set3DScene(Scene3D* pscene)
 		return false;
 
 	/* Set kernel arguments */
-	if (!kernel->SetArgument(0, vertices))
+	if (!m_kernel->SetArgument(0, vertices))
 		return false;
-	if (!kernel->SetArgument(1, normals))
+	if (!m_kernel->SetArgument(1, normals))
 		return false;
-	if (!kernel->SetArgument(2, faces))
+	if (!m_kernel->SetArgument(2, faces))
 		return false;
-	if (!kernel->SetArgument(3, materials))
+	if (!m_kernel->SetArgument(3, materials))
 		return false;
 
-	sceneLoaded = true;
+	m_sceneLoaded = true;
 	return true;
 }
 
@@ -206,13 +232,13 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 		return false;
 	}
 
-	if (!sceneLoaded)
+	if (!m_sceneLoaded)
 	{
 		Log::Error("Cannot render since there's no loaded scene!");
 		return false;
 	}
 
-	OCLContext* context = selectedDevice->GetContext();
+	OCLContext* context = m_selectedDevice->GetContext();
 	cl_bool error = false;
 
 	/* Setup render frame */
@@ -220,25 +246,25 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 	int pixelCount = width * height; // total amount of pixels
 
 	// delete old frame
-	if (frame != NULL)
+	if (m_frame != NULL)
 	{
-		context->DeleteMemoryObject<cl_uchar4>(frame);
-		frame = NULL;
+		context->DeleteMemoryObject<cl_uchar4>(m_frame);
+		m_frame = NULL;
 	}
 
-	frame = context->CreateMemoryObject<cl_uchar4>(pixelCount, WriteOnly, &error);
+	m_frame = context->CreateMemoryObject<cl_uchar4>(pixelCount, WriteOnly, &error);
 	if (error)
 		return false;
 
 	cl_uchar4* frameRaw = new cl_uchar4[pixelCount];
-	frame->SetData(frameRaw,false);
+	m_frame->SetData(frameRaw,false);
 
 	/* Setup render info */
-	scene.width = width;
-	scene.height = height;
-	scene.pixelCount = pixelCount;
+	m_scene.width = width;
+	m_scene.height = height;
+	m_scene.pixelCount = pixelCount;
 	
-	OCLMemoryObject<SceneInformation>* sceneInfoMem = context->CreateMemoryObjectWithData(1, &scene, true, ReadOnly);
+	OCLMemoryObject<SceneInformation>* sceneInfoMem = context->CreateMemoryObjectWithData(1, &m_scene, true, ReadOnly);
 	sceneInfoMem->SyncHostToDevice();
 
 
@@ -257,19 +283,19 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 	mem_cam->SyncHostToDevice();
 
 	// set remaining arguments
-	kernel->SetArgument(4, sceneInfoMem);
-	kernel->SetArgument(5, frame);
-	kernel->SetArgument(6, mem_cam);
-	kernel->SetArgument(7, mem_light);
+	m_kernel->SetArgument(4, sceneInfoMem);
+	m_kernel->SetArgument(5, m_frame);
+	m_kernel->SetArgument(6, mem_cam);
+	m_kernel->SetArgument(7, mem_light);
 
-	kernel->SetGlobalWorkSize(pixelCount); // one work-iten per pixel
+	m_kernel->SetGlobalWorkSize(pixelCount); // one work-iten per pixel
 
 	Log::Message("Rendering...");
 
 	// start counter
 	auto pretime = std::chrono::high_resolution_clock::now();
 
-	if (!kernel->EnqueueExecution())
+	if (!m_kernel->EnqueueExecution())
 		return false;
 
 	if (!context->ExecuteCommands())
@@ -282,35 +308,35 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 	std::chrono::nanoseconds ns = std::chrono::duration_cast<std::chrono::nanoseconds>(postime - pretime);
 	Log::Message("Rendering took " + std::to_string((float)(ns.count() / 1000000000.0f)) + " seconds.");
 
-	frame->SyncDeviceToHost();
+	m_frame->SyncDeviceToHost();
 
 	return true;
 }
 
 void RenderGirlShared::ReleaseDevice()
 {
-	assert(selectedDevice != NULL);
+	assert(m_selectedDevice != NULL);
 
-	Log::Message("Freeing resources on device " + selectedDevice->GetName());
+	Log::Message("Freeing resources on device " + m_selectedDevice->GetName());
 
-	if (kernel != NULL)
+	if (m_kernel != NULL)
 	{
-		delete kernel;
-		kernel = NULL;
+		delete m_kernel;
+		m_kernel = NULL;
 	}
-	if (program != NULL)
+	if (m_program != NULL)
 	{
-		delete program;
-		program = NULL;
+		delete m_program;
+		m_program = NULL;
 	}
-	if (frame != NULL)
+	if (m_frame != NULL)
 	{
 		/* this will get deallocated anyway on ReleaseContext so there's no need to delete it here
 			just remove the reference */
-		frame = NULL;
+		m_frame = NULL;
 	}
 
-	selectedDevice->ReleaseContext();
-	selectedDevice = NULL;
-	sceneLoaded = false;
+	m_selectedDevice->ReleaseContext();
+	m_selectedDevice = NULL;
+	m_sceneLoaded = false;
 }

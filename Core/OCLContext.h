@@ -44,8 +44,8 @@ public:
 	template <class T>
 	OCLMemoryObject<T>* CreateMemoryObject(const int size,const MemoryType type = ReadWrite,cl_bool *error = NULL)
 	{
-		OCLMemoryObject<T>* newMem = new OCLMemoryObject<T>(this, queue, size, type, error);
-		memList.push_back(newMem);
+		OCLMemoryObject<T>* newMem = new OCLMemoryObject<T>(this, m_queue, size, type, error);
+		m_memList.push_back(newMem);
 
 		return newMem;
 	}
@@ -67,10 +67,10 @@ public:
 	void DeleteMemoryObject(OCLMemoryObject<T>* memObject)
 	{
 		// check if the memory belongs to this context
-		assert((std::find(memList.begin(), memList.end(), memObject) != memList.end()) 
+		assert((std::find(m_memList.begin(), m_memList.end(), memObject) != m_memList.end()) 
 				&& "This piece of memory is not part of this context!");
 		delete memObject;
-		memList.remove(memObject);
+		m_memList.remove(memObject);
 	}
 
 	/* Call SyncDeviceToHost on all memories associated with this context. Return FALSE if at least
@@ -84,22 +84,22 @@ public:
 	// Get device where this context is running
 	inline const OCLDevice* GetDevice()const
 	{
-		return device;
+		return m_device;
 	}
 	// Get OpenCL context
 	inline const cl_context GetCLContext()const
 	{
-		return context;
+		return m_context;
 	}
 	// Get OpenCL command queue of this context
 	inline const cl_command_queue GetCLQueue()const
 	{
-		return queue;
+		return m_queue;
 	}
 	// Is this context ready to receive kernels?
 	inline const bool IsReady()const
 	{
-		return isReady;
+		return m_isReady;
 	}
 	/* execute all commands on the command queue (call a clFlush), this is a blocking call.
 		return TRUE for sucess and FALSE for an error */
@@ -108,20 +108,20 @@ public:
 private:
 
 	// the device which this context is running
-	const OCLDevice* device;
+	const OCLDevice* m_device;
 	// internal pointer to cl context
-	cl_context context;
+	cl_context m_context;
 	// internal pointer to cl command queue
-	cl_command_queue queue;
+	cl_command_queue m_queue;
 	/*	I'll be using only one command queue for each context to keep things simple, 
 		maybe later I'll implement a command queue class and share it among contexts */
 
 
 	// is this context ready to receive kernels?
-	bool isReady;
+	bool m_isReady;
 
 	// list of memories associated with this context
-	std::list<OCLMemoryObjectBase*> memList;
+	std::list<OCLMemoryObjectBase*> m_memList;
 };
 
 

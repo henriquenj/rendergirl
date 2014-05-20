@@ -45,7 +45,7 @@ private:
 	Log(){ ; };
 
 	// global list of log listeners
-	static std::vector<LogListener*> logListeners;
+	static std::vector<LogListener*> m_logListeners;
 };
 
 

@@ -42,10 +42,11 @@ public:
 		// create listener for log details
 		LogOutputWx* listener = new LogOutputWx();
 		Log::AddListener(listener);
-
+		
+		RenderGirlShared& shared = RenderGirlShared::GetRenderGirlShared();
 		/* search for OpenCL capable devices on all platforms */
-		RenderGirlShared::InitPlatforms();
-		RenderGirlShared::InitDevices();
+		shared.InitPlatforms();
+		shared.InitDevices();
 
 		frame->UpdateDevicesInterface();
 
@@ -56,9 +57,10 @@ public:
 
 	virtual ~RenderGirlApp()
 	{
+		RenderGirlShared& shared = RenderGirlShared::GetRenderGirlShared();
 		// dealloc the OpenCL driver and all memory used in the process.
-		if (RenderGirlShared::GetSelectedDevice())
-			RenderGirlShared::ReleaseDevice();
+		if (shared.GetSelectedDevice())
+			shared.ReleaseDevice();
 
 		Log::RemoveAllListeners();
 	}

@@ -43,33 +43,33 @@ public:
 	/* Return TRUE if this program is ready to be executed */
 	inline bool IsCompiled() const
 	{
-		return isCompiled;
+		return m_isCompiled;
 	}
 
 	/* Return OpenCL program pointer */
 	inline cl_program GetCLProgram()const
 	{
-		return program;
+		return m_program;
 	}
 
 	/* Get the OCLContext associated with this program */
 	inline const OCLContext*  GetContext()const
 	{
-		return context;
+		return m_context;
 	}
 
 private:
 	// the contex on where this program is running
-	const OCLContext* context;
+	const OCLContext* m_context;
 	// the OpenCL program
-	cl_program program;
+	cl_program m_program;
 
 	// is the program compiled and ready to be executed?
-	bool isCompiled;
+	bool m_isCompiled;
 	// is this program source code loaded?
-	bool isLoaded;
+	bool m_isLoaded;
 	// the path of the sourcefile
-	std::string sourceFile; 
+	std::string m_sourceFile; 
 };
 
 
