@@ -1,0 +1,4 @@
+rendergirl
+==========
+
+An OpenCL raytracer
