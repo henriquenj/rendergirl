@@ -6,10 +6,12 @@ The core part of the renderer is separated from the interfaces with the user in 
 
 Want to help? Know how to code? Have experience building plugins for one or more of the applications stated above? Fork my repository, pull requests are welcome.
 
+For additional information please visit the [wiki pages](https://github.com/henriquenj/rendergirl/wiki)
+
 **Notes on the source code**
 
 The only build system currently available is for Visual Studio 2013, located in the
-VS2013 folder. The compiled software has only the [Visual C++ Redistributable 2013] as dependency. The Raytracer.cl source file should be on the same folder as the compiled software.
+VS2013 folder. The compiled software has only the [Visual C++ Redistributable 2013](http://www.microsoft.com/en-gb/download/details.aspx?id=40784) as dependency. The Raytracer.cl source file should be on the same folder as the compiled software.
 
 In order to compile the software, simply open the RenderGirlOpenCL.sln file and select a platform (either Win32 or x64) and press Build > Build Solution. The selected StartUp project should be always be RenderGirlApp if you want to run the software from inside Visual Studio.
 
@@ -29,7 +31,4 @@ Upon compilation, the following folders are created
 
 Licensed under LGPL.
 
-For additional information about RenderGirl, newest versions or any issues related to it, please access the [project page] hosted at Github.
-
-[Visual C++ Redistributable 2013]:http://www.microsoft.com/en-gb/download/details.aspx?id=40784
-[project page]:https://github.com/henriquenj/rendergirl
+[Project page](https://github.com/henriquenj/rendergirl) hosted at Github.
