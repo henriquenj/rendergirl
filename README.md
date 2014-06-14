@@ -6,7 +6,7 @@ The core part of the renderer is separated from the interfaces with the user in 
 
 Want to help? Know how to code? Have experience building plugins for one or more of the applications stated above? Fork my repository, pull requests are welcome.
 
-Notes on the source code:
+**Notes on the source code**
 
 The only build system currently available is for Visual Studio 2013, located in the
 VS2013 folder. The compiled software has only the [Visual C++ Redistributable 2013] as dependency. The Raytracer.cl source file should be on the same folder as the compiled software.

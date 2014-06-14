@@ -113,6 +113,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "webview", "..\App\wxWidgets
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wxexpat", "..\App\wxWidgets\build\msw\wx_vc12_wxexpat.vcxproj", "{A1A8355B-0988-528E-9CC2-B971D6266669}"
+	ProjectSection(ProjectDependencies) = postProject
+		{01F4CE10-2CFB-41A8-B41F-E54337868A1D} = {01F4CE10-2CFB-41A8-B41F-E54337868A1D}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wxjpeg", "..\App\wxWidgets\build\msw\wx_vc12_wxjpeg.vcxproj", "{6053CC38-CDEE-584C-8BC8-4B000D800FC7}"
 EndProject
@@ -126,6 +129,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wxtiff", "..\App\wxWidgets\build\msw\wx_vc12_wxtiff.vcxproj", "{75596CE6-5AE7-55C9-B890-C07B0A657A83}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wxzlib", "..\App\wxWidgets\build\msw\wx_vc12_wxzlib.vcxproj", "{8B867186-A0B5-5479-B824-E176EDD27C40}"
+	ProjectSection(ProjectDependencies) = postProject
+		{01F4CE10-2CFB-41A8-B41F-E54337868A1D} = {01F4CE10-2CFB-41A8-B41F-E54337868A1D}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xml", "..\App\wxWidgets\build\msw\wx_vc12_xml.vcxproj", "{3E6DCA27-5FA3-53EC-BBD6-2D42294B7AE6}"
 	ProjectSection(ProjectDependencies) = postProject
