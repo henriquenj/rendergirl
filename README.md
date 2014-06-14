@@ -1,5 +1,10 @@
-Render Girl by Henrique Jung
+Render Girl
 =======
+RenderGirl is an ongoing effort to build an open source raytracer capable of running inside the OpenCL architecture. There are currently few options available for this kind of software, since most part of the implementations are either on CUDA, closed-source, or both.
+
+The core part of the renderer is separated from the interfaces with the user in order to easily create additional front-end for the renderer; those front-ends can be applications such as 3DS Max, Blender and SketchUp.
+
+Want to help? Know how to code? Have experience building plugins for one or more of the applications stated above? Fork my repository, pull requests are welcome.
 
 Notes on the source code:
 

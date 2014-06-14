@@ -8,6 +8,10 @@
 *.user
 *.sln.docstates
 
+## lib and binaries files
+lib/
+bin/
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
