@@ -134,8 +134,8 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
 	wxIntegerValidator<int> val;
 	m_widthField = new wxTextCtrl(panel, wxID_ANY, "512", wxDefaultPosition, wxDefaultSize, 0L, val);
 	resoSizer->Add(m_widthField);
-	/*m_heightField = new wxTextCtrl(panel, wxID_ANY, "512", wxDefaultPosition, wxSize(50, 30), 0L, val);
-	resoSizer->Add(m_heightField);*/
+	m_heightField = new wxTextCtrl(panel, wxID_ANY, "512", wxDefaultPosition, wxDefaultSize, 0L, val);
+	resoSizer->Add(m_heightField);
 
 	//camera options
 	wxBoxSizer* cameraSizer = new wxStaticBoxSizer(new wxStaticBox(panel, wxID_ANY, "Camera"), wxVERTICAL);
@@ -283,6 +283,10 @@ void MainFrame::OnSelectButtonPressed(wxCommandEvent& WXUNUSED(event))
 		this->SetStatusText("RenderGirl ready!");
 		m_renderButton->Enable();
 	}
+	else
+	{
+		this->SetStatusText("No 3D scene");
+	}
 
 }
 
@@ -302,7 +306,10 @@ void MainFrame::OnLoadModel(wxCommandEvent& WXUNUSED(event))
 
 	RenderGirlShared& shared = RenderGirlShared::GetRenderGirlShared();
 	if (shared.GetSelectedDevice())
+	{
 		m_renderButton->Enable();
+		this->SetStatusText("RenderGirl ready!");
+	}
 
 
 }
@@ -313,8 +320,8 @@ void MainFrame::OnRenderButton(wxCommandEvent& WXUNUSED(event))
 
 	long width = 32;
 	m_widthField->GetValue().ToLong(&width);
-	/*long height = 32;
-	m_heightField->GetValue().ToLong(&height);*/
+	long height = 32;
+	m_heightField->GetValue().ToLong(&height);
 	/* Send data to OpenCL implementation */
 
 	if (!shared.Set3DScene(scene))
@@ -361,13 +368,13 @@ void MainFrame::OnRenderButton(wxCommandEvent& WXUNUSED(event))
 	light.Ka = 0.0;
 
 	// render
-	if (!shared.Render(width, width, camera, light))
+	if (!shared.Render(width, height, camera, light))
 		return;
 
 	// get data back
 	const cl_uchar4* frame = shared.GetFrame();
 
-	m_renderFrame->SetImage(frame, wxSize(width, width));
+	m_renderFrame->SetImage(frame, wxSize(width, height));
 	m_renderFrame->Show();
 	m_renderFrame->Raise();
 	m_windowMenu->Check(ShowRenderViewMenu, true);

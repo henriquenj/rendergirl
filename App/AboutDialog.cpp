@@ -31,7 +31,7 @@ AboutDialog::AboutDialog(wxWindow *parent, wxWindowID id,
 	wxButton* okButton = new wxButton(this, wxID_OK, _("Ok"));
 	
 	// add hyperlink to the project
-	wxHyperlinkCtrl* projectLink = new wxHyperlinkCtrl(this, wxID_ANY, _("Project hosted at Google Code"), "http://code.google.com/p/rendergirl/");
+	wxHyperlinkCtrl* projectLink = new wxHyperlinkCtrl(this, wxID_ANY, _("Project hosted at GitHub"), "https://github.com/henriquenj/rendergirl");
 
 	// build string to be displayed on about box
 	std::string aboutText = "\n"

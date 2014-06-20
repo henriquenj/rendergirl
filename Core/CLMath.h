@@ -24,6 +24,10 @@
 #include "CL\cl.h"
 #include <math.h>
 
+
+#define R_PI 3.14159265359
+#define R_QUARTER_PI 0.785398163397
+
 /* cl math header contains math functions that receives the cl types as arguments, mimicking their OpenCL C counterparts */
 
 

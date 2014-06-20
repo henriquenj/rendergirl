@@ -186,7 +186,7 @@ bool RenderGirlShared::Set3DScene(Scene3D* pscene)
 	OCLContext* context = m_selectedDevice->GetContext();
 
 	cl_bool error = false;
-	/* Send data to the OpenCL device*/
+	/* Setup data to the OpenCL device*/
 	OCLMemoryObject<cl_double3>* vertices = context->CreateMemoryObject<cl_double3>(m_scene.verticesSize, ReadOnly, &error);
 	if (error)
 		return false;
@@ -206,6 +206,7 @@ bool RenderGirlShared::Set3DScene(Scene3D* pscene)
 	faces->SetData(pscene->faces);
 	materials->SetData(pscene->materials);
 
+	/* Send date to the device */
 	if (!context->SyncAllMemoryHostToDevice())
 		return false;
 
@@ -263,7 +264,9 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 	m_scene.width = width;
 	m_scene.height = height;
 	m_scene.pixelCount = pixelCount;
-	
+	m_scene.proportion_x = (double)width / (double)height;
+	m_scene.proportion_y = (double)height / (double)width;
+
 	OCLMemoryObject<SceneInformation>* sceneInfoMem = context->CreateMemoryObjectWithData(1, &m_scene, true, ReadOnly);
 	sceneInfoMem->SyncHostToDevice();
 

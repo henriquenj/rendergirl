@@ -55,6 +55,8 @@ typedef struct SceneInformation
 	int normalSize;
 	int facesSize;
 	int materiaslSize;
+	double proportion_x;
+	double proportion_y;
 } SceneInformation;
 
 /*Struct to control material properties */
@@ -156,10 +158,10 @@ __kernel void Raytrace(__global double3* vertices, __global double3* normals, __
 	So use the XYZ to access the members of any vector types */
 
 	/* build direction of the ray based on camera and the current pixel */
-	double normalized_i = (double)((double)x / (double)(sceneInfo->width)) - 0.5;
-	double normalized_j = (double)((double)y / (double)(sceneInfo->height)) - 0.5;
+	double normalized_i = -((double)((double)x / (double)(sceneInfo->width) * (double)(sceneInfo->proportion_x)) - 0.5);
+	double normalized_j = -((double)((double)y / (double)(sceneInfo->height) * (double)(sceneInfo->proportion_y)) - 0.5);
 	double3 ray_dir = (double3)(camera->right * normalized_i) + (double3)(camera->up * normalized_j) + camera->dir;
-
+	
 	ray_dir = normalize(ray_dir);
 
 	double distance = 1000000.0; // high value for the first ray

@@ -55,6 +55,8 @@ typedef struct SceneInformation
 	cl_int normalSize;
 	cl_int facesSize;
 	cl_int materiaslSize;
+	cl_double proportion_x;
+	cl_double proportion_y;
 } SceneInformation;
 
 /*Struct to control material properties */

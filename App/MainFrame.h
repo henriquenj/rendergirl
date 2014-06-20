@@ -72,7 +72,7 @@ private:
 
 	/* fields to type */
 	wxTextCtrl* m_widthField;
-	/*wxTextCtrl* m_heightField;*/
+	wxTextCtrl* m_heightField;
 	wxTextCtrl* m_lightPosXField;
 	wxTextCtrl* m_lightPosYField;
 	wxTextCtrl* m_lightPosZField;
