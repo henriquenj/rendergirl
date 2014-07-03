@@ -95,5 +95,7 @@ int main()
 
 	Log::RemoveAllListeners();
 
+	system("pause");
+
 	return 0;
 }

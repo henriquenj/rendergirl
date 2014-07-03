@@ -18,9 +18,15 @@
     <ClCompile Include="..\Console\Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\App\OBJLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Console\Utilities.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\App\OBJLoader.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
