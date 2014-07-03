@@ -14,7 +14,7 @@
 
 	You should have received a copy of the GNU Lesser General Public
 	License along with this program.
-	*/
+*/
 
 
 #include "OBJLoader.h"
@@ -112,7 +112,7 @@ Material* LoadMTL(std::vector<std::string>& materialName, const char* file)
 		// jump line
 		while (true)
 		{
-			if (mtlContent[counter] == 10)
+			if (mtlContent[counter] == 10 || counter == size)
 			{
 				counter++;
 				break;
@@ -179,7 +179,7 @@ Scene3D* LoadOBJ(const char* fileName)
 		// jump line
 		while (true)
 		{
-			if (objContent[counter] == 10)
+			if (objContent[counter] == 10 || counter == size)
 			{
 				counter++;
 				break;
@@ -217,44 +217,48 @@ Scene3D* LoadOBJ(const char* fileName)
 		else if (objContent[counter] == 'f')
 		{
 			/* check face defintion on each new face (some programs output with all kinds of face definitons)*/
-			int faceDefinition = GetFaceDefinition(objContent, counter);
-			counter += 2;
-			cl_int temp = 0; // to fill with descarted data
+			int faceDefinition = GetFaceDefinition(objContent, counter, size);
+			if (faceDefinition != 0) // rule out corruputed obj
+			{
 
-			if (faceDefinition == 1)
-			{
-				sscanf(objContent + counter, "%i %i %i",
-					&(scene->faces[faceCount].s[0]),
-					&(scene->faces[faceCount].s[1]),
-					&(scene->faces[faceCount].s[2]));
+				counter += 2;
+				cl_int temp = 0; // to fill with descarted data
+
+				if (faceDefinition == 1)
+				{
+					sscanf(objContent + counter, "%i %i %i",
+						&(scene->faces[faceCount].s[0]),
+						&(scene->faces[faceCount].s[1]),
+						&(scene->faces[faceCount].s[2]));
+				}
+				else if (faceDefinition == 2)
+				{
+					sscanf(objContent + counter, "%i/%i %i/%i %i/%i",
+						&(scene->faces[faceCount].s[0]), &temp,
+						&(scene->faces[faceCount].s[1]), &temp,
+						&(scene->faces[faceCount].s[2]), &temp);
+				}
+				else if (faceDefinition == 3)
+				{
+					sscanf(objContent + counter, "%i//%i %i//%i %i//%i",
+						&(scene->faces[faceCount].s[0]), &temp,
+						&(scene->faces[faceCount].s[1]), &temp,
+						&(scene->faces[faceCount].s[2]), &temp);
+				}
+				else
+				{
+					sscanf(objContent + counter, "%i/%i/%i %i/%i/%i %i/%i/%i",
+						&(scene->faces[faceCount].s[0]), &temp, &temp,
+						&(scene->faces[faceCount].s[1]), &temp, &temp,
+						&(scene->faces[faceCount].s[2]), &temp, &temp);
+				}
+				// make C-like indexes since OBJ file format use indexes starting in 1
+				scene->faces[faceCount].s[0]--;
+				scene->faces[faceCount].s[1]--;
+				scene->faces[faceCount].s[2]--;
+				scene->faces[faceCount].s[3] = currentMaterial;
+				faceCount++;
 			}
-			else if (faceDefinition == 2)
-			{
-				sscanf(objContent + counter, "%i/%i %i/%i %i/%i",
-					&(scene->faces[faceCount].s[0]), &temp,
-					&(scene->faces[faceCount].s[1]), &temp,
-					&(scene->faces[faceCount].s[2]), &temp);
-			}
-			else if (faceDefinition == 3)
-			{
-				sscanf(objContent + counter, "%i//%i %i//%i %i//%i",
-					&(scene->faces[faceCount].s[0]), &temp,
-					&(scene->faces[faceCount].s[1]), &temp,
-					&(scene->faces[faceCount].s[2]), &temp);
-			}
-			else
-			{
-				sscanf(objContent + counter, "%i/%i/%i %i/%i/%i %i/%i/%i",
-					&(scene->faces[faceCount].s[0]), &temp, &temp,
-					&(scene->faces[faceCount].s[1]), &temp, &temp,
-					&(scene->faces[faceCount].s[2]), &temp, &temp);
-			}
-			// make C-like indexes since OBJ file format use indexes starting in 1
-			scene->faces[faceCount].s[0]--;
-			scene->faces[faceCount].s[1]--;
-			scene->faces[faceCount].s[2]--;
-			scene->faces[faceCount].s[3] = currentMaterial;
-			faceCount++;
 		}
 		//vertices
 		else if (objContent[counter] == 'v' && objContent[counter + 1] == ' ')
@@ -319,7 +323,7 @@ Scene3D* LoadOBJ(const char* fileName)
 		// jump line
 		while (true)
 		{
-			if (objContent[counter] == 10)
+			if (objContent[counter] == 10 || counter == size)
 			{
 				counter++;
 				break;
@@ -335,12 +339,12 @@ Scene3D* LoadOBJ(const char* fileName)
 }
 
 
-int GetFaceDefinition(char* objContent, int counter)
+int GetFaceDefinition(char* objContent, int counter, int size)
 {
 
 	counter += 2;
 	// keep walking until finds something to checks the face definition type
-	for (int p = counter;; p++)
+	for (int p = counter; p < size || objContent[p] != 10; p++)
 	{
 		if (objContent[p] == ' ') // vertex only
 		{
@@ -354,7 +358,7 @@ int GetFaceDefinition(char* objContent, int counter)
 		}
 		else if (objContent[p] == '/')
 		{
-			while (true)
+			while (p < size && objContent[p] != 10) // this will prevent crashs using corruputed OBJ files
 			{
 				p++;
 				if (objContent[p] == '/') // vertex, texture and normal mode
@@ -373,4 +377,5 @@ int GetFaceDefinition(char* objContent, int counter)
 
 	}
 
+	return 0;
 }
