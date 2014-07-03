@@ -83,7 +83,6 @@ void RenderFrame::SetImage(const cl_uchar4 *frame, wxSize& resolution)
 	if (m_render.IsOk())
 		m_render.Destroy(); /* delete previously image */
 
-
 	m_imageMenu->Enable(wxID_SAVE, true);
 
 	/* copy to local data */
@@ -99,13 +98,15 @@ void RenderFrame::SetImage(const cl_uchar4 *frame, wxSize& resolution)
 		frameAlphaData[a] = frame[a].s[3];
 	}
 
-	m_render.Create(resolution, frameRGBData, frameAlphaData, true);
+	// wx will take care of freeing frameRGBData and frameAlphaData
+	m_render.Create(resolution, frameRGBData, frameAlphaData,false);
 
 	/* resize screen to best fit the image */
 	m_sizer->SetMinSize(resolution);
-	this->SetBestFittingSize();
+	m_sizer->SetDimension(wxPoint(wxDefaultPosition), resolution);
+	this->SetMinSize(resolution);
+	this->Fit();
 	this->Refresh();
-	
 }
 
 void RenderFrame::OnSaveImage(wxCommandEvent& WXUNUSED(event))
