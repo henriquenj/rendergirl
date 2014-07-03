@@ -15,7 +15,7 @@ VS2013 folder. The compiled software has only the [Visual C++ Redistributable 20
 
 In order to compile the software, simply open the RenderGirlOpenCL.sln file and select a platform (either Win32 or x64) and press Build > Build Solution. The selected StartUp project should either be RenderGirlApp or RenderGirlConsole if you want to run the software from inside Visual Studio.
 
-The VS solution is organized as follows: the wxWidgets solution folder contains the wxWidgets projects, the RenderGirlApp project contains the wxWidgets interface for the Core and the RenderGirlCore project contains the Core itself.
+The VS solution is organized as follows: the wxWidgets solution folder contains the wxWidgets projects, the RenderGirlApp project contains the wxWidgets interface, the RenderGirlConsole contains the console-only interface and the RenderGirlCore project contains the Core itself.
 
 The source code folder structure is organized as follows:
 - **/VS2013**: contains the VS2013 build files and the intermediate directories
