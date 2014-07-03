@@ -151,6 +151,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_custom_build", "..\App\wxW
 		{8ACC122A-CA6A-5AA6-9C97-9CDD2E533DB0} = {8ACC122A-CA6A-5AA6-9C97-9CDD2E533DB0}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenderGirlConsole", "RenderGirlConsole.vcxproj", "{E4D7DC6B-01CD-411B-9493-B5AB1EEFAB0D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1110E5D3-904D-46B6-99F2-91BF554C3EC4} = {1110E5D3-904D-46B6-99F2-91BF554C3EC4}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -473,6 +478,17 @@ Global
 		{01F4CE10-2CFB-41A8-B41F-E54337868A1D}.Release|Win32.Build.0 = Release|Win32
 		{01F4CE10-2CFB-41A8-B41F-E54337868A1D}.Release|x64.ActiveCfg = Release|x64
 		{01F4CE10-2CFB-41A8-B41F-E54337868A1D}.Release|x64.Build.0 = Release|x64
+		{E4D7DC6B-01CD-411B-9493-B5AB1EEFAB0D}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{E4D7DC6B-01CD-411B-9493-B5AB1EEFAB0D}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{E4D7DC6B-01CD-411B-9493-B5AB1EEFAB0D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E4D7DC6B-01CD-411B-9493-B5AB1EEFAB0D}.Debug|Win32.Build.0 = Debug|Win32
+		{E4D7DC6B-01CD-411B-9493-B5AB1EEFAB0D}.Debug|x64.ActiveCfg = Debug|Win32
+		{E4D7DC6B-01CD-411B-9493-B5AB1EEFAB0D}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{E4D7DC6B-01CD-411B-9493-B5AB1EEFAB0D}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{E4D7DC6B-01CD-411B-9493-B5AB1EEFAB0D}.Release|Win32.ActiveCfg = Release|Win32
+		{E4D7DC6B-01CD-411B-9493-B5AB1EEFAB0D}.Release|Win32.Build.0 = Release|Win32
+		{E4D7DC6B-01CD-411B-9493-B5AB1EEFAB0D}.Release|x64.ActiveCfg = Release|x64
+		{E4D7DC6B-01CD-411B-9493-B5AB1EEFAB0D}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

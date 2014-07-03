@@ -13,7 +13,7 @@ For additional information please visit the [wiki pages](https://github.com/henr
 The only build system currently available is for Visual Studio 2013, located in the
 VS2013 folder. The compiled software has only the [Visual C++ Redistributable 2013](http://www.microsoft.com/en-gb/download/details.aspx?id=40784) as dependency. The Raytracer.cl source file should be on the same folder as the compiled software.
 
-In order to compile the software, simply open the RenderGirlOpenCL.sln file and select a platform (either Win32 or x64) and press Build > Build Solution. The selected StartUp project should be always be RenderGirlApp if you want to run the software from inside Visual Studio.
+In order to compile the software, simply open the RenderGirlOpenCL.sln file and select a platform (either Win32 or x64) and press Build > Build Solution. The selected StartUp project should either be RenderGirlApp or RenderGirlConsole if you want to run the software from inside Visual Studio.
 
 The VS solution is organized as follows: the wxWidgets solution folder contains the wxWidgets projects, the RenderGirlApp project contains the wxWidgets interface for the Core and the RenderGirlCore project contains the Core itself.
 
@@ -21,6 +21,7 @@ The source code folder structure is organized as follows:
 - **/VS2013**: contains the VS2013 build files and the intermediate directories
 - **/Core**: RenderGirl Core source code, the Raytracer.cl and OpenCL headers and libraries
 - **/App**: wxWidgets interface source code, as well as the submodule for wxWidgets itself
+- **/Console**: Source code for the console project
 
 Upon compilation, the following folders are created
 - **/lib**: the final compiled core (a .lib on windows) goes to this folder

@@ -79,7 +79,7 @@ public:
 	}
 
 	/* return list of avaiable platforms */ 
-	const inline std::vector<OCLPlatform*>& ReturnPlatforms()
+	inline const std::vector<OCLPlatform*>& ReturnPlatforms()
 	{
 		return m_platforms;
 	}

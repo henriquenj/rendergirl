@@ -154,7 +154,6 @@ __kernel void Raytrace(__global double3* vertices, __global double3* normals, __
 	int x = id % sceneInfo->width;
 	int y = id / sceneInfo->height;
 
-	printf("test output");
 
 	/* Using the syntax frame[x][y] produces different behaviour on different platforms (doesn't work on NVIDIA GPUS)
 	So use the XYZ to access the members of any vector types */
