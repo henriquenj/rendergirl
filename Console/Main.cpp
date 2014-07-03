@@ -67,8 +67,25 @@ int main()
 	shared.InitPlatforms();
 	shared.InitDevices();
 
+	/* Fill up camera information */
 	Camera camera;
+	camera.pos.s[0] = camera.lookAt.s[1] = 0.0;
+	camera.pos.s[2] = -10.0;
+	camera.lookAt.s[0] = camera.lookAt.s[1] = camera.lookAt.s[2] = 0.0;
+
+	// set up vector to the be just pointing up
+	camera.up.s[0] = 0.0;
+	camera.up.s[1] = 1.0;
+	camera.up.s[2] = 0.0;
+
 	Light light;
+	light.pos.s[0] = light.pos.s[1] = 1.0;
+	light.pos.s[2] = -10.0;
+
+	light.color.s[0] = light.color.s[1] = light.color.s[2] = 1.0;
+
+	light.Ks = 0.2;
+	light.Ka = 0.0;
 
 	// select list of platforms
 	std::vector<OCLPlatform*> platforms = shared.ReturnPlatforms();
