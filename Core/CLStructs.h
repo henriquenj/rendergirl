@@ -104,6 +104,12 @@ public:
 	}
 };
 
-
+/* default material to objects that don't have one */
+static const Material s_defaultMaterial = 
+{
+	{/*ambient(KA)*/ {0.0,0.0,0.0} },
+	{/*diffuse(KD)*/{0.5,0.5,0.5} },
+	{/*specular(KS)*/{0.0,0.0,0.0} }
+};
 
 #endif //__CLSTRUCTS_HEADER__

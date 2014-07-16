@@ -200,7 +200,7 @@ Scene3D* LoadOBJ(const char* fileName)
 	counter = 0;
 
 	std::vector<std::string> materialNames;
-	int currentMaterial = -1; //-1 means faces with no material
+	int currentMaterial = 0;
 
 	while (counter < size)
 	{
@@ -291,6 +291,7 @@ Scene3D* LoadOBJ(const char* fileName)
 					break;
 				}
 			}
+
 		}
 		// mtl lib
 		else if (objContent[counter] == 'm' && objContent[counter + 1] == 't')
@@ -331,6 +332,26 @@ Scene3D* LoadOBJ(const char* fileName)
 			counter++;
 		}
 
+	}
+
+	/* create a material lib with the default material if there's none by now*/
+	if (scene->materialSize == 0)
+	{
+		if (scene->materials != NULL)
+			delete scene->materials;
+
+		scene->materials = new Material[1]; // this [1] is to make the delete compliant since it's dealloced with delete[]
+		*scene->materials = s_defaultMaterial;
+		scene->materialSize = 1;
+
+	}
+	// iterate through all the faces and see if there's a material for all faces
+	for (unsigned int p = 0; p < scene->facesSize; p++)
+	{
+		if (scene->faces[p].s[3] >= scene->materialSize) // an object cannot reference a material that does not exist
+		{
+			scene->faces[p].s[3] = scene->materialSize - 1; // point to the last valid one
+		}
 	}
 
 	delete[] objContent;
