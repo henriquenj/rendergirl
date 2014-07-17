@@ -69,57 +69,79 @@ typedef struct Material
 
 
 
-/* Möller–Trumbore intersection algorithm - http://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm */
-int Intersect( const double3   V1,  // Triangle vertices
-				const double3   V2,
-				const double3   V3,
-				const double3    O,  //Ray origin
-				const double3    D,  //Ray direction
-						float* out )
+/* Intersect function test collision with triangles only, based on a function provided by Rossana Baptista Queiroz */
+int Intersect(double* dist, double3* origin, double3* dir, double3* point, int indexFace, double3* normal,
+	__global int4* faces, __global double3* vertices)
 {
-	
-	double3 e1, e2;  //Edge1, Edge2
-  double3 P, Q, T;
-  float det, inv_det, u, v;
-  float t;
- 
-  //Find vectors for two edges sharing V1
-  e1 = V2 - V1;
-  e2 = V3 - V1;
-  //Begin calculating determinant - also used to calculate u parameter
-  P = cross(D, e2);
-  //if determinant is near zero, ray lies in plane of triangle
-  det = dot(e1, P);
-  //NOT CULLING
-  if (det > - SMALL_NUM && det < SMALL_NUM) return 0;
-  inv_det = 1.f / det;
- 
-  //calculate distance from V1 to ray origin
-  T = O - V1;
- 
-  //Calculate u parameter and test bound
-  u = dot(T, P) * inv_det;
-  //The intersection lies outside of the triangle
-  if(u < 0.f || u > 1.f) return 0;
- 
-  //Prepare to test v parameter
-  Q = cross(T, e1);
- 
-  //Calculate V parameter and test bound
-  v = dot(D, Q) * inv_det;
-  //The intersection lies outside of the triangle
-  if(v < 0.f || u + v  > 1.f) return 0;
- 
-  t = dot(e2, Q) * inv_det;
- 
-  if (t > SMALL_NUM) { //ray intersection
-    *out = t;
-    return 1;
-  }
- 
-  // No hit, no win
-  return 0;
+	// get position of the three vertices of the triangle
+	double3 tri[3];
 
+	// first vertex
+	tri[0].x = vertices[faces[indexFace].x].x;
+	tri[0].y = vertices[faces[indexFace].x].y;
+	tri[0].z = vertices[faces[indexFace].x].z;
+	// second vertex
+	tri[1].x = vertices[faces[indexFace].y].x;
+	tri[1].y = vertices[faces[indexFace].y].y;
+	tri[1].z = vertices[faces[indexFace].y].z;
+	// third vertex
+	tri[2].x = vertices[faces[indexFace].z].x;
+	tri[2].y = vertices[faces[indexFace].z].y;
+	tri[2].z = vertices[faces[indexFace].z].z;
+
+	double3 u, v, n; //triangle vectors
+	double3 w0, w; //ray vectors
+	double r, a, b; // params to calc ray-plane intersect
+
+	// get triangle edge vectors and plane normal
+	u = tri[1] - tri[0];
+	v = tri[2] - tri[0];
+	*normal = cross(u, v);
+	double3 zero = (double3)(0.0, 0.0, 0.0);
+	if (all(*normal == zero))
+		return -1; // triangle is degenerate, not deal with this case
+
+	w0 = (*origin) - tri[0];
+	a = -dot(*normal, w0);
+	b = dot(*normal, *dir);
+	if (fabs(b) < SMALL_NUM) // ray is parallel to triangle plane
+	{
+		if (a == 0)				// ray lies in triangle plane
+			return 1;
+		else return 0;	// ray disjoint from plane
+	}
+
+
+	// get intersection point of ray with triangle plane
+	r = a / b;
+	if (r < 0.0) // ray goes away from triangle
+		return 0; // => no intersect
+	// for a segment, also test if (r > 1.0) => no intersect
+
+	*point = (*origin) + (*dir) * r; // intersect point of ray and plane
+
+	*dist = r;
+
+	// is I inside T?
+	double    uu, uv, vv, wu, wv, D;
+	uu = dot(u, u);
+	uv = dot(u, v);
+	vv = dot(v, v);
+	w = (*point) - tri[0];
+	wu = dot(w, u);
+	wv = dot(w, v);
+	D = uv * uv - uu * vv;
+
+	// get and test parametric coords
+	double s, t;
+	s = (uv * wv - vv * wu) / D;
+	if (s < 0.0 || s > 1.0)        // I is outside T
+		return 0;
+	t = (uv * wu - uu * wv) / D;
+	if (t < 0.0 || (s + t) > 1.0)  // I is outside T
+		return 0;
+
+	return 1;                      // I is in T
 
 }
 
@@ -144,12 +166,11 @@ __kernel void Raytrace(__global double3* vertices, __global double3* normals, __
 	ray_dir = normalize(ray_dir);
 
 	double distance = 1000000.0; // high value for the first ray
-	int face_i = -1; // index of the face that was hit, was -1 I don't now why
+	int face_i = -1; // index of the face that was hit
 	double maxDistance = 1000000.0; //max distance, work as a far view point
 	double3 point_i; // intersection point
 	double3 normal; // face normal
 	double3 l_origin = camera->pos; // local copy of origin of rays (camera/eye)
-	float intersectOutput;
 	// for each face, look for intersections with the ray
 	for (unsigned int k = 0; k < sceneInfo->facesSize; k++)
 	{
@@ -157,12 +178,12 @@ __kernel void Raytrace(__global double3* vertices, __global double3* normals, __
 		double3 temp_point; // temporary intersection point
 		double3 temp_normal;// temporary normal vector
 
-		result = Intersect(vertices[faces[k].x], vertices[faces[k].y], vertices[faces[k].z], l_origin, ray_dir, &intersectOutput);
+		result = Intersect(&distance, &l_origin, &ray_dir, &temp_point, k, &temp_normal, faces, vertices);
 
 		if (result > 0)
 		{
 			//some collision
-			//if (distance < maxDistance) // check if it's the closest to the camera so far
+			if (distance < maxDistance) // check if it's the closest to the camera so far
 			{
 				maxDistance = distance;
 				face_i = k;
@@ -175,54 +196,74 @@ __kernel void Raytrace(__global double3* vertices, __global double3* normals, __
 	if (face_i != -1)
 	{
 
-		//// now that we have the face, calculate illumination
-		//double3 amount_color = (double3)(0.0, 0.0, 0.0); //final amount of color that goes to each pixel
-
-		//// get direction vector of light based on the intersection point
-		//double3 L = light->pos - point_i;
-		//L = normalize(L);
-		//normal = normalize(normal);
-
-		//int indexMaterial = faces[face_i].w;// material is stored in the last component of the face vector
-
-		////diffuse
-		//double dot_r = dot(normal, L);
-		//if (dot_r > 0)
+		/* shot secondary ray directed to the light and see if we have a shadow */
+		//double3 rayToLight = point_i - light->pos;
+		//rayToLight = normalize(rayToLight);
+		//l_origin = light->pos;
+		//int temp; // info to be discarted
+		//for (unsigned int p = 0; p < sceneInfo->facesSize; p++)
 		//{
-		//	double Kd = ((materials[indexMaterial].diffuseColor.x
-		//		+ materials[indexMaterial].diffuseColor.y
-		//		+ materials[indexMaterial].diffuseColor.z) / 3.0);
-		//	double dif = dot_r * Kd;
-		//	//put diffuse component
-		//	amount_color += materials[indexMaterial].diffuseColor * light->color * dif;
-		//}
-		////specular
-		////glm::vec3 R = glm::cross(2.0f * glm::dot(L,normal) * normal,L);
-		//double3 R = L - 2.0 * dot(L, normal) * normal;
-		//dot_r = dot(ray_dir, R);
-		//if (dot_r > 0)
-		//{
-		//	double spec = pown(dot_r, 20.0) * light->Ks;
-		//	// put specular component
-		//	amount_color += spec * light->color;
+		//	if (p != face_i)
+		//	{
+		//		if (Intersect(&distance, &l_origin, &rayToLight, &temp, p, &temp, faces, vertices) > 0)
+		//		{
+		//			frame[id].x = 0;
+		//			frame[id].y = 0;
+		//			frame[id].z = 0;
+		//			frame[id].w = 255;
+		//			return;
+		//		}
+		//	}
 		//}
 
-		//// build pixel
-		//double3 final_c;
-		//final_c.x = (amount_color.x) + (light->color.x * light->Ka); // put ambient
-		//final_c.y = (amount_color.y) + (light->color.y * light->Ka);
-		//final_c.z = (amount_color.z) + (light->color.z * light->Ka);
+		// now that we have the face, calculate illumination
+		double3 amount_color = (double3)(0.0, 0.0, 0.0); //final amount of color that goes to each pixel
 
-		//if (final_c.x > 1.0)
-		//	final_c.x = 1.0;
-		//if (final_c.y > 1.0)
-		//	final_c.y = 1.0;
-		//if (final_c.z > 1.0)
-		//	final_c.z = 1.0;
+		// get direction vector of light based on the intersection point
+		double3 L = light->pos - point_i;
+		L = normalize(L);
+		normal = normalize(normal);
 
-		frame[id].x = 255;
-		frame[id].y = 255;
-		frame[id].z = 255;
+		int indexMaterial = faces[face_i].w;// material is stored in the last component of the face vector
+
+		//diffuse
+		double dot_r = dot(normal, L);
+		if (dot_r > 0)
+		{
+			double Kd = ((materials[indexMaterial].diffuseColor.x
+				+ materials[indexMaterial].diffuseColor.y
+				+ materials[indexMaterial].diffuseColor.z) / 3.0);
+			double dif = dot_r * Kd;
+			//put diffuse component
+			amount_color += materials[indexMaterial].diffuseColor * light->color * dif;
+		}
+		//specular
+		//glm::vec3 R = glm::cross(2.0f * glm::dot(L,normal) * normal,L);
+		double3 R = L - 2.0 * dot(L, normal) * normal;
+		dot_r = dot(ray_dir, R);
+		if (dot_r > 0)
+		{
+			double spec = pown(dot_r, 20.0) * light->Ks;
+			// put specular component
+			amount_color += spec * light->color;
+		}
+
+		// build pixel
+		double3 final_c;
+		final_c.x = (amount_color.x) + (light->color.x * light->Ka); // put ambient
+		final_c.y = (amount_color.y) + (light->color.y * light->Ka);
+		final_c.z = (amount_color.z) + (light->color.z * light->Ka);
+
+		if (final_c.x > 1.0)
+			final_c.x = 1.0;
+		if (final_c.y > 1.0)
+			final_c.y = 1.0;
+		if (final_c.z > 1.0)
+			final_c.z = 1.0;
+
+		frame[id].x = (final_c.x * 255.0);
+		frame[id].y = (final_c.y * 255.0);
+		frame[id].z = (final_c.z * 255.0);
 		frame[id].w = 255; // full alpha
 	}
 	else

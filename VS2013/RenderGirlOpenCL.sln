@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30501.0
+VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenderGirlApp", "RenderGirlOpenCL.vcxproj", "{118A0C67-BB56-4918-AD2B-FB5882F23DF8}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -172,8 +172,8 @@ Global
 		{118A0C67-BB56-4918-AD2B-FB5882F23DF8}.Debug|Win32.Build.0 = Debug|Win32
 		{118A0C67-BB56-4918-AD2B-FB5882F23DF8}.Debug|x64.ActiveCfg = Debug|x64
 		{118A0C67-BB56-4918-AD2B-FB5882F23DF8}.Debug|x64.Build.0 = Debug|x64
-		{118A0C67-BB56-4918-AD2B-FB5882F23DF8}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{118A0C67-BB56-4918-AD2B-FB5882F23DF8}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{118A0C67-BB56-4918-AD2B-FB5882F23DF8}.Release|Mixed Platforms.ActiveCfg = Debug|x64
+		{118A0C67-BB56-4918-AD2B-FB5882F23DF8}.Release|Mixed Platforms.Build.0 = Debug|x64
 		{118A0C67-BB56-4918-AD2B-FB5882F23DF8}.Release|Win32.ActiveCfg = Release|Win32
 		{118A0C67-BB56-4918-AD2B-FB5882F23DF8}.Release|Win32.Build.0 = Release|Win32
 		{118A0C67-BB56-4918-AD2B-FB5882F23DF8}.Release|x64.ActiveCfg = Release|x64
