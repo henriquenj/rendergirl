@@ -75,6 +75,9 @@ int Intersect( const double3   V1,  // Triangle vertices
 				const double3   V3,
 				const double3    O,  //Ray origin
 				const double3    D,  //Ray direction
+				double3*	 normal,
+				double3*	 point_i,
+				double*	 dist,
 						float* out )
 {
 	
@@ -82,6 +85,18 @@ int Intersect( const double3   V1,  // Triangle vertices
   double3 P, Q, T;
   float det, inv_det, u, v;
   float t;
+
+  //Find normal
+  double3 u2 = V2 - V1;
+  double3 v2 = V3 - V1;
+  *normal = cross(u2, v2);
+  //Find intersection and distance
+  double3 w0 = O - V1;
+  float a = -dot(*normal, w0);
+  float b = dot(*normal, D);
+  float r = a / b;
+  *point_i = (O) + (D) * r; // intersect point of ray and plane
+  *dist = r;
  
   //Find vectors for two edges sharing V1
   e1 = V2 - V1;
@@ -96,6 +111,8 @@ int Intersect( const double3   V1,  // Triangle vertices
  
   //calculate distance from V1 to ray origin
   T = O - V1;
+  //*dist = length(T);
+  //*point_i = (O)+(D) * (*dist);
  
   //Calculate u parameter and test bound
   u = dot(T, P) * inv_det;
@@ -157,12 +174,12 @@ __kernel void Raytrace(__global double3* vertices, __global double3* normals, __
 		double3 temp_point; // temporary intersection point
 		double3 temp_normal;// temporary normal vector
 
-		result = Intersect(vertices[faces[k].x], vertices[faces[k].y], vertices[faces[k].z], l_origin, ray_dir, &intersectOutput);
+		result = Intersect(vertices[faces[k].x], vertices[faces[k].y], vertices[faces[k].z], l_origin, ray_dir, &temp_normal, &temp_point, &distance, &intersectOutput);
 
 		if (result > 0)
 		{
 			//some collision
-			//if (distance < maxDistance) // check if it's the closest to the camera so far
+			if (distance < maxDistance) // check if it's the closest to the camera so far
 			{
 				maxDistance = distance;
 				face_i = k;
@@ -175,54 +192,54 @@ __kernel void Raytrace(__global double3* vertices, __global double3* normals, __
 	if (face_i != -1)
 	{
 
-		//// now that we have the face, calculate illumination
-		//double3 amount_color = (double3)(0.0, 0.0, 0.0); //final amount of color that goes to each pixel
+		// now that we have the face, calculate illumination
+		double3 amount_color = (double3)(0.0, 0.0, 0.0); //final amount of color that goes to each pixel
 
-		//// get direction vector of light based on the intersection point
-		//double3 L = light->pos - point_i;
-		//L = normalize(L);
-		//normal = normalize(normal);
+		// get direction vector of light based on the intersection point
+		double3 L = light->pos - point_i;
+		L = normalize(L);
+		normal = normalize(normal);
 
-		//int indexMaterial = faces[face_i].w;// material is stored in the last component of the face vector
+		int indexMaterial = faces[face_i].w;	// material is stored in the last component of the face vector
 
-		////diffuse
-		//double dot_r = dot(normal, L);
-		//if (dot_r > 0)
-		//{
-		//	double Kd = ((materials[indexMaterial].diffuseColor.x
-		//		+ materials[indexMaterial].diffuseColor.y
-		//		+ materials[indexMaterial].diffuseColor.z) / 3.0);
-		//	double dif = dot_r * Kd;
-		//	//put diffuse component
-		//	amount_color += materials[indexMaterial].diffuseColor * light->color * dif;
-		//}
-		////specular
-		////glm::vec3 R = glm::cross(2.0f * glm::dot(L,normal) * normal,L);
-		//double3 R = L - 2.0 * dot(L, normal) * normal;
-		//dot_r = dot(ray_dir, R);
-		//if (dot_r > 0)
-		//{
-		//	double spec = pown(dot_r, 20.0) * light->Ks;
-		//	// put specular component
-		//	amount_color += spec * light->color;
-		//}
+		//diffuse
+		double dot_r = dot(normal, L);
+		if (dot_r > 0)
+		{
+			double Kd = ((materials[indexMaterial].diffuseColor.x
+				+ materials[indexMaterial].diffuseColor.y
+				+ materials[indexMaterial].diffuseColor.z) / 3.0);
+			double dif = dot_r * Kd;
+			//put diffuse component
+			amount_color += materials[indexMaterial].diffuseColor * light->color * dif;
+		}
+		//specular
+		//glm::vec3 R = glm::cross(2.0f * glm::dot(L,normal) * normal,L);
+		double3 R = L - 2.0 * dot(L, normal) * normal;
+		dot_r = dot(ray_dir, R);
+		if (dot_r > 0)
+		{
+			double spec = pown(dot_r, 20.0) * light->Ks;
+			// put specular component
+			amount_color += spec * light->color;
+		}
 
-		//// build pixel
-		//double3 final_c;
-		//final_c.x = (amount_color.x) + (light->color.x * light->Ka); // put ambient
-		//final_c.y = (amount_color.y) + (light->color.y * light->Ka);
-		//final_c.z = (amount_color.z) + (light->color.z * light->Ka);
+		// build pixel
+		double3 final_c;
+		final_c.x = (amount_color.x) + (light->color.x * light->Ka); // put ambient
+		final_c.y = (amount_color.y) + (light->color.y * light->Ka);
+		final_c.z = (amount_color.z) + (light->color.z * light->Ka);
 
-		//if (final_c.x > 1.0)
-		//	final_c.x = 1.0;
-		//if (final_c.y > 1.0)
-		//	final_c.y = 1.0;
-		//if (final_c.z > 1.0)
-		//	final_c.z = 1.0;
+		if (final_c.x > 1.0)
+			final_c.x = 1.0;
+		if (final_c.y > 1.0)
+			final_c.y = 1.0;
+		if (final_c.z > 1.0)
+			final_c.z = 1.0;
 
-		frame[id].x = 255;
-		frame[id].y = 255;
-		frame[id].z = 255;
+		frame[id].x = (final_c.x * 255.0);
+		frame[id].y = (final_c.y * 255.0);
+		frame[id].z = (final_c.z * 255.0);
 		frame[id].w = 255; // full alpha
 	}
 	else
