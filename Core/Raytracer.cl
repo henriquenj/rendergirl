@@ -84,25 +84,16 @@ int Intersect( const double3   V1,  // Triangle vertices
 	double3 e1, e2;  //Edge1, Edge2
   double3 P, Q, T;
   float det, inv_det, u, v;
-  float t;
+  float t, t2;
 
-  //Find normal
-  double3 u2 = V2 - V1;
-  double3 v2 = V3 - V1;
-  *normal = cross(u2, v2);
   //Find intersection and distance
-  T = O - V1;
-  float a = -dot(*normal, T);
-  float b = dot(*normal, D);
-  float r = a / b;
-  *point_i = (O) + (D) * r; // intersect point of ray and plane
-  *dist = r;
  
   //Find vectors for two edges sharing V1
   e1 = V2 - V1;
   e2 = V3 - V1;
-  //Begin calculating determinant - also used to calculate u parameter
+  //Begin calculating determinant - also used to calculate u parameter, this is used to calculate normal as well, so we calculate here now
   P = cross(D, e2);
+  *normal = cross(e1, e2);
   //if determinant is near zero, ray lies in plane of triangle
   det = dot(e1, P);
   //NOT CULLING
@@ -110,6 +101,7 @@ int Intersect( const double3   V1,  // Triangle vertices
   inv_det = 1.f / det;
  
   //calculate distance from V1 to ray origin
+  T = O - V1;
   //*dist = length(T);
   //*point_i = (O)+(D) * (*dist);
  
@@ -126,9 +118,15 @@ int Intersect( const double3   V1,  // Triangle vertices
   //The intersection lies outside of the triangle
   if(v < 0.f || u + v  > 1.f) return 0;
  
-  t = dot(e2, Q) * inv_det;
+  t2 = dot(e2, Q);
+  t = t2 * inv_det;
  
   if (t > SMALL_NUM) { //ray intersection
+
+	  float r = t2 / det;			//if there was a intersection, compute distance!
+	  *point_i = (O)+(D)* r; // intersect point of ray and plane
+	  *dist = r;
+
     *out = t;
     return 1;
   }
