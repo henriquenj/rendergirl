@@ -93,7 +93,6 @@ int Intersect( const double3   V1,  // Triangle vertices
   e2 = V3 - V1;
   //Begin calculating determinant - also used to calculate u parameter, this is used to calculate normal as well, so we calculate here now
   P = cross(D, e2);
-  *normal = cross(e1, e2);
   //if determinant is near zero, ray lies in plane of triangle
   det = dot(e1, P);
   //NOT CULLING
@@ -123,6 +122,7 @@ int Intersect( const double3   V1,  // Triangle vertices
  
   if (t > SMALL_NUM) { //ray intersection
 
+	  *normal = cross(e1, e2);
 	  float r = t2 / det;			//if there was a intersection, compute distance!
 	  *point_i = (O)+(D)* r; // intersect point of ray and plane
 	  *dist = r;
