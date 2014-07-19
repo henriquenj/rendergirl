@@ -91,8 +91,8 @@ int Intersect( const double3   V1,  // Triangle vertices
   double3 v2 = V3 - V1;
   *normal = cross(u2, v2);
   //Find intersection and distance
-  double3 w0 = O - V1;
-  float a = -dot(*normal, w0);
+  T = O - V1;
+  float a = -dot(*normal, T);
   float b = dot(*normal, D);
   float r = a / b;
   *point_i = (O) + (D) * r; // intersect point of ray and plane
@@ -110,7 +110,6 @@ int Intersect( const double3   V1,  // Triangle vertices
   inv_det = 1.f / det;
  
   //calculate distance from V1 to ray origin
-  T = O - V1;
   //*dist = length(T);
   //*point_i = (O)+(D) * (*dist);
  
