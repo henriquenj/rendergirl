@@ -14,7 +14,7 @@
 
 	You should have received a copy of the GNU Lesser General Public
 	License along with this library.
-*/
+	*/
 
 
 /* enable double precision calculations on some OpenCL Compilers (NVIDIA) */
@@ -70,69 +70,69 @@ typedef struct Material
 
 
 /* Möller–Trumbore intersection algorithm - http://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm */
-int Intersect( const float3   V1,  // Triangle vertices
-				const float3   V2,
-				const float3   V3,
-				const float3    O,  //Ray origin
-				const float3    D,  //Ray direction
-				float3*	 normal,
-				float3*	 point_i,
-				float*	 dist,
-						float* out )
+int Intersect(const float3   V1,  // Triangle vertices
+	const float3   V2,
+	const float3   V3,
+	const float3    O,  //Ray origin
+	const float3    D,  //Ray direction
+	float3*	 normal,
+	float3*	 point_i,
+	float*	 dist,
+	float* out)
 {
-	
+
 	float3 e1, e2;  //Edge1, Edge2
-  float3 P, Q, T;
-  float det, inv_det, u, v;
-  float t, t2;
+	float3 P, Q, T;
+	float det, inv_det, u, v;
+	float t, t2;
 
-  //Find intersection and distance
- 
-  //Find vectors for two edges sharing V1
-  e1 = V2 - V1;
-  e2 = V3 - V1;
-  //Begin calculating determinant - also used to calculate u parameter, this is used to calculate normal as well, so we calculate here now
-  P = cross(D, e2);
-  //if determinant is near zero, ray lies in plane of triangle
-  det = dot(e1, P);
-  //NOT CULLING
-  if (det > - SMALL_NUM && det < SMALL_NUM) return 0;
-  inv_det = 1.f / det;
- 
-  //calculate distance from V1 to ray origin
-  T = O - V1;
-  //*dist = length(T);
-  //*point_i = (O)+(D) * (*dist);
- 
-  //Calculate u parameter and test bound
-  u = dot(T, P) * inv_det;
-  //The intersection lies outside of the triangle
-  if(u < 0.f || u > 1.f) return 0;
- 
-  //Prepare to test v parameter
-  Q = cross(T, e1);
- 
-  //Calculate V parameter and test bound
-  v = dot(D, Q) * inv_det;
-  //The intersection lies outside of the triangle
-  if(v < 0.f || u + v  > 1.f) return 0;
- 
-  t2 = dot(e2, Q);
-  t = t2 * inv_det;
- 
-  if (t > SMALL_NUM) { //ray intersection
+	//Find intersection and distance
 
-	  *normal = cross(e1, e2);
-	  float r = t2 / det;			//if there was a intersection, compute distance!
-	  *point_i = (O)+(D)* r; // intersect point of ray and plane
-	  *dist = r;
+	//Find vectors for two edges sharing V1
+	e1 = V2 - V1;
+	e2 = V3 - V1;
+	//Begin calculating determinant - also used to calculate u parameter, this is used to calculate normal as well, so we calculate here now
+	P = cross(D, e2);
+	//if determinant is near zero, ray lies in plane of triangle
+	det = dot(e1, P);
+	//NOT CULLING
+	if (det > -SMALL_NUM && det < SMALL_NUM) return 0;
+	inv_det = 1.f / det;
 
-    *out = t;
-    return 1;
-  }
- 
-  // No hit, no win
-  return 0;
+	//calculate distance from V1 to ray origin
+	T = O - V1;
+	//*dist = length(T);
+	//*point_i = (O)+(D) * (*dist);
+
+	//Calculate u parameter and test bound
+	u = dot(T, P) * inv_det;
+	//The intersection lies outside of the triangle
+	if (u < 0.f || u > 1.f) return 0;
+
+	//Prepare to test v parameter
+	Q = cross(T, e1);
+
+	//Calculate V parameter and test bound
+	v = dot(D, Q) * inv_det;
+	//The intersection lies outside of the triangle
+	if (v < 0.f || u + v  > 1.f) return 0;
+
+	t2 = dot(e2, Q);
+	t = t2 * inv_det;
+
+	if (t > SMALL_NUM) { //ray intersection
+
+		*normal = cross(e1, e2);
+		float r = t2 / det;			//if there was a intersection, compute distance!
+		*point_i = (O)+(D)* r; // intersect point of ray and plane
+		*dist = r;
+
+		*out = t;
+		return 1;
+	}
+
+	// No hit, no win
+	return 0;
 
 
 }
@@ -154,7 +154,7 @@ __kernel void Raytrace(__global float3* vertices, __global float3* normals, __gl
 	float normalized_i = -((float)((float)x / (float)(sceneInfo->width) * (float)(sceneInfo->proportion_x)) - 0.5f);
 	float normalized_j = -((float)((float)y / (float)(sceneInfo->height) * (float)(sceneInfo->proportion_y)) - 0.5f);
 	float3 ray_dir = (float3)(camera->right * normalized_i) + (float3)(camera->up * normalized_j) + camera->dir;
-	
+
 	ray_dir = normalize(ray_dir);
 
 	float distance = 1000000.0f; // high value for the first ray
@@ -189,12 +189,38 @@ __kernel void Raytrace(__global float3* vertices, __global float3* normals, __gl
 	if (face_i != -1)
 	{
 
-		// now that we have the face, calculate illumination
-		float3 amount_color = (float3)(0.0f, 0.0f, 0.0f); //final amount of color that goes to each pixel
-
 		// get direction vector of light based on the intersection point
 		float3 L = light->pos - point_i;
 		L = normalize(L);
+
+		/* shot secondary ray directed to the light and see if we have a shadow */
+		l_origin = point_i;
+		bool shadow = false;
+		int temp; // info to be discarted
+		for (unsigned int p = 0; p < sceneInfo->facesSize; p++)
+		{
+			if (p != face_i)
+			{
+				if (Intersect(vertices[faces[p].x], vertices[faces[p].y], vertices[faces[p].z], l_origin, L, &temp, &temp, &distance, &intersectOutput) > 0)
+				{
+					shadow = true;
+					break;
+				}
+			}
+		}
+
+		if (shadow)// if there's a shadow, put black pixel
+		{
+			frame[id].x = 0;
+			frame[id].y = 0;
+			frame[id].z = 0;
+			frame[id].w = 255;
+			return;
+		}
+
+		// now that we have the face, calculate illumination
+		float3 amount_color = (float3)(0.0f, 0.0f, 0.0f); //final amount of color that goes to each pixel
+
 		normal = normalize(normal);
 
 		int indexMaterial = faces[face_i].w;	// material is stored in the last component of the face vector
