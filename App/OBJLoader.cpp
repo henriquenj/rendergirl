@@ -87,7 +87,7 @@ Material* LoadMTL(std::vector<std::string>& materialName, const char* file)
 		{
 			counter += 3;
 			// ambient color
-			sscanf(mtlContent + counter, "%lf %lf %lf", &(tempMaterial.ambientColor.s[0]),
+			sscanf(mtlContent + counter, "%f %f %f", &(tempMaterial.ambientColor.s[0]),
 				&(tempMaterial.ambientColor.s[1]),
 				&(tempMaterial.ambientColor.s[2]));
 		}
@@ -96,7 +96,7 @@ Material* LoadMTL(std::vector<std::string>& materialName, const char* file)
 		{
 			counter += 3;
 			// diffuse color
-			sscanf(mtlContent + counter, "%lf %lf %lf", &(tempMaterial.diffuseColor.s[0]),
+			sscanf(mtlContent + counter, "%f %f %f", &(tempMaterial.diffuseColor.s[0]),
 				&(tempMaterial.diffuseColor.s[1]),
 				&(tempMaterial.diffuseColor.s[2]));
 		}
@@ -104,7 +104,7 @@ Material* LoadMTL(std::vector<std::string>& materialName, const char* file)
 		{
 			counter += 3;
 			// specular color
-			sscanf(mtlContent + counter, "%lf %lf %lf", &(tempMaterial.specularColor.s[0]),
+			sscanf(mtlContent + counter, "%f %f %f", &(tempMaterial.specularColor.s[0]),
 				&(tempMaterial.specularColor.s[1]),
 				&(tempMaterial.specularColor.s[2]));
 		}
@@ -190,8 +190,8 @@ Scene3D* LoadOBJ(const char* fileName)
 
 	// alloc enough memory
 	scene->faces = new cl_int4[scene->facesSize];
-	scene->normal = new cl_double3[scene->normalSize];
-	scene->vertices = new cl_double3[scene->verticesSize];
+	scene->normal = new cl_float3[scene->normalSize];
+	scene->vertices = new cl_float3[scene->verticesSize];
 
 	int faceCount, verticesCount, normalCount;
 	faceCount = verticesCount = normalCount = 0;
@@ -208,7 +208,7 @@ Scene3D* LoadOBJ(const char* fileName)
 		if (objContent[counter] == 'v' && objContent[counter + 1] == 'n')
 		{
 			counter += 3;
-			sscanf(objContent + counter, "%lf %lf %lf", &(scene->normal[normalCount].s[0]),
+			sscanf(objContent + counter, "%f %f %f", &(scene->normal[normalCount].s[0]),
 				&(scene->normal[normalCount].s[1]),
 				&(scene->normal[normalCount].s[2]));
 			normalCount++;
@@ -265,7 +265,7 @@ Scene3D* LoadOBJ(const char* fileName)
 		{
 			counter += 2;
 			// load line
-			sscanf(objContent + counter, "%lf %lf %lf", &(scene->vertices[verticesCount].s[0]),
+			sscanf(objContent + counter, "%f %f %f", &(scene->vertices[verticesCount].s[0]),
 				&(scene->vertices[verticesCount].s[1]),
 				&(scene->vertices[verticesCount].s[2]));
 			verticesCount++;
