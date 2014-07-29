@@ -273,3 +273,155 @@ __kernel void Raytrace(__global float3* vertices, __global float3* normals, __gl
 		frame[id].w = 0; // zero alpha
 	}
 }
+
+
+float FxaaLuma(float3 rgb) {
+	return rgb.y * (0.587 / 0.299) + rgb.x;
+}
+
+__kernel void AntiAliasingFXAA(__global uchar4* screenInput, __global uchar4* screenOutput, __global int* width, __global int* height)
+{
+	int id = get_global_id(0);
+	int x = id % *width;				//-----column in which is the pixel
+	int y = id / *width;				//-----line in which is the pixel
+
+	bool canUp = true;
+	bool canDown = true;
+	bool canWest = true;
+	bool canEast = true;
+
+	float3 rgbM = screenInput[id].xyz;
+	//get current pixel and transform
+	float lumaM = FxaaLuma(rgbM);
+
+	float3 rgbW = rgbM;
+	float3 rgbE = rgbM;
+	float3 rgbN = rgbM;
+	float3 rgbS = rgbM;
+	float lumaW = lumaM;
+	float lumaE = lumaM;
+	float lumaN = lumaM;
+	float lumaS = lumaM;
+
+	//find the pixel of each coordinate and transform
+	if (x > 0)
+	{
+		rgbW = screenInput[id - 1].xyz;
+		lumaW = FxaaLuma(rgbN);
+	}
+	else
+	{
+		canWest = false;
+	}
+	if (x < width - 1)
+	{
+		rgbE = screenInput[id + 1].xyz;
+		lumaE = FxaaLuma(rgbE);
+	}
+	else
+	{
+		canEast = false;
+	}
+	if (y > 0)
+	{
+		rgbN = screenInput[id - width].xyz;
+		lumaN = FxaaLuma(rgbN);
+	}
+	else
+	{
+		canUp = false;
+	}
+	if (y < height - 1)
+	{
+		rgbS = screenInput[id + width].xyz;
+		lumaS = FxaaLuma(rgbS);
+	}
+	else
+	{
+		canDown = false;
+	}
+
+
+	float rangeMin = min(lumaM, min(min(lumaN, lumaW), min(lumaS, lumaE)));
+	float rangeMax = max(lumaM, max(max(lumaN, lumaW), max(lumaS, lumaE)));
+	float range = rangeMax - rangeMin;
+	if (range <
+		max(FXAA_EDGE_THRESHOLD_MIN, rangeMax * FXAA_EDGE_THRESHOLD)) {
+		screenOutput[id] = screenInput[id];
+		return;	}	float lumaL = (lumaN + lumaW + lumaE + lumaS) * 0.25;
+	float rangeL = abs(lumaL - lumaM);
+	float blendL = max(0.0,
+		(rangeL / range) - FXAA_SUBPIX_TRIM) * FXAA_SUBPIX_TRIM_SCALE;
+	blendL = min(FXAA_SUBPIX_CAP, blendL);	float3 rgbL = rgbN + rgbW + rgbM + rgbE + rgbS;
+
+	////////fazer condição pra cada direção!!!!
+	float3 rgbNW = rgbM;
+	float3 rgbNE = rgbM;
+	float3 rgbSW = rgbM;
+	float3 rgbSE = rgbM;
+	float lumaNW = lumaM;
+	float lumaNE = lumaM;
+	float lumaSW = lumaM;
+	float lumaSE = lumaM;
+
+	if (canUp && canWest)
+	{
+		rgbNW = screenInput[id - width - 1].xyz;
+		lumaNW = FxaaLuma(rgbNW);
+	}
+	if (canUp && canEast)
+	{
+		rgbNE = screenInput[id - width + 1].xyz;
+		lumaNE = FxaaLuma(rgbNE);
+	}
+	if (canDown && canWest)
+	{
+		rgbSW = screenInput[id + width - 1].xyz;
+		lumaSW = FxaaLuma(rgbSW);
+	}
+	if (canDown && canEast)
+	{
+		rgbSE = screenInput[id + width + 1].xyz;
+		lumaSE = FxaaLuma(rgbSE);
+	}
+
+	rgbL += (rgbNW + rgbNE + rgbSW + rgbSE);
+	rgbL = rgbL * (1.0 / 9.0);			//dont know if it's possible
+	screenOutput[id].x = rgbL.x;
+	screenOutput[id].y = rgbL.y;
+	screenOutput[id].z = rgbL.z;
+	screenOutput[id].w = 255;
+	//this part cannot be done without texture!!	/*-------------------------------------------
+	//edge test
+	float edgeVert =
+	abs((0.25 * lumaNW) + (-0.5 * lumaN) + (0.25 * lumaNE)) +
+	abs((0.50 * lumaW) + (-1.0 * lumaM) + (0.50 * lumaE)) +
+	abs((0.25 * lumaSW) + (-0.5 * lumaS) + (0.25 * lumaSE));
+	float edgeHorz =
+	abs((0.25 * lumaNW) + (-0.5 * lumaW) + (0.25 * lumaSW)) +
+	abs((0.50 * lumaN) + (-1.0 * lumaM) + (0.50 * lumaS)) +
+	abs((0.25 * lumaNE) + (-0.5 * lumaE) + (0.25 * lumaSE));
+	bool horzSpan = edgeHorz >= edgeVert;	float3 posN;	float3 posP;	float lumaEndN;	float lumaEndP;	lumaN = lumaM;	float gradientN = FXAA_SEARCH_THRESHOLD;	if (horzSpan)	{	posN = rgbW;	posP = rgbE;	}	else	{	posN = rgbS;	posP = rgbM;	}
+	bool doneN = false;
+	bool doneP = false;
+
+	//search for edges
+	for (uint i = 0; i < FXAA_SEARCH_STEPS; i++) {
+	#if FXAA_SEARCH_ACCELERATION == 1					//MUST BE 1!!
+	if (!doneN) lumaEndN = FxaaLuma(posN.xyz);
+	if (!doneP) lumaEndP = FxaaLuma(posP.xyz);
+	#else
+	if (!doneN) lumaEndN = FxaaLuma(
+	FxaaTextureGrad(tex, posN.xy, offNP).xyz);
+	if (!doneP) lumaEndP = FxaaLuma(
+	FxaaTextureGrad(tex, posP.xy, offNP).xyz);
+	#endif
+	doneN = doneN || (abs(lumaEndN - lumaN) >= gradientN);
+	doneP = doneP || (abs(lumaEndP - lumaN) >= gradientN);
+	if (doneN && doneP) break;
+	if (!doneN) posN -= offNP;
+	if (!doneP) posP += offNP;
+	}
+	------------------------------------------------*/
+
+}
