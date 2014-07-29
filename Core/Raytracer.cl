@@ -22,6 +22,19 @@
 
 #define SMALL_NUM  0.00000001f // anything that avoids division overflow
 
+
+/*----------FXAA quality defines-----------
+-------------------------------------------
+-----------------------------------------*/
+#define FXAA_EDGE_THRESHOLD	1/8		//The minimum amount of local contrast required to apply algorithm. 1 / 3 – too little, 1 / 4 – low quality, 1 / 8 – high quality, 1 / 16 – overkill
+#define FXAA_EDGE_THRESHOLD_MIN 1/16	//Trims the algorithm from processing darks. 1 / 32 – visible limit, 1 / 16 – high quality, 1 / 12 – upper limit(start of visible unfiltered edges)
+#define FXAA_SUBPIX_TRIM_SCALE 0 //Toggle subpix filtering. 0 – turn off, 1 – turn on, 2 – turn on force full (ignore FXAA_SUBPIX_TRIM and CAP)
+#define FXAA_SUBPIX_TRIM 1/4 //Controls removal of sub-pixel aliasing., 1/2 – low removal, 1/3 – medium removal, 1/4 – default removal, 1/8 – high removal, 0 – complete removal
+#define FXAA_SUBPIX_CAP 3/4 //Insures fine detail is not completely removed., This partly overrides FXAA_SUBPIX_TRIM., 3/4 – default amount of filtering, 7/8 – high amount of filtering, 1 – no capping of filtering
+#define FXAA_SEARCH_STEPS 1 //Controls the maximum number of search steps., Multiply by FXAA_SEARCH_ACCELERATION for filtering radius., 
+#define FXAA_SEARCH_ACCELERATION 1	//How much to accelerate search using anisotropic filtering., 1 – no acceleration, 2 – skip by 2 pixels, 3 – skip by 3 pixels, 4 – skip by 4 pixels (hard upper limit)
+#define FXAA_SEARCH_THRESHOLD 1/4 //Controls when to stop searching. 1/4 – seems best quality wise
+
 /*Any change on those structs should be copied back to the host code on CLStructs.h */
 
 /* Stores the concept of a Camera */
@@ -275,7 +288,7 @@ __kernel void Raytrace(__global float3* vertices, __global float3* normals, __gl
 }
 
 
-float FxaaLuma(float3 rgb) {
+uchar FxaaLuma(uchar3 rgb) {
 	return rgb.y * (0.587 / 0.299) + rgb.x;
 }
 
@@ -290,18 +303,18 @@ __kernel void AntiAliasingFXAA(__global uchar4* screenInput, __global uchar4* sc
 	bool canWest = true;
 	bool canEast = true;
 
-	float3 rgbM = screenInput[id].xyz;
+	uchar3 rgbM = screenInput[id].xyz;
 	//get current pixel and transform
-	float lumaM = FxaaLuma(rgbM);
+	uchar lumaM = FxaaLuma(rgbM);
 
-	float3 rgbW = rgbM;
-	float3 rgbE = rgbM;
-	float3 rgbN = rgbM;
-	float3 rgbS = rgbM;
-	float lumaW = lumaM;
-	float lumaE = lumaM;
-	float lumaN = lumaM;
-	float lumaS = lumaM;
+	uchar3 rgbW = rgbM;
+	uchar3 rgbE = rgbM;
+	uchar3 rgbN = rgbM;
+	uchar3 rgbS = rgbM;
+	uchar lumaW = lumaM;
+	uchar lumaE = lumaM;
+	uchar lumaN = lumaM;
+	uchar lumaS = lumaM;
 
 	//find the pixel of each coordinate and transform
 	if (x > 0)
@@ -313,7 +326,7 @@ __kernel void AntiAliasingFXAA(__global uchar4* screenInput, __global uchar4* sc
 	{
 		canWest = false;
 	}
-	if (x < width - 1)
+	if (x < *width - 1)
 	{
 		rgbE = screenInput[id + 1].xyz;
 		lumaE = FxaaLuma(rgbE);
@@ -324,16 +337,16 @@ __kernel void AntiAliasingFXAA(__global uchar4* screenInput, __global uchar4* sc
 	}
 	if (y > 0)
 	{
-		rgbN = screenInput[id - width].xyz;
+		rgbN = screenInput[id - *width].xyz;
 		lumaN = FxaaLuma(rgbN);
 	}
 	else
 	{
 		canUp = false;
 	}
-	if (y < height - 1)
+	if (y < *height - 1)
 	{
-		rgbS = screenInput[id + width].xyz;
+		rgbS = screenInput[id + *width].xyz;
 		lumaS = FxaaLuma(rgbS);
 	}
 	else
@@ -346,47 +359,47 @@ __kernel void AntiAliasingFXAA(__global uchar4* screenInput, __global uchar4* sc
 	float rangeMax = max(lumaM, max(max(lumaN, lumaW), max(lumaS, lumaE)));
 	float range = rangeMax - rangeMin;
 	if (range <
-		max(FXAA_EDGE_THRESHOLD_MIN, rangeMax * FXAA_EDGE_THRESHOLD)) {
+		max((float)FXAA_EDGE_THRESHOLD_MIN, rangeMax * FXAA_EDGE_THRESHOLD)) {
 		screenOutput[id] = screenInput[id];
-		return;	}	float lumaL = (lumaN + lumaW + lumaE + lumaS) * 0.25;
+		return;	}	uchar lumaL = (lumaN + lumaW + lumaE + lumaS) * 0.25;
 	float rangeL = abs(lumaL - lumaM);
-	float blendL = max(0.0,
+	float blendL = max(0.0f,
 		(rangeL / range) - FXAA_SUBPIX_TRIM) * FXAA_SUBPIX_TRIM_SCALE;
-	blendL = min(FXAA_SUBPIX_CAP, blendL);	float3 rgbL = rgbN + rgbW + rgbM + rgbE + rgbS;
+	blendL = min((float)FXAA_SUBPIX_CAP, blendL);	uchar3 rgbL = rgbN + rgbW + rgbM + rgbE + rgbS;
 
 	////////fazer condição pra cada direção!!!!
-	float3 rgbNW = rgbM;
-	float3 rgbNE = rgbM;
-	float3 rgbSW = rgbM;
-	float3 rgbSE = rgbM;
-	float lumaNW = lumaM;
-	float lumaNE = lumaM;
-	float lumaSW = lumaM;
-	float lumaSE = lumaM;
+	uchar3 rgbNW = rgbM;
+	uchar3 rgbNE = rgbM;
+	uchar3 rgbSW = rgbM;
+	uchar3 rgbSE = rgbM;
+	uchar lumaNW = lumaM;
+	uchar lumaNE = lumaM;
+	uchar lumaSW = lumaM;
+	uchar lumaSE = lumaM;
 
 	if (canUp && canWest)
 	{
-		rgbNW = screenInput[id - width - 1].xyz;
+		rgbNW = screenInput[id - *width - 1].xyz;
 		lumaNW = FxaaLuma(rgbNW);
 	}
 	if (canUp && canEast)
 	{
-		rgbNE = screenInput[id - width + 1].xyz;
+		rgbNE = screenInput[id - *width + 1].xyz;
 		lumaNE = FxaaLuma(rgbNE);
 	}
 	if (canDown && canWest)
 	{
-		rgbSW = screenInput[id + width - 1].xyz;
+		rgbSW = screenInput[id + *width - 1].xyz;
 		lumaSW = FxaaLuma(rgbSW);
 	}
 	if (canDown && canEast)
 	{
-		rgbSE = screenInput[id + width + 1].xyz;
+		rgbSE = screenInput[id + *width + 1].xyz;
 		lumaSE = FxaaLuma(rgbSE);
 	}
 
 	rgbL += (rgbNW + rgbNE + rgbSW + rgbSE);
-	rgbL = rgbL * (1.0 / 9.0);			//dont know if it's possible
+	rgbL = rgbL * (uchar3)(1.0f / 9.0f, 1.0f / 9.0f, 1.0f / 9.0f);			//dont know if it's possible
 	screenOutput[id].x = rgbL.x;
 	screenOutput[id].y = rgbL.y;
 	screenOutput[id].z = rgbL.z;
