@@ -32,7 +32,7 @@ public:
 
 	/* Load an OpenCL program in a given context, sourceFile argument is a path to a .cl file.
 		Return FALSE if there was a problem with the source code */
-	bool LoadProgramWithSource(const std::string &sourceFile);
+	bool LoadSource(const std::string &sourceFile);
 
 	/* Build the loaded OpenCL program in a given context, options argument is a set 
 		of options to the OpenCL compiler (can be NULL), return FALSE if there was a problem.
@@ -53,7 +53,7 @@ public:
 	}
 
 	/* Get the OCLContext associated with this program */
-	inline const OCLContext*  GetContext()const
+	inline const OCLContext* GetContext()const
 	{
 		return m_context;
 	}
@@ -66,10 +66,11 @@ private:
 
 	// is the program compiled and ready to be executed?
 	bool m_isCompiled;
-	// is this program source code loaded?
-	bool m_isLoaded;
-	// the path of the sourcefile
-	std::string m_sourceFile; 
+	// vector with a list of the source file list that composes this program
+	std::vector<std::string> m_sourceFilePathList;
+	/* vector with a list of pointers to the source code of each file,
+		m_sourceCodeList[x] matches m_sourceFileList[x] */
+	std::vector<char*> m_sourceCodeList;
 };
 
 

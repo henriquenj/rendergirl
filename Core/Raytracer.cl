@@ -196,7 +196,7 @@ __kernel void Raytrace(__global float3* vertices, __global float3* normals, __gl
 		/* shot secondary ray directed to the light and see if we have a shadow */
 		l_origin = point_i;
 		bool shadow = false;
-		int temp; // info to be discarted
+		float3 temp; // info to be discarted
 		for (unsigned int p = 0; p < sceneInfo->facesSize; p++)
 		{
 			if (p != face_i)
@@ -208,7 +208,6 @@ __kernel void Raytrace(__global float3* vertices, __global float3* normals, __gl
 				}
 			}
 		}
-
 		if (shadow)// if there's a shadow, put black pixel
 		{
 			frame[id].x = 0;

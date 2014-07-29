@@ -14,7 +14,7 @@
 
 	You should have received a copy of the GNU Lesser General Public
 	License along with this library.
-*/
+	*/
 
 #include "OCLProgram.h"
 #include "OCLDevice.h"
@@ -27,17 +27,22 @@ OCLProgram::OCLProgram(OCLContext* context)
 	assert(context->IsReady() && "Context must be ready to execute kernels!");
 
 	m_isCompiled = false;
-	m_isLoaded = false;
 }
 
 OCLProgram::~OCLProgram()
 {
+	// delete source code
+	int size = m_sourceCodeList.size();
+	for (unsigned int a = 0; a < size; a++)
+	{
+		delete m_sourceCodeList[a];
+	}
+
 	clReleaseProgram(m_program);
 }
 
-bool OCLProgram::LoadProgramWithSource(const std::string &sourceFile)
+bool OCLProgram::LoadSource(const std::string &sourceFile)
 {
-	this->m_sourceFile = sourceFile;
 	// load kernel code from file
 	FILE* kernelCodeFile = fopen(sourceFile.c_str(), "rb");
 	if (kernelCodeFile == NULL)
@@ -45,35 +50,26 @@ bool OCLProgram::LoadProgramWithSource(const std::string &sourceFile)
 		Log::Error("The program couldn't find the source file " + sourceFile);
 		return false;
 	}
-	
+
 	// look for file size
 	fseek(kernelCodeFile, 0L, SEEK_END);
 	long size = ftell(kernelCodeFile);
 	fseek(kernelCodeFile, 0L, SEEK_SET);
 
 	//alloc enough memory
-	char* kernelCode = new char[size+1]; // +1 for the null-terminanting character
+	char* kernelCode = new char[size + 1]; // +1 for the null-terminanting character
 	memset((char*)kernelCode, 0, size);
 	fread((char*)kernelCode, sizeof(char), size, kernelCodeFile);
 	// end file stuff
 	fclose(kernelCodeFile);
 
 	kernelCode[size] = '\0'; // we need this null terminating string otherwise we the OpenCL loader goes nuts
-
-
-	cl_int error;
-
-	// send source code to OpenCL
-	m_program = clCreateProgramWithSource(m_context->GetCLContext(), 1, (const char**)&kernelCode, NULL, &error);
-	if (error != CL_SUCCESS)
-	{
-		Log::Error("There was an error when sending the source code to the OpenCL implementation.");
-		return false;
-	}
-
-	delete[] kernelCode;
-
-	m_isLoaded = true;
+	/* for more info abou this issue go to http://www.khronos.org/registry/cl/sdk/1.0/docs/man/xhtml/clCreateProgramWithSource.html
+		and check the "const size_t *lengths" parameter
+	*/
+	// add to the list as a loaded source code
+	m_sourceFilePathList.push_back(sourceFile);
+	m_sourceCodeList.push_back(kernelCode);
 
 	return true;
 }
@@ -81,9 +77,33 @@ bool OCLProgram::LoadProgramWithSource(const std::string &sourceFile)
 bool OCLProgram::BuildProgram(const char* options)
 {
 	// now the building phase
-	Log::Message("Compiling " + m_sourceFile);
 
-	cl_int error = clBuildProgram(m_program, 0, NULL, options, NULL, NULL);
+	cl_int error;
+
+	// send source code to OpenCL for each source file
+	int sizeVector = m_sourceCodeList.size();
+	char** sourcePointers = (char**)malloc(sizeof(char*) * sizeVector);
+	std::string messageLog("Compiling: ");
+	// group all pointers on the same array and build log message
+	for (unsigned int a = 0; a < sizeVector; a++)
+	{
+		sourcePointers[a] = m_sourceCodeList[a];
+		messageLog += m_sourceFilePathList[a];
+		messageLog += " ";
+	}
+	
+	Log::Message(messageLog);
+
+	m_program = clCreateProgramWithSource(m_context->GetCLContext(), sizeVector, (const char**)sourcePointers, NULL, &error);
+	free(sourcePointers);
+
+	if (error != CL_SUCCESS)
+	{
+		Log::Error("There was an error when sending the source code to the OpenCL implementation.");
+		return false;
+	}
+
+	error = clBuildProgram(m_program, 0, NULL, options, NULL, NULL);
 
 	if (error != CL_SUCCESS)
 	{
@@ -106,7 +126,7 @@ bool OCLProgram::BuildProgram(const char* options)
 		}
 		else
 		{
-			Log::Error("Error while compiling OpenCL code on file: " + m_sourceFile);
+			Log::Error("Error while compiling OpenCL C code.");
 		}
 		return false;
 	}

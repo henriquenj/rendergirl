@@ -143,7 +143,7 @@ bool RenderGirlShared::PrepareRaytracer()
 	/* Prepare this device compiling the OpenCL kernels*/
 
 	m_program = new OCLProgram(context);
-	if (!m_program->LoadProgramWithSource("Raytracer.cl"))
+	if (!m_program->LoadSource("Raytracer.cl"))
 	{
 		delete m_program;
 		m_program = NULL;
