@@ -29,6 +29,11 @@
 #include "OCLKernel.h"
 #include "CLStructs.h"
 
+enum AntiAliasing
+{
+	noAA,
+	FXAA
+};
 /* Singleton class encapsules the OpenCL status and the renderer status.
 	This singleton architecture was kindly sugested by Loki Astari at
 	http://stackoverflow.com/questions/270947/can-any-one-provide-me-a-sample-of-singleton-in-c/271104#271104
@@ -67,7 +72,7 @@ public:
 		This is a blocking call.
 		Param resolution is the resolution of the resulting image.
 		Return FALSE for an error */
-	bool Render(int width, int height, Camera &camera, Light &light);
+	bool Render(int width, int height, Camera &camera, Light &light, AntiAliasing AAOption);
 
 	/* Release the selected device from use, deallocing all memory used */
 	void ReleaseDevice();
@@ -108,8 +113,10 @@ private:
 	// device selected for doing the computation
 	OCLDevice* m_selectedDevice;
 
+	AntiAliasing antiAliasingOption;
 	OCLProgram* m_program;
 	OCLKernel* m_kernel;
+	OCLKernel* m_kernel_AA;
 	SceneInformation m_scene;
 	bool m_sceneLoaded;
 	OCLMemoryObject<cl_uchar4>* m_frame;

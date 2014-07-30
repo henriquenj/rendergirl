@@ -103,7 +103,7 @@ int main()
 		// send 3D information to the renderer
 		shared.Set3DScene(scene);
 		// call the render function
-		shared.Render(256, 256, camera, light);
+		shared.Render(256, 256, camera, light, FXAA);
 		delete scene;
 	}
 

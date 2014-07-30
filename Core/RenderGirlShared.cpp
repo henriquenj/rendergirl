@@ -26,6 +26,7 @@ RenderGirlShared::RenderGirlShared()
 	m_selectedDevice = NULL;
 	m_program = NULL;
 	m_kernel = NULL;
+	m_kernel_AA = NULL;
 	m_sceneLoaded = false;
 	m_frame = NULL;
 }
@@ -138,6 +139,7 @@ bool RenderGirlShared::PrepareRaytracer()
 {
 	assert(m_selectedDevice != NULL);
 	assert(m_program == NULL);
+	assert(antiAliasingOption != NULL);
 	OCLContext* context = m_selectedDevice->GetContext();
 
 	/* Prepare this device compiling the OpenCL kernels*/
@@ -150,7 +152,7 @@ bool RenderGirlShared::PrepareRaytracer()
 		return false;
 	}
 
-	if (!m_program->BuildProgram())
+	if (!m_program->BuildProgram("-D ANTIALIASING"))
 	{
 		delete m_program;
 		m_program = NULL;
@@ -158,11 +160,17 @@ bool RenderGirlShared::PrepareRaytracer()
 	}
 
 	m_kernel = new OCLKernel(m_program, std::string("Raytrace"));
+	if (antiAliasingOption == FXAA)					//create kernel if antialiasing is on
+	{
+		m_kernel_AA = new OCLKernel(m_program, std::string("AntiAliasingFXAA"));
+	}
+	#define ANTIALIASING
 	if (!m_kernel->GetOk())
 	{
 		delete m_program;
 		delete m_kernel;
 		m_kernel = NULL;
+		m_kernel_AA = NULL;
 		m_program = NULL;
 		return false;
 	}
@@ -224,7 +232,7 @@ bool RenderGirlShared::Set3DScene(Scene3D* pscene)
 	return true;
 }
 
-bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &light)
+bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &light, AntiAliasing AAOption)
 {
 
 	if (height < 1 || width < 1)
@@ -326,6 +334,12 @@ void RenderGirlShared::ReleaseDevice()
 	{
 		delete m_kernel;
 		m_kernel = NULL;
+
+	}
+	if (m_kernel_AA != NULL)
+	{
+		delete m_kernel_AA;
+		m_kernel_AA = NULL;
 	}
 	if (m_program != NULL)
 	{
