@@ -23,9 +23,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Console\Utilities.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\App\OBJLoader.h">
       <Filter>Source Files</Filter>
     </ClInclude>
