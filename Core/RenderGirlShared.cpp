@@ -160,17 +160,11 @@ bool RenderGirlShared::PrepareRaytracer()
 	}
 
 	m_kernel = new OCLKernel(m_program, std::string("Raytrace"));
-	if (antiAliasingOption == FXAA)					//create kernel if antialiasing is on
-	{
-		m_kernel_AA = new OCLKernel(m_program, std::string("AntiAliasingFXAA"));
-	}
-	#define ANTIALIASING
 	if (!m_kernel->GetOk())
 	{
 		delete m_program;
 		delete m_kernel;
 		m_kernel = NULL;
-		m_kernel_AA = NULL;
 		m_program = NULL;
 		return false;
 	}
@@ -178,6 +172,7 @@ bool RenderGirlShared::PrepareRaytracer()
 	Log::Message("Device ready for execution.");
 	return true;
 }
+
 
 bool RenderGirlShared::Set3DScene(Scene3D* pscene)
 {
@@ -232,6 +227,58 @@ bool RenderGirlShared::Set3DScene(Scene3D* pscene)
 	return true;
 }
 
+bool RenderGirlShared::PrepareAntiAliasing()
+{
+	m_kernel_AA = new OCLKernel(m_program, std::string("AntiAliasingFXAA"));
+	if (!m_kernel_AA->GetOk())
+	{
+		delete m_program;
+		delete m_kernel_AA;
+		m_kernel_AA = NULL;
+		delete m_kernel;
+		m_kernel = NULL;
+		m_program = NULL;
+		return false;
+	}
+	return true;
+}
+
+
+bool RenderGirlShared::ExecuteAntiAliasing(OCLContext *context, int width, int height)
+{
+	cl_bool error = false;
+
+	OCLMemoryObject<cl_int>* widthMem = context->CreateMemoryObject(1, ReadOnly, &error);
+	widthMem->SetData(width, false);
+	widthMem->SyncHostToDevice();
+	OCLMemoryObject<cl_int>* heightMem = context->CreateMemoryObject(1, ReadOnly, &error);
+	heightMem->SetData(height, false);
+	heightMem->SyncHostToDevice();
+
+	if (!error)
+		return false;
+
+	if (!m_kernel->SetArgument(0, m_frame))
+		return false;
+	if (!m_kernel->SetArgument(1, m_frame_AA))
+		return false;
+	if (!m_kernel->SetArgument(2, widthMem))
+		return false;
+	if (!m_kernel->SetArgument(3, heightMem))
+		return false;
+
+
+	m_kernel_AA->SetGlobalWorkSize(width * height); // one work-iten per pixel
+
+	if (!m_kernel_AA->EnqueueExecution())
+		return false;
+
+	if (!context->ExecuteCommands())
+		return false;
+
+	return true;
+}
+
 bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &light, AntiAliasing AAOption)
 {
 
@@ -264,6 +311,27 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 	m_frame = context->CreateMemoryObject<cl_uchar4>(pixelCount, WriteOnly, &error);
 	if (error)
 		return false;
+
+	cl_uchar4* frameRawAA;
+	if (AAOption != noAA)		//if there is antialiasing
+	{
+		if (!PrepareAntiAliasing())
+			return false;
+
+		if (m_frame_AA != NULL)
+		{
+			context->DeleteMemoryObject<cl_uchar4>(m_frame_AA);
+			m_frame_AA = NULL;
+		}
+		m_frame_AA = context->CreateMemoryObject<cl_uchar4>(pixelCount, WriteOnly, &error);
+		if (error)
+			return false;
+
+
+		frameRawAA = new cl_uchar4[pixelCount];
+		m_frame_AA->SetData(frameRawAA, false);
+		m_frame_AA->SyncDeviceToHost();
+	}
 
 	cl_uchar4* frameRaw = new cl_uchar4[pixelCount];
 	m_frame->SetData(frameRaw,false);
@@ -311,6 +379,19 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 
 	if (!context->ExecuteCommands())
 		return false;
+
+	if (AAOption != noAA)
+	{
+		if (ExecuteAntiAliasing(context, width, height))
+		{
+			m_frame = m_frame_AA;
+		}
+		else
+		{
+			Log::Message("Device ready for execution.");
+		}
+	}
+
 
 
 	// finish timer

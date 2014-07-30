@@ -103,6 +103,9 @@ public:
 
 private:
 	RenderGirlShared();
+
+	bool PrepareAntiAliasing();
+	bool ExecuteAntiAliasing(OCLContext *context, int width, int height);
 	// prevent copy by not implementing this methods
 	RenderGirlShared(RenderGirlShared const&);
 	void operator=(RenderGirlShared const&);
@@ -113,13 +116,13 @@ private:
 	// device selected for doing the computation
 	OCLDevice* m_selectedDevice;
 
-	AntiAliasing antiAliasingOption;
 	OCLProgram* m_program;
 	OCLKernel* m_kernel;
 	OCLKernel* m_kernel_AA;
 	SceneInformation m_scene;
 	bool m_sceneLoaded;
 	OCLMemoryObject<cl_uchar4>* m_frame;
+	OCLMemoryObject<cl_uchar4>* m_frame_AA;
 };
 
 
