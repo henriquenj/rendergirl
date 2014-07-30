@@ -43,6 +43,9 @@ OCLProgram::~OCLProgram()
 
 bool OCLProgram::LoadSource(const std::string &sourceFile)
 {
+
+	assert(!m_isCompiled && "Can't load another source code if the program is already compiled");
+
 	// load kernel code from file
 	FILE* kernelCodeFile = fopen(sourceFile.c_str(), "rb");
 	if (kernelCodeFile == NULL)
