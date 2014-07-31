@@ -123,14 +123,6 @@ public:
 		return true;
 	}
 
-	~OCLMemoryObject()
-	{
-		// dealloc resources and free memory on both host and device
-		clReleaseMemObject(m_data_device);
-		if (m_data_host != NULL)
-		delete[] m_data_host;
-	}
-
 	inline T &operator[](const int index)
 	{
 		return m_data_host[index];
@@ -166,6 +158,14 @@ private:
 			*error = false;
 
 		m_data_host = NULL;
+	}
+
+	~OCLMemoryObject()
+	{
+		// dealloc resources and free memory on both host and device
+		clReleaseMemObject(m_data_device);
+		if (m_data_host != NULL)
+			delete[] m_data_host;
 	}
 
 	friend class OCLContext;
