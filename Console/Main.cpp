@@ -22,19 +22,15 @@
 	RenderGirlConsole is an interface for RenderGirl that does not contain any GUI elements
 	and it's suppose to be clean and simple. There's no image output.
 	
-	Windows only for now.
-	
 	It's also useful to capture printf from the kernel on Intel platforms 
 	(outputed to stdout)
 */
 
 #include <vector>
 #include <iostream>
-#include <Windows.h>
 
 #include "RenderGirlCore.h"
 #include "OBJLoader.h"
-#include "Utilities.h"
 
 
 class LogOutput : public LogListener
@@ -42,14 +38,11 @@ class LogOutput : public LogListener
 public:
 	void PrintLog(const char * message)
 	{
-		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
 		std::cout << message << std::endl;
 	}
 	void PrintError(const char * error)
 	{
-		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), BACKGROUND_RED);
 		std::cout << error << std::endl;
-		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
 	}
 };
 
@@ -95,24 +88,33 @@ int main()
 	// load kernel code and compile raytracer
 	shared.PrepareRaytracer();
 
-	const char* path = ShowFileDialog(0, DialogOpen, "OBJ Files (*.obj)", "*.obj");
+	std::string path;
 
-	if (path != NULL)
+	std::cout << "Please type the path of an OBJ file: ";
+	std::cin >> path;
+	
+
+	if (!path.empty())
 	{
-		Scene3D* scene = LoadOBJ(path); // using the provided OBJ loader
-		// send 3D information to the renderer
-		shared.Set3DScene(scene);
-		// call the render function
-		shared.Render(256, 256, camera, light, FXAA);
-		delete scene;
+		Scene3D* scene = LoadOBJ(path.c_str()); // using the provided OBJ loader
+		if (scene != NULL)
+		{
+			// send 3D information to the renderer
+			shared.Set3DScene(scene);
+			// call the render function
+			shared.Render(256, 256, camera, light);
+			delete scene;
+		}
+		else
+		{
+			std::cout << "The program can't find the file located at " << path << std::endl;
+		}
 	}
 
 	// dealloc the OpenCL driver and all memory used in the process.
 	shared.ReleaseDevice();
 
 	Log::RemoveAllListeners();
-
-	system("pause");
 
 	return 0;
 }
