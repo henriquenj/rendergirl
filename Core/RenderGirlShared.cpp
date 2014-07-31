@@ -243,8 +243,10 @@ bool RenderGirlShared::PrepareAntiAliasing()
 }
 
 
-bool RenderGirlShared::ExecuteAntiAliasing(OCLContext *context, int width, int height)
+bool RenderGirlShared::ExecuteAntiAliasing( int width, int height)
 {
+	OCLContext* context = m_selectedDevice->GetContext();
+
 	cl_bool error = false;
 
 	cl_int temp = width; 
@@ -258,25 +260,22 @@ bool RenderGirlShared::ExecuteAntiAliasing(OCLContext *context, int width, int h
 	heightMem->SetData(&temp, true);
 	heightMem->SyncHostToDevice();
 
-	if (!error)
+	if (error)
 		return false;
 
-	if (!m_kernel->SetArgument(0, m_frame))
+	if (!m_kernel_AA->SetArgument(0, m_frame))
 		return false;
-	if (!m_kernel->SetArgument(1, m_frame_AA))
+	if (!m_kernel_AA->SetArgument(1, m_frame_AA))
 		return false;
-	if (!m_kernel->SetArgument(2, widthMem))
+	if (!m_kernel_AA->SetArgument(2, widthMem))
 		return false;
-	if (!m_kernel->SetArgument(3, heightMem))
+	if (!m_kernel_AA->SetArgument(3, heightMem))
 		return false;
 
 
 	m_kernel_AA->SetGlobalWorkSize(width * height); // one work-iten per pixel
 
 	if (!m_kernel_AA->EnqueueExecution())
-		return false;
-
-	if (!context->ExecuteCommands())
 		return false;
 
 	return true;
@@ -333,7 +332,6 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 
 		frameRawAA = new cl_uchar4[pixelCount];
 		m_frame_AA->SetData(frameRawAA, false);
-		m_frame_AA->SyncDeviceToHost();
 	}
 
 	cl_uchar4* frameRaw = new cl_uchar4[pixelCount];
@@ -374,27 +372,19 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 
 	Log::Message("Rendering...");
 
+
 	// start counter
 	auto pretime = std::chrono::high_resolution_clock::now();
 
 	if (!m_kernel->EnqueueExecution())
 		return false;
 
+	if (AAOption != noAA)
+		if (!ExecuteAntiAliasing(width, height))
+			return false;
+
 	if (!context->ExecuteCommands())
 		return false;
-
-	if (AAOption != noAA)
-	{
-		if (ExecuteAntiAliasing(context, width, height))
-		{
-			m_frame = m_frame_AA;
-		}
-		else
-		{
-			Log::Message("Device ready for execution.");
-		}
-	}
-
 
 
 	// finish timer
@@ -402,6 +392,13 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 	auto postime = std::chrono::high_resolution_clock::now();
 	std::chrono::nanoseconds ns = std::chrono::duration_cast<std::chrono::nanoseconds>(postime - pretime);
 	Log::Message("Rendering took " + std::to_string((float)(ns.count() / 1000000000.0f)) + " seconds.");
+
+	if (AAOption != noAA)
+	{
+		context->DeleteMemoryObject(m_frame);
+		m_frame = m_frame_AA;
+		m_frame_AA = NULL;
+	}
 
 	m_frame->SyncDeviceToHost();
 

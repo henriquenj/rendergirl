@@ -72,7 +72,7 @@ public:
 		This is a blocking call.
 		Param resolution is the resolution of the resulting image.
 		Return FALSE for an error */
-	bool Render(int width, int height, Camera &camera, Light &light, AntiAliasing AAOption);
+	bool Render(int width, int height, Camera &camera, Light &light, AntiAliasing AAOption = FXAA);
 
 	/* Release the selected device from use, deallocing all memory used */
 	void ReleaseDevice();
@@ -109,7 +109,7 @@ private:
 						what each parameter means and what is returning.
 	*/
 	bool PrepareAntiAliasing();
-	bool ExecuteAntiAliasing(OCLContext *context, int width, int height);
+	bool ExecuteAntiAliasing(int width, int height);
 	// prevent copy by not implementing this methods
 	RenderGirlShared(RenderGirlShared const&);
 	void operator=(RenderGirlShared const&);
