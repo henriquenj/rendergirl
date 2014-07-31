@@ -258,27 +258,37 @@ bool RenderGirlShared::ExecuteAntiAliasing(OCLContext *context, int width, int h
 	heightMem->SetData(&temp, true);
 	heightMem->SyncHostToDevice();
 
+	Log::Message("terminou?");
 	if (!error)
 		return false;
+	Log::Message("terminou?");
 
 	if (!m_kernel->SetArgument(0, m_frame))
 		return false;
+	Log::Message("terminou?1");
 	if (!m_kernel->SetArgument(1, m_frame_AA))
 		return false;
+	Log::Message("terminou?2");
 	if (!m_kernel->SetArgument(2, widthMem))
 		return false;
+	Log::Message("terminou?3");
 	if (!m_kernel->SetArgument(3, heightMem))
 		return false;
+	Log::Message("terminou?4");
 
 
 	m_kernel_AA->SetGlobalWorkSize(width * height); // one work-iten per pixel
 
 	if (!m_kernel_AA->EnqueueExecution())
 		return false;
+	Log::Message("terminou?5");
 
 	if (!context->ExecuteCommands())
 		return false;
+	Log::Message("terminou?6");
 
+
+	Log::Message("terminou?");
 	return true;
 }
 
@@ -387,6 +397,7 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 	{
 		if (ExecuteAntiAliasing(context, width, height))
 		{
+			Log::Message("executing");
 			m_frame = m_frame_AA;
 		}
 		else
