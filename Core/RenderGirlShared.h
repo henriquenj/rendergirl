@@ -109,7 +109,7 @@ private:
 						what each parameter means and what is returning.
 	*/
 	bool PrepareAntiAliasing();
-	bool ExecuteAntiAliasing(OCLContext *context, int width, int height);
+	bool ExecuteAntiAliasing(OCLContext *context, OCLMemoryObject<SceneInformation>* sceneInfoMem);
 	// prevent copy by not implementing this methods
 	RenderGirlShared(RenderGirlShared const&);
 	void operator=(RenderGirlShared const&);

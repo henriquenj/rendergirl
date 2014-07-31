@@ -292,8 +292,12 @@ uchar FxaaLuma(uchar3 rgb) {
 	return rgb.y * (0.587 / 0.299) + rgb.x;
 }
 
-__kernel void AntiAliasingFXAA(__global uchar4* screenInput, __global uchar4* screenOutput, __global int* width, __global int* height)
+__kernel void AntiAliasingFXAA(__global uchar4* screenInput, __global uchar4* screenOutput, __global SceneInformation* sceneInfo)
 {
+	int widthAddress = sceneInfo->width;
+	int heightAddress = sceneInfo->height;
+	int* width = &widthAddress;
+	int *height = &heightAddress;
 	int id = get_global_id(0);
 	int x = id % *width;				//-----column in which is the pixel
 	int y = id / *width;				//-----line in which is the pixel

@@ -243,41 +243,41 @@ bool RenderGirlShared::PrepareAntiAliasing()
 }
 
 
-bool RenderGirlShared::ExecuteAntiAliasing(OCLContext *context, int width, int height)
+bool RenderGirlShared::ExecuteAntiAliasing(OCLContext *context, OCLMemoryObject<SceneInformation>* sceneInfoMem)
 {
 	cl_bool error = false;
 
-	cl_int temp = width; 
+	//cl_int temp = width; 
 	/* DELIO: passing a int pointer to be casted as a cl_int pointer can result in some crazy shit if
 	sizeof(int) is different than sizeof(cl_int), so we let our compiler copy the date to temp */
-	OCLMemoryObject<cl_int>* widthMem = context->CreateMemoryObject<cl_int>(1, ReadOnly, &error);
+	/*OCLMemoryObject<cl_int>* widthMem = context->CreateMemoryObject<cl_int>(1, ReadOnly, &error);
 	widthMem->SetData(&temp, true);
 	widthMem->SyncHostToDevice();
 	temp = height;
 	OCLMemoryObject<cl_int>* heightMem = context->CreateMemoryObject<cl_int>(1, ReadOnly, &error);
 	heightMem->SetData(&temp, true);
 	heightMem->SyncHostToDevice();
-
+	
 	Log::Message("terminou?");
 	if (!error)
 		return false;
 	Log::Message("terminou?");
-
+	*/
 	if (!m_kernel->SetArgument(0, m_frame))
 		return false;
 	Log::Message("terminou?1");
 	if (!m_kernel->SetArgument(1, m_frame_AA))
 		return false;
 	Log::Message("terminou?2");
-	if (!m_kernel->SetArgument(2, widthMem))
+	if (!m_kernel->SetArgument(2, sceneInfoMem))
 		return false;
 	Log::Message("terminou?3");
-	if (!m_kernel->SetArgument(3, heightMem))
+	/*if (!m_kernel->SetArgument(3, heightMem))
 		return false;
-	Log::Message("terminou?4");
+	Log::Message("terminou?4");*/
 
 
-	m_kernel_AA->SetGlobalWorkSize(width * height); // one work-iten per pixel
+	//m_kernel_AA->SetGlobalWorkSize(width * height); // one work-iten per pixel
 
 	if (!m_kernel_AA->EnqueueExecution())
 		return false;
@@ -395,7 +395,7 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 
 	if (AAOption != noAA)
 	{
-		if (ExecuteAntiAliasing(context, width, height))
+		if (ExecuteAntiAliasing(context, sceneInfoMem))
 		{
 			Log::Message("executing");
 			m_frame = m_frame_AA;
