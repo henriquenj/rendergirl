@@ -139,7 +139,6 @@ bool RenderGirlShared::PrepareRaytracer()
 {
 	assert(m_selectedDevice != NULL);
 	assert(m_program == NULL);
-	assert(antiAliasingOption != NULL);
 	OCLContext* context = m_selectedDevice->GetContext();
 
 	/* Prepare this device compiling the OpenCL kernels*/
@@ -248,11 +247,15 @@ bool RenderGirlShared::ExecuteAntiAliasing(OCLContext *context, int width, int h
 {
 	cl_bool error = false;
 
-	OCLMemoryObject<cl_int>* widthMem = context->CreateMemoryObject(1, ReadOnly, &error);
-	widthMem->SetData(width, false);
+	cl_int temp = width; 
+	/* DELIO: passing a int pointer to be casted as a cl_int pointer can result in some crazy shit if
+	sizeof(int) is different than sizeof(cl_int), so we let our compiler copy the date to temp */
+	OCLMemoryObject<cl_int>* widthMem = context->CreateMemoryObject<cl_int>(1, ReadOnly, &error);
+	widthMem->SetData(&temp, true);
 	widthMem->SyncHostToDevice();
-	OCLMemoryObject<cl_int>* heightMem = context->CreateMemoryObject(1, ReadOnly, &error);
-	heightMem->SetData(height, false);
+	temp = height;
+	OCLMemoryObject<cl_int>* heightMem = context->CreateMemoryObject<cl_int>(1, ReadOnly, &error);
+	heightMem->SetData(&temp, true);
 	heightMem->SyncHostToDevice();
 
 	if (!error)

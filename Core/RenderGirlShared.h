@@ -104,6 +104,10 @@ public:
 private:
 	RenderGirlShared();
 
+	/* DELIO: WRITE WHAT YOUR FUNCTION IS DOING!
+		From our wiki: Always put a comment just above the function signature telling what it does, 
+						what each parameter means and what is returning.
+	*/
 	bool PrepareAntiAliasing();
 	bool ExecuteAntiAliasing(OCLContext *context, int width, int height);
 	// prevent copy by not implementing this methods
