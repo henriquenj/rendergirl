@@ -69,7 +69,7 @@ bool OCLKernel::EnqueueExecution()
 		std::string errorString = "Kernel being executed on " + m_program->GetContext()->GetDevice()->GetName()
 			+ " report the following error: ";
 		// print the error codes, I'm not taking care of all of them
-		switch (error)
+		switch (error) // yeah I just copy-pasted all of them, I'm lazy
 		{
 		case CL_INVALID_KERNEL_ARGS:
 			errorString += "CL_INVALID_KERNEL_ARGS";
@@ -77,7 +77,7 @@ bool OCLKernel::EnqueueExecution()
 		case CL_INVALID_WORK_GROUP_SIZE:
 			errorString += "CL_INVALID_KERNEL_ARGS";
 			break;
-		case CL_INVALID_WORK_ITEM_SIZE:// for now will never get here
+		case CL_INVALID_WORK_ITEM_SIZE:
 			errorString += "CL_INVALID_WORK_ITEM_SIZE";
 			break;
 		case CL_OUT_OF_RESOURCES:
@@ -88,9 +88,27 @@ bool OCLKernel::EnqueueExecution()
 			break;
 		case CL_OUT_OF_HOST_MEMORY:
 			errorString += "CL_OUT_OF_HOST_MEMORY";
-			break; // yeah I just copy-pasted all of them, I'm lazy
+			break;
+		case CL_INVALID_PROGRAM_EXECUTABLE:
+			errorString += "CL_INVALID_PROGRAM_EXECUTABLE";
+			break;
+		case CL_INVALID_COMMAND_QUEUE:
+			errorString += "CL_INVALID_COMMAND_QUEUE";
+			break;
+		case CL_INVALID_KERNEL:
+			errorString += "CL_INVALID_KERNEL";
+			break;
+		case CL_INVALID_WORK_DIMENSION:
+			errorString += "CL_INVALID_WORK_DIMENSION";
+			break;
+		case CL_INVALID_GLOBAL_OFFSET:
+			errorString += "CL_INVALID_GLOBAL_OFFSET";
+			break;
+		case CL_INVALID_EVENT_WAIT_LIST:
+			errorString += "CL_INVALID_EVENT_WAIT_LIST";
+			break;
 		default:
-			errorString += "generic error";  // OK that was even MORE lazy
+			errorString += "generic error";
 		}
 
 		Log::Error(errorString);

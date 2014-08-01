@@ -84,12 +84,12 @@ private:
 	// is this kernel Ok?
 	bool m_kernelOk;
 	// number of kernel arguments
-	int m_argumentSize;
+	cl_uint m_argumentSize;
 
 	/* variable to control kernel execution*/
 
 	// the size of the work dimention, default 1 for now
-	int m_workDim;
+	cl_int m_workDim;
 	// the total amount of work-itens in all work-groups
 	size_t m_globalWorkSize;
 
