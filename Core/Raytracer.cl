@@ -16,10 +16,6 @@
 	License along with this library.
 	*/
 
-
-/* enable double precision calculations on some OpenCL Compilers (NVIDIA) */
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-
 #define SMALL_NUM  0.00000001f // anything that avoids division overflow
 
 /*Any change on those structs should be copied back to the host code on CLStructs.h */
@@ -101,8 +97,6 @@ int Intersect(const float3   V1,  // Triangle vertices
 
 	//calculate distance from V1 to ray origin
 	T = O - V1;
-	//*dist = length(T);
-	//*point_i = (O)+(D) * (*dist);
 
 	//Calculate u parameter and test bound
 	u = dot(T, P) * inv_det;
@@ -123,11 +117,12 @@ int Intersect(const float3   V1,  // Triangle vertices
 	if (t > SMALL_NUM) { //ray intersection
 
 		*normal = cross(e1, e2);
-		float r = t2 / det;			//if there was a intersection, compute distance!
+		float r = t2 * inv_det;			//if there was a intersection, compute distance!
 		*point_i = (O)+(D)* r; // intersect point of ray and plane
-		*dist = r;
 
+		*dist = r;
 		*out = t;
+
 		return 1;
 	}
 
