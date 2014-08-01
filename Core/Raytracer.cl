@@ -225,7 +225,7 @@ __kernel void Raytrace(__global float3* vertices, __global float3* normals, __gl
 		{
 			float Kd = ((materials[indexMaterial].diffuseColor.x
 				+ materials[indexMaterial].diffuseColor.y
-				+ materials[indexMaterial].diffuseColor.z) / 3.0f);
+				+ materials[indexMaterial].diffuseColor.z) * 0.3333);
 			float dif = dot_r * Kd;
 			//put diffuse component
 			amount_color += materials[indexMaterial].diffuseColor * light->color * dif;
