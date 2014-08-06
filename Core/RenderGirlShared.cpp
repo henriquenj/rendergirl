@@ -243,52 +243,41 @@ bool RenderGirlShared::PrepareAntiAliasing()
 }
 
 
-bool RenderGirlShared::ExecuteAntiAliasing(OCLContext *context, OCLMemoryObject<SceneInformation>* sceneInfoMem)
+bool RenderGirlShared::ExecuteAntiAliasing( int width, int height)
 {
+	OCLContext* context = m_selectedDevice->GetContext();
+
 	cl_bool error = false;
 
-	//cl_int temp = width; 
+	cl_int temp = width; 
 	/* DELIO: passing a int pointer to be casted as a cl_int pointer can result in some crazy shit if
 	sizeof(int) is different than sizeof(cl_int), so we let our compiler copy the date to temp */
-	/*OCLMemoryObject<cl_int>* widthMem = context->CreateMemoryObject<cl_int>(1, ReadOnly, &error);
+	OCLMemoryObject<cl_int>* widthMem = context->CreateMemoryObject<cl_int>(1, ReadOnly, &error);
 	widthMem->SetData(&temp, true);
 	widthMem->SyncHostToDevice();
 	temp = height;
 	OCLMemoryObject<cl_int>* heightMem = context->CreateMemoryObject<cl_int>(1, ReadOnly, &error);
 	heightMem->SetData(&temp, true);
 	heightMem->SyncHostToDevice();
-	
-	Log::Message("terminou?");
-	if (!error)
+
+	if (error)
 		return false;
-	Log::Message("terminou?");
-	*/
-	if (!m_kernel->SetArgument(0, m_frame))
+
+	if (!m_kernel_AA->SetArgument(0, m_frame))
 		return false;
-	Log::Message("terminou?1");
-	if (!m_kernel->SetArgument(1, m_frame_AA))
+	if (!m_kernel_AA->SetArgument(1, m_frame_AA))
 		return false;
-	Log::Message("terminou?2");
-	if (!m_kernel->SetArgument(2, sceneInfoMem))
+	if (!m_kernel_AA->SetArgument(2, widthMem))
 		return false;
-	Log::Message("terminou?3");
-	/*if (!m_kernel->SetArgument(3, heightMem))
+	if (!m_kernel_AA->SetArgument(3, heightMem))
 		return false;
-	Log::Message("terminou?4");*/
 
 
-	//m_kernel_AA->SetGlobalWorkSize(width * height); // one work-iten per pixel
+	m_kernel_AA->SetGlobalWorkSize(width * height); // one work-iten per pixel
 
 	if (!m_kernel_AA->EnqueueExecution())
 		return false;
-	Log::Message("terminou?5");
 
-	if (!context->ExecuteCommands())
-		return false;
-	Log::Message("terminou?6");
-
-
-	Log::Message("terminou?");
 	return true;
 }
 
@@ -343,7 +332,7 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 
 		frameRawAA = new cl_uchar4[pixelCount];
 		m_frame_AA->SetData(frameRawAA, false);
-		m_frame_AA->SyncDeviceToHost();
+		m_frame_AA->SyncHostToDevice();
 	}
 
 	cl_uchar4* frameRaw = new cl_uchar4[pixelCount];
@@ -384,28 +373,33 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 
 	Log::Message("Rendering...");
 
+
 	// start counter
 	auto pretime = std::chrono::high_resolution_clock::now();
 
 	if (!m_kernel->EnqueueExecution())
 		return false;
 
-	if (!context->ExecuteCommands())
-		return false;
+	//AAOption = noAA;
 
 	if (AAOption != noAA)
 	{
-		if (ExecuteAntiAliasing(context, sceneInfoMem))
-		{
-			Log::Message("executing");
-			m_frame = m_frame_AA;
-		}
-		else
-		{
-			Log::Message("Device ready for execution.");
-		}
+		if (!ExecuteAntiAliasing(width, height))
+			return false;
+
+		clEnqueueCopyBuffer(context->GetCLQueue(),
+			m_frame_AA->GetDeviceMemory(),
+			m_frame->GetDeviceMemory(),
+			0,
+			0,
+			m_frame_AA->GetSize()*4,
+			0,
+			NULL,
+			NULL);
 	}
 
+	if (!context->ExecuteCommands())
+		return false;
 
 
 	// finish timer
@@ -413,6 +407,12 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 	auto postime = std::chrono::high_resolution_clock::now();
 	std::chrono::nanoseconds ns = std::chrono::duration_cast<std::chrono::nanoseconds>(postime - pretime);
 	Log::Message("Rendering took " + std::to_string((float)(ns.count() / 1000000000.0f)) + " seconds.");
+
+	if (AAOption != noAA)
+	{
+		context->DeleteMemoryObject(m_frame_AA);
+		m_frame_AA = NULL;
+	}
 
 	m_frame->SyncDeviceToHost();
 
@@ -446,6 +446,12 @@ void RenderGirlShared::ReleaseDevice()
 		/* this will get deallocated anyway on ReleaseContext so there's no need to delete it here
 			just remove the reference */
 		m_frame = NULL;
+	}
+	if (m_frame_AA != NULL)
+	{
+		/* this will get deallocated anyway on ReleaseContext so there's no need to delete it here
+		just remove the reference */
+		m_frame_AA = NULL;
 	}
 
 	m_selectedDevice->ReleaseContext();
