@@ -221,61 +221,67 @@ __kernel void Raytrace(__global float3* vertices, __global float3* normals, __gl
 				}
 			}
 		}
+		bool shadowCond = false;
+
 		if (shadow)// if there's a shadow, put black pixel
 		{
 			frame[id].x = 0;
 			frame[id].y = 0;
 			frame[id].z = 0;
 			frame[id].w = 255;
-			return;
+
+			shadow = true;
 		}
 
-		// now that we have the face, calculate illumination
-		float3 amount_color = (float3)(0.0f, 0.0f, 0.0f); //final amount of color that goes to each pixel
-
-		normal = normalize(normal);
-
-		int indexMaterial = faces[face_i].w;	// material is stored in the last component of the face vector
-
-		//diffuse
-		float dot_r = dot(normal, L);
-		if (dot_r > 0)
+		if (!shadow)
 		{
-			float Kd = ((materials[indexMaterial].diffuseColor.x
-				+ materials[indexMaterial].diffuseColor.y
-				+ materials[indexMaterial].diffuseColor.z) / 3.0f);
-			float dif = dot_r * Kd;
-			//put diffuse component
-			amount_color += materials[indexMaterial].diffuseColor * light->color * dif;
+			// now that we have the face, calculate illumination
+			float3 amount_color = (float3)(0.0f, 0.0f, 0.0f); //final amount of color that goes to each pixel
+
+			normal = normalize(normal);
+
+			int indexMaterial = faces[face_i].w;	// material is stored in the last component of the face vector
+
+			//diffuse
+			float dot_r = dot(normal, L);
+			if (dot_r > 0)
+			{
+				float Kd = ((materials[indexMaterial].diffuseColor.x
+					+ materials[indexMaterial].diffuseColor.y
+					+ materials[indexMaterial].diffuseColor.z) / 3.0f);
+				float dif = dot_r * Kd;
+				//put diffuse component
+				amount_color += materials[indexMaterial].diffuseColor * light->color * dif;
+			}
+			//specular
+			//glm::vec3 R = glm::cross(2.0f * glm::dot(L,normal) * normal,L);
+			float3 R = L - 2.0f * dot(L, normal) * normal;
+			dot_r = dot(ray_dir, R);
+			if (dot_r > 0)
+			{
+				float spec = pown(dot_r, 20.0f) * light->Ks;
+				// put specular component
+				amount_color += spec * light->color;
+			}
+
+			// build pixel
+			float3 final_c;
+			final_c.x = (amount_color.x) + (light->color.x * light->Ka); // put ambient
+			final_c.y = (amount_color.y) + (light->color.y * light->Ka);
+			final_c.z = (amount_color.z) + (light->color.z * light->Ka);
+
+			if (final_c.x > 1.0f)
+				final_c.x = 1.0f;
+			if (final_c.y > 1.0f)
+				final_c.y = 1.0f;
+			if (final_c.z > 1.0f)
+				final_c.z = 1.0f;
+
+			frame[id].x = (final_c.x * 255.0f);
+			frame[id].y = (final_c.y * 255.0f);
+			frame[id].z = (final_c.z * 255.0f);
+			frame[id].w = 255; // full alpha
 		}
-		//specular
-		//glm::vec3 R = glm::cross(2.0f * glm::dot(L,normal) * normal,L);
-		float3 R = L - 2.0f * dot(L, normal) * normal;
-		dot_r = dot(ray_dir, R);
-		if (dot_r > 0)
-		{
-			float spec = pown(dot_r, 20.0f) * light->Ks;
-			// put specular component
-			amount_color += spec * light->color;
-		}
-
-		// build pixel
-		float3 final_c;
-		final_c.x = (amount_color.x) + (light->color.x * light->Ka); // put ambient
-		final_c.y = (amount_color.y) + (light->color.y * light->Ka);
-		final_c.z = (amount_color.z) + (light->color.z * light->Ka);
-
-		if (final_c.x > 1.0f)
-			final_c.x = 1.0f;
-		if (final_c.y > 1.0f)
-			final_c.y = 1.0f;
-		if (final_c.z > 1.0f)
-			final_c.z = 1.0f;
-
-		frame[id].x = (final_c.x * 255.0f);
-		frame[id].y = (final_c.y * 255.0f);
-		frame[id].z = (final_c.z * 255.0f);
-		frame[id].w = 255; // full alpha
 	}
 	else
 	{
@@ -288,16 +294,14 @@ __kernel void Raytrace(__global float3* vertices, __global float3* normals, __gl
 }
 
 
-uchar FxaaLuma(uchar3 rgb) {
-	return rgb.y * (0.587 / 0.299) + rgb.x;
+float FxaaLuma(uchar3 rgb) {
+	return (float)rgb.y * (0.587 / 0.299) + (float)rgb.x;
 }
 
-__kernel void AntiAliasingFXAA(__global uchar4* screenInput, __global uchar4* screenOutput, __global SceneInformation* sceneInfo)
+__kernel void AntiAliasingFXAA(__global uchar4* screenInput, __global uchar4* screenOutput, __global int* width, __global int* height)
 {
-	int widthAddress = sceneInfo->width;
-	int heightAddress = sceneInfo->height;
-	int* width = &widthAddress;
-	int *height = &heightAddress;
+
+
 	int id = get_global_id(0);
 	int x = id % *width;				//-----column in which is the pixel
 	int y = id / *width;				//-----line in which is the pixel
@@ -307,18 +311,23 @@ __kernel void AntiAliasingFXAA(__global uchar4* screenInput, __global uchar4* sc
 	bool canWest = true;
 	bool canEast = true;
 
+	//uchar4 nada = screenInput[id];
+
+	//screenOutput[id] = convert_uchar4(convert_float4(nada) * (float4)(0.2f, 0.2f, 0.2f, 1.0f));
+	//return;
+
 	uchar3 rgbM = screenInput[id].xyz;
 	//get current pixel and transform
-	uchar lumaM = FxaaLuma(rgbM);
+	float lumaM = FxaaLuma(rgbM);
 
 	uchar3 rgbW = rgbM;
 	uchar3 rgbE = rgbM;
 	uchar3 rgbN = rgbM;
 	uchar3 rgbS = rgbM;
-	uchar lumaW = lumaM;
-	uchar lumaE = lumaM;
-	uchar lumaN = lumaM;
-	uchar lumaS = lumaM;
+	float lumaW = lumaM;
+	float lumaE = lumaM;
+	float lumaN = lumaM;
+	float lumaS = lumaM;
 
 	//find the pixel of each coordinate and transform
 	if (x > 0)
@@ -328,7 +337,8 @@ __kernel void AntiAliasingFXAA(__global uchar4* screenInput, __global uchar4* sc
 	}
 	else
 	{
-		canWest = false;
+		screenOutput[id] = screenInput[id];
+		return;
 	}
 	if (x < *width - 1)
 	{
@@ -337,7 +347,8 @@ __kernel void AntiAliasingFXAA(__global uchar4* screenInput, __global uchar4* sc
 	}
 	else
 	{
-		canEast = false;
+		screenOutput[id] = screenInput[id];
+		return;
 	}
 	if (y > 0)
 	{
@@ -346,7 +357,8 @@ __kernel void AntiAliasingFXAA(__global uchar4* screenInput, __global uchar4* sc
 	}
 	else
 	{
-		canUp = false;
+		screenOutput[id] = screenInput[id];
+		return;
 	}
 	if (y < *height - 1)
 	{
@@ -355,9 +367,14 @@ __kernel void AntiAliasingFXAA(__global uchar4* screenInput, __global uchar4* sc
 	}
 	else
 	{
-		canDown = false;
+		screenOutput[id] = screenInput[id];
+		return;
 	}
-
+	//uchar4 teste;
+	//teste.xyz = convert_uchar3(convert_float3(rgbM + rgbW + rgbE + rgbN + rgbS) * (float3)(0.2f, 0.2f, 0.2f));
+	//teste.w = 255;
+	//screenOutput[id] =(uchar4)teste;
+	//return;
 
 	float rangeMin = min(lumaM, min(min(lumaN, lumaW), min(lumaS, lumaE)));
 	float rangeMax = max(lumaM, max(max(lumaN, lumaW), max(lumaS, lumaE)));
@@ -365,48 +382,48 @@ __kernel void AntiAliasingFXAA(__global uchar4* screenInput, __global uchar4* sc
 	if (range <
 		max((float)FXAA_EDGE_THRESHOLD_MIN, rangeMax * FXAA_EDGE_THRESHOLD)) {
 		screenOutput[id] = screenInput[id];
-		return;	}	uchar lumaL = (lumaN + lumaW + lumaE + lumaS) * 0.25;
-	float rangeL = abs(lumaL - lumaM);
+		return;	}	float lumaL = (lumaN + lumaW + lumaE + lumaS) * 0.25;
+	int rangeL = fabs(lumaL - lumaM);
 	float blendL = max(0.0f,
 		(rangeL / range) - FXAA_SUBPIX_TRIM) * FXAA_SUBPIX_TRIM_SCALE;
-	blendL = min((float)FXAA_SUBPIX_CAP, blendL);	uchar3 rgbL = rgbN + rgbW + rgbM + rgbE + rgbS;
+	blendL = min((float)FXAA_SUBPIX_CAP, blendL);	float3 rgbL = convert_float3(rgbM);
+	rgbL += convert_float3(rgbN);
+	rgbL += convert_float3(rgbW);
+	rgbL += convert_float3(rgbE);
+	rgbL += convert_float3(rgbS);
 
 	////////fazer condição pra cada direção!!!!
 	uchar3 rgbNW = rgbM;
 	uchar3 rgbNE = rgbM;
 	uchar3 rgbSW = rgbM;
 	uchar3 rgbSE = rgbM;
-	uchar lumaNW = lumaM;
-	uchar lumaNE = lumaM;
-	uchar lumaSW = lumaM;
-	uchar lumaSE = lumaM;
+	float lumaNW = lumaM;
+	float lumaNE = lumaM;
+	float lumaSW = lumaM;
+	float lumaSE = lumaM;
 
-	if (canUp && canWest)
-	{
-		rgbNW = screenInput[id - *width - 1].xyz;
-		lumaNW = FxaaLuma(rgbNW);
-	}
-	if (canUp && canEast)
-	{
-		rgbNE = screenInput[id - *width + 1].xyz;
-		lumaNE = FxaaLuma(rgbNE);
-	}
-	if (canDown && canWest)
-	{
-		rgbSW = screenInput[id + *width - 1].xyz;
-		lumaSW = FxaaLuma(rgbSW);
-	}
-	if (canDown && canEast)
-	{
-		rgbSE = screenInput[id + *width + 1].xyz;
-		lumaSE = FxaaLuma(rgbSE);
-	}
 
-	rgbL += (rgbNW + rgbNE + rgbSW + rgbSE);
-	rgbL = rgbL * (uchar3)(0.1111f, 0.1111f, 0.1111f);			//dont know if it's possible
-	screenOutput[id].x = rgbL.x;
-	screenOutput[id].y = rgbL.y;
-	screenOutput[id].z = rgbL.z;
+	rgbNW = screenInput[id - *width - 1].xyz;
+	lumaNW = FxaaLuma(rgbNW);
+
+	rgbNE = screenInput[id - *width + 1].xyz;
+	lumaNE = FxaaLuma(rgbNE);
+
+	rgbSW = screenInput[id + *width - 1].xyz;
+	lumaSW = FxaaLuma(rgbSW);
+
+	rgbSE = screenInput[id + *width + 1].xyz;
+	lumaSE = FxaaLuma(rgbSE);
+
+
+	rgbL += convert_float3(rgbNW);
+	rgbL += convert_float3(rgbNE);
+	rgbL += convert_float3(rgbSW);
+	rgbL += convert_float3(rgbSE);
+	rgbL = rgbL * (float3)(0.1111f, 0.1111f, 0.1111f);			//dont know if it's possible
+	screenOutput[id].x = (uchar)rgbL.x;
+	screenOutput[id].y = (uchar)rgbL.y;
+	screenOutput[id].z = (uchar)rgbL.z;
 	screenOutput[id].w = 255;
 	//this part cannot be done without texture!!	/*-------------------------------------------
 	//edge test
