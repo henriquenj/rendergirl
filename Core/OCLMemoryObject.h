@@ -22,6 +22,7 @@
 
 #include "CL\cl.h"
 #include <assert.h>
+#include <algorithm>
 #include "Log.h"
 
 
@@ -90,6 +91,44 @@ public:
 	inline const cl_mem GetDeviceMemory()const
 	{
 		return m_data_device;
+	}
+
+	/* Copy memory from a given device buffer to this memory buffer. 
+		Copy is the amount of elements to copy.
+		source is the source buffer to be copied.
+		sourceOffset and destOffset are the offset of the copy for source buffer and dest buffer,
+		in the amount of elements, NOT the size in bytes.
+		WARNING: the task will only be completed when the current command queue is flushed,
+		call ExecuteCommands on OCLContext to guarantee a copy. Return FALSE if the copy failed */
+	inline const bool CopyFromMemoryBuffer(const OCLMemoryObject<T>* source, const int amount,
+		const int sourceOffset = 0, const int destOffset = 0)
+	{
+		assert(source != NULL && "Parameter source cannot be NULL");
+		assert(destOffset + amount <= m_size && "You can't copy more memory than the buffer size");
+		assert(sourceOffset + amount <= source->GetSize() && "You can't copy more memory than the buffer size");
+
+		cl_int error;
+
+		error = clEnqueueCopyBuffer(m_queue, source->GetDeviceMemory(), m_data_device, sourceOffset * sizeof(T),
+			destOffset * sizeof(T), amount * sizeof(T), NULL, NULL, NULL);
+
+		if (error != CL_SUCCESS)
+		{
+			Log::Error("Couldn't copy memory on " + m_context->GetDevice()->GetName() + " device");
+			return false;
+		}
+
+		return true;
+		
+	}
+
+	/* Differs from the above function only in the arguments that receives. The amount of elements copied will be
+		the size of the smallest buffer */
+	inline const bool CopyFromMemoryBuffer(const OCLMemoryObject<T>* source, const int sourceOffset = 0, const int destOffset = 0)
+	{
+		int amount = std::min(source->GetSize(), m_size);
+
+		return this->CopyFromMemoryBuffer(source, amount, sourceOffset, destOffset);
 	}
 
 	/* Sync functions*/
@@ -180,7 +219,6 @@ private:
 	cl_mem m_data_device;
 	// number of elements 
 	int m_size;
-
 };
 
 
