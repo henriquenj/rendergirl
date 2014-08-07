@@ -174,6 +174,8 @@ private:
 	OCLMemoryObject(const OCLContext* context,const cl_command_queue queue,const int size,const MemoryType type,cl_bool* error)
 	{
 		assert(size > 0 && "Size should be at least 1!");
+		assert(context != NULL);
+		assert(context->IsReady() && " Context must be ready!");
 		cl_int l_error = false;
 
 		this->m_context = context;
