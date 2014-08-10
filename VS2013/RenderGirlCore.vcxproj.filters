@@ -50,6 +50,12 @@
     <ClInclude Include="..\Core\CLMath.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Core\SceneManager.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Core\SceneGroup.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Core\Log.cpp">
@@ -72,6 +78,12 @@
     </ClCompile>
     <ClCompile Include="..\Core\OCLProgram.cpp">
       <Filter>Source Files\OpenCL Wrapper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Core\SceneManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Core\SceneGroup.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

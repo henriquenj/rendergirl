@@ -30,6 +30,8 @@
     <ClInclude Include="..\Core\OCLProgram.h" />
     <ClInclude Include="..\Core\RenderGirlCore.h" />
     <ClInclude Include="..\Core\RenderGirlShared.h" />
+    <ClInclude Include="..\Core\SceneGroup.h" />
+    <ClInclude Include="..\Core\SceneManager.h" />
     <ClInclude Include="..\Core\UtilitiesFuncions.h" />
   </ItemGroup>
   <ItemGroup>
@@ -40,6 +42,8 @@
     <ClCompile Include="..\Core\OCLPlatform.cpp" />
     <ClCompile Include="..\Core\OCLProgram.cpp" />
     <ClCompile Include="..\Core\RenderGirlShared.cpp" />
+    <ClCompile Include="..\Core\SceneGroup.cpp" />
+    <ClCompile Include="..\Core\SceneManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Core\Raytracer.cl" />

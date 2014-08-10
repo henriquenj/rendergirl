@@ -29,12 +29,13 @@
 #include "OCLKernel.h"
 #include "CLStructs.h"
 
-/* Singleton class encapsules the OpenCL status and the renderer status.
-	This singleton architecture was kindly sugested by Loki Astari at
-	http://stackoverflow.com/questions/270947/can-any-one-provide-me-a-sample-of-singleton-in-c/271104#271104
-	*/
+/* Singleton class encapsules the OpenCL status and the renderer status. */
 class RenderGirlShared
 {
+
+/*This singleton architecture was kindly sugested by Loki Astari at
+http://stackoverflow.com/questions/270947/can-any-one-provide-me-a-sample-of-singleton-in-c/271104#271104 */
+
 public:
 	/* get shared instance of this singleton */
 	static RenderGirlShared& GetRenderGirlShared()
@@ -98,7 +99,7 @@ public:
 
 private:
 	RenderGirlShared();
-	// prevent copy by not implementing this methods
+	// prevent copy by not implementing those methods
 	RenderGirlShared(RenderGirlShared const&);
 	void operator=(RenderGirlShared const&);
 

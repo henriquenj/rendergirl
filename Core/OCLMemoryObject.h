@@ -201,7 +201,7 @@ private:
 		m_data_host = NULL;
 	}
 
-	/* prevent copy by not implementing this */
+	/* prevent copy by not implementing those */
 	OCLMemoryObject(OCLMemoryObject<T> const&);
 	void operator=(OCLMemoryObject<T> const&);
 
