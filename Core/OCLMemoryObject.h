@@ -93,8 +93,8 @@ public:
 		return m_data_device;
 	}
 
-	/* Copy memory from a given device buffer to this memory buffer. 
-		Copy is the amount of elements to copy.
+	/* Copy memory from a given device buffer to this device buffer. 
+		amount is the amount of elements to copy.
 		source is the source buffer to be copied.
 		sourceOffset and destOffset are the offset of the copy for source buffer and dest buffer,
 		in the amount of elements, NOT the size in bytes.
