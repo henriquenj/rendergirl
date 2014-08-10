@@ -201,6 +201,10 @@ private:
 		m_data_host = NULL;
 	}
 
+	/* prevent copy by not implementing this */
+	OCLMemoryObject(OCLMemoryObject<T> const&);
+	void operator=(OCLMemoryObject<T> const&);
+
 	~OCLMemoryObject()
 	{
 		// dealloc resources and free memory on both host and device
