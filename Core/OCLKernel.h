@@ -30,7 +30,7 @@ public:
 	~OCLKernel();
 
 	/*Enqueue execution of this kernel in the current command queue. Warning: the is a non-blocking call that will only
-		be executed when ExecuteCommands is called on the command queue. Return FALSE for fail on execution */
+		be executed when ExecuteCommands is called on OCLContext. Return FALSE for fail on execution */
 	bool EnqueueExecution();
 
 

@@ -17,16 +17,76 @@
 */
 
 #include "SceneManager.h"
+#include "OCLContext.h"
 
 
 SceneManager::SceneManager()
 {
-	geometryUpdated = false;
-	lightUpdated = false;
-	materialsUpdated = false;
+	m_geometryUpdated = false;
+	m_lightUpdated = false;
+	m_materialsUpdated = false;
+
+	m_sceneInfo.facesSize = 0;
+	m_sceneInfo.materiaslSize = 0;
+	m_sceneInfo.verticesSize = 0;
+
+	m_facesBuffer = NULL;
+	m_verticesBuffer = NULL;
+
+	m_context = NULL;
 }
 
 SceneManager::~SceneManager()
 {
+	this->ClearScene();
+}
+
+void SceneManager::ClearScene()
+{
+	/* clear all groups in scene */
+	std::list<SceneGroup*>::iterator it;
+	for (it = m_groups.begin(); it != m_groups.end(); it++)
+	{
+		delete *it;
+	}
+	m_groups.clear();
+
+	if (m_context != NULL)
+	{
+		if (m_facesBuffer != NULL)
+			m_context->DeleteMemoryObject(m_facesBuffer);
+		if (m_verticesBuffer != NULL)
+			m_context->DeleteMemoryObject(m_verticesBuffer);
+	}
+
+	m_facesBuffer = NULL;
+	m_verticesBuffer = NULL;
+
+	m_geometryUpdated = false;
+	m_lightUpdated = false;
+	m_materialsUpdated = false;
+
+	m_sceneInfo.facesSize = 0;
+	m_sceneInfo.materiaslSize = 0;
+	m_sceneInfo.verticesSize = 0;
+
+}
+
+SceneGroup* SceneManager::CreateSceneGroup()
+{
+	SceneGroup* newGroup = new SceneGroup();
+	m_groups.push_back(newGroup);
+
+	return newGroup;
+}
+
+void SceneManager::DeleteSceneGroup(SceneGroup* group)
+{
+	// check if the memory belongs to this context
+	assert((std::find(m_groups.begin(), m_groups.end(), group) != m_groups.end())
+	&& "This scene group is not part of this scene!");
+
+	delete group;
+	m_groups.remove(group);
 
 }

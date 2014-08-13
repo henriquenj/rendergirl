@@ -20,7 +20,6 @@
 #ifndef __SCENEGROUPCLASS__
 #define __SCENEGROUPCLASS__
 
-#include "SceneManager.h"
 #include "CL\cl.h"
 
 /* SceneGroup class handles a given portion of geometry (an object, for instance) and
@@ -28,20 +27,35 @@
 class SceneGroup
 {
 public:
+	/* return TRUE if this group is updated with the scene manager (inside device memory) */
+	inline const bool IsUpdated()const
+	{
+		return m_isUpdated;
+	}
 private:
 
 	SceneGroup();
+	~SceneGroup();
 
 	/* prevent copy by not implementing this */
 	SceneGroup(SceneGroup const&);
 	void operator=(SceneGroup const&);
 
+	/* mark this group as updated with SceneManager */
+	inline void SetUpdateTrue()
+	{
+		m_isUpdated = true;
+	}
+
 	friend class SceneManager;
 
 	/* geometry associated with this object */
-	cl_float3* vertices;
-	cl_float3* faces;
-
+	cl_float3* m_vertices;
+	cl_float3* m_faces;
+	cl_int m_verticesSize;
+	cl_int m_facesSize;
+	/* controls if this group is updated with the SceneManager*/
+	bool m_isUpdated;
 };
 
 

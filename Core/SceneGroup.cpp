@@ -22,6 +22,19 @@
 
 SceneGroup::SceneGroup()
 {
-	vertices = NULL;
-	faces = NULL;
+	m_vertices = NULL;
+	m_faces = NULL;
+	m_isUpdated = false;
+	m_verticesSize = 0;
+	m_facesSize = 0;
+}
+
+SceneGroup::~SceneGroup()
+{
+	if (m_vertices != NULL)
+		delete m_vertices;
+
+	if (m_faces != NULL)
+		delete m_faces;
+
 }

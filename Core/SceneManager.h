@@ -20,6 +20,11 @@
 #ifndef __SCENEMANAGERCLASS__
 #define __SCENEMANAGERCLASS__
 
+#include "RenderGirlCore.h"
+#include "SceneGroup.h"
+#include <list>
+#include <assert.h>
+
 /* Singleton class that controls the scene creation and management for the raytracer,
 	ultimately converting the scene data into an OpenCL capable format.
 	It's duties includes creating and deleting groups, materials, cameras and lights */
@@ -37,7 +42,27 @@ public:
 	}
 
 	~SceneManager();
+	
+	/* Creates a scene group, you can delete this memory using SceneManager::DeleteSceneGroup.
+		For more information about scene groups, check the documentation at SceneGroup.h */
+	SceneGroup* CreateSceneGroup();
 
+	/* Delete a SceneGroup inside this scene. */
+	void DeleteSceneGroup(SceneGroup* group);
+
+	/* Load an OBJ file into the scene */
+	bool LoadSceneFromOBJ(const char* path);
+
+	/* Remove all the memory associeated with the scene, including all the groups */
+	void ClearScene();
+
+	/* Return the amount of scene groups associated with the scene.
+		To render a scene, you must have at least one group loaded. */
+	inline const int GetGroupsCount()const
+	{
+		return m_groups.size();
+	}
+	
 private:
 	
 	SceneManager();
@@ -48,9 +73,18 @@ private:
 	friend class RenderGirlShared;
 
 	/* booleans to control if a given part of the scene is updated with the OpenCL device */
-	bool geometryUpdated;
-	bool lightUpdated;
-	bool materialsUpdated;
+	bool m_geometryUpdated;
+	bool m_lightUpdated;
+	bool m_materialsUpdated;
+	SceneInformation m_sceneInfo;
+	/* buffers for this scene */
+	OCLMemoryObject<cl_float3>* m_facesBuffer;
+	OCLMemoryObject<cl_float3>* m_verticesBuffer;
+
+	std::list<SceneGroup*> m_groups;
+	
+	/* copy of context currently being used, filled by RenderGirlShared upon the first rendering */
+	OCLContext* m_context;
 };
 
 
