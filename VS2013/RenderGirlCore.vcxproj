@@ -22,6 +22,7 @@
     <ClInclude Include="..\Core\CLMath.h" />
     <ClInclude Include="..\Core\CLStructs.h" />
     <ClInclude Include="..\Core\Log.h" />
+    <ClInclude Include="..\Core\OBJLoader.h" />
     <ClInclude Include="..\Core\OCLContext.h" />
     <ClInclude Include="..\Core\OCLDevice.h" />
     <ClInclude Include="..\Core\OCLKernel.h" />
@@ -36,6 +37,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Core\Log.cpp" />
+    <ClCompile Include="..\Core\OBJLoader.cpp" />
     <ClCompile Include="..\Core\OCLContext.cpp" />
     <ClCompile Include="..\Core\OCLDevice.cpp" />
     <ClCompile Include="..\Core\OCLKernel.cpp" />
