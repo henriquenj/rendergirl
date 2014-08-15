@@ -90,3 +90,15 @@ void SceneManager::DeleteSceneGroup(SceneGroup* group)
 	m_groups.remove(group);
 
 }
+
+void SceneManager::SetContext(const OCLContext* context)
+{
+	/* changes in the context imply that those memory objects no longer exist */
+	m_facesBuffer = NULL;
+	m_verticesBuffer = NULL;
+	m_geometryUpdated = false;
+	m_lightUpdated = false;
+	m_materialsUpdated = false;
+
+	m_context = const_cast<OCLContext*>(context);
+}
