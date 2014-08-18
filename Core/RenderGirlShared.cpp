@@ -26,7 +26,6 @@ RenderGirlShared::RenderGirlShared()
 	m_selectedDevice = NULL;
 	m_program = NULL;
 	m_kernel = NULL;
-	m_sceneLoaded = false;
 	m_frame = NULL;
 }
 RenderGirlShared::~RenderGirlShared()
@@ -171,71 +170,12 @@ bool RenderGirlShared::PrepareRaytracer()
 	return true;
 }
 
-bool RenderGirlShared::Set3DScene(Scene3D* pscene)
-{
-
-	assert(m_kernel != NULL);
-	assert(m_kernel->GetOk());
-	assert(pscene != NULL);
-
-	m_scene.facesSize = pscene->facesSize;
-	m_scene.normalSize = pscene->normalSize;
-	m_scene.verticesSize = pscene->verticesSize;
-	m_scene.materiaslSize = pscene->materialSize;
-
-	OCLContext* context = m_selectedDevice->GetContext();
-
-	cl_bool error = false;
-	/* Setup data to the OpenCL device*/
-	OCLMemoryObject<cl_float3>* vertices = context->CreateMemoryObject<cl_float3>(m_scene.verticesSize, ReadOnly, &error);
-	if (error)
-		return false;
-	OCLMemoryObject<cl_float3>* normals = context->CreateMemoryObject<cl_float3>(m_scene.normalSize, ReadOnly, &error);
-	if (error)
-		return false;
-	OCLMemoryObject<cl_int4>* faces = context->CreateMemoryObject<cl_int4>(m_scene.facesSize, ReadOnly, &error);
-	if (error)
-		return false;
-	OCLMemoryObject<Material>* materials = context->CreateMemoryObject<Material>(m_scene.materiaslSize, ReadOnly, &error);
-	if (error)
-		return false;
-
-
-	vertices->SetData(pscene->vertices);
-	normals->SetData(pscene->normal);
-	faces->SetData(pscene->faces);
-	materials->SetData(pscene->materials);
-
-	/* Send date to the device */
-	if (!context->SyncAllMemoryHostToDevice())
-		return false;
-
-	/* Set kernel arguments */
-	if (!m_kernel->SetArgument(0, vertices))
-		return false;
-	if (!m_kernel->SetArgument(1, normals))
-		return false;
-	if (!m_kernel->SetArgument(2, faces))
-		return false;
-	if (!m_kernel->SetArgument(3, materials))
-		return false;
-
-	m_sceneLoaded = true;
-	return true;
-}
-
 bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &light)
 {
 
 	if (height < 1 || width < 1)
 	{
 		Log::Error("You have to choose a positive resolution");
-		return false;
-	}
-
-	if (!m_sceneLoaded)
-	{
-		Log::Error("Cannot render since there's no loaded scene!");
 		return false;
 	}
 
@@ -322,6 +262,9 @@ void RenderGirlShared::ReleaseDevice()
 
 	Log::Message("Freeing resources on device " + m_selectedDevice->GetName());
 
+	SceneManager& manager = SceneManager::GetSharedManager();
+	manager.SetContext(NULL); /* update context reference of the manager */
+
 	if (m_kernel != NULL)
 	{
 		delete m_kernel;
@@ -341,5 +284,4 @@ void RenderGirlShared::ReleaseDevice()
 
 	m_selectedDevice->ReleaseContext();
 	m_selectedDevice = NULL;
-	m_sceneLoaded = false;
 }

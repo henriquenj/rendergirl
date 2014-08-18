@@ -21,7 +21,11 @@
 #define __SCENEGROUPCLASS__
 
 #include "CL\cl.h"
+#include "CLStructs.h"
+#include "Log.h"
 #include <string.h>
+#include <string>
+#include <vector>
 
 /* SceneGroup class handles a given portion of geometry (an object, for instance) and
 	can share vertices between faces. Each group can be assotiated with a material */
@@ -31,17 +35,27 @@ public:
 
 	/* Set faces on this object. Size is the amount of faces.
 		Each face is described as an three int values acting as indexes in the
-		vertices array. Parameter copy defines if the memory will be copied or just the pointer; if just the
-		pointer is copied, SceneGroup will take care of freeing this memory. 
+		vertices array. Data will be copied, so you are free to use the memory afterwards.
 		Peivous loaded data will be deleted. */
-	void SetFaces(cl_int3* faces, const int size, const bool copy = true);
+	void SetFaces(cl_int3* faces, const int size);
+
+	/* add a face to this group. Must be a combination of three integer pointing to somewhere in the vertex array */
+	inline void AddFace(const cl_int3& face)
+	{
+		m_faces.push_back(face);
+	}
+
+	/* add a vertex do this group. */
+	inline void AddVertex(const cl_float3& vertex)
+	{
+		m_vertices.push_back(vertex);
+	}
 
 	/* Set vertices on this object. Size is the amount of vertices.
 	Each vertice is described as an three floating point values that should be referenced in the faces array. 
-	Parameter copy defines if the memory will be copied or just the pointer; if just the
-	pointer is copied, SceneGroup will take care of freeing this memory.
+	Data will be copied, so you are free to use the memory afterwards.
 	Peivous loaded data will be deleted. */
-	void SetVertices(cl_float3* vertices, const int size, const bool copy = true);
+	void SetVertices(cl_float3* vertices, const int size);
 
 	/* return TRUE if this group is updated with the scene manager (inside device memory) */
 	inline const bool IsUpdated()const
@@ -49,19 +63,34 @@ public:
 		return m_isUpdated;
 	}
 
+	/* set material on this group */
+	inline void SetMaterial(const Material &material)
+	{
+		m_material = material;
+	}
+
+	/* get material associated with this group */
+	inline Material& GetMaterial()
+	{
+		return m_material;
+	}
+
 	/* Return the amount of faces in this group */
 	inline const int GetFaceNumber()const
 	{
-		return m_facesSize;
+		return m_faces.size();
 	}
 	/* Return the amount of vertices in this group */
 	inline const int GetVerticesNumber()const
 	{
-		return m_verticesSize;
+		return m_vertices.size();
 	}
+
+	/* check this group for corrupted indexes (such as faces pointing to non-existent vertices) */
+	bool CheckCorruptedFaces();
 private:
 
-	SceneGroup();
+	SceneGroup(const std::string& name);
 	~SceneGroup();
 
 	/* prevent copy by not implementing this */
@@ -76,13 +105,16 @@ private:
 
 	friend class SceneManager;
 
+	std::string m_name;
 	/* geometry associated with this object */
-	cl_float3* m_vertices;
-	cl_int3* m_faces;
-	cl_int m_verticesSize;
-	cl_int m_facesSize;
+	std::vector<cl_float3> m_vertices;
+	std::vector<cl_int3> m_faces;
 	/* controls if this group is updated with the SceneManager*/
 	bool m_isUpdated;
+
+	// local mateiral of this group
+	//TODO: move the material to its own class later on
+	Material m_material;
 };
 
 

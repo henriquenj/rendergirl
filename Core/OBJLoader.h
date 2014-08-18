@@ -21,6 +21,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include "RenderGirlShared.h"
 
 // strip a path string from the file name (the last name)
@@ -31,9 +32,9 @@ void RemoveFileName(std::string &path);
 	is the size of the vector of strings, not very pretty I know*/
 Material* LoadMTL(std::vector<std::string>& materialName, const char* file);
 
-/* Loads an obj file providing a path. WARNING: it's your responsability to delete this memory. 
-	This loader does not implements the full specification of the format. Return NULL for an error. */
-Scene3D* LoadOBJ(const char* fileName);
+/* Loads an obj file providing a path. 
+	This loader does not implements the full specification of the format. Return FALSE for an error. */
+bool LoadOBJ(const char* fileName);
 
 /*
 Analyse the definition of a face and return the proper face definition.

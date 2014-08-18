@@ -67,42 +67,6 @@ typedef struct Material
 	cl_float3 specularColor;//KS
 }Material;
 
-/*here ends the cl structures*/
-
-/* file loaders (or other software) should fill this class with 3d information*/
-class Scene3D
-{
-public:
-
-	/* You may notice that this class is a work in progress (all members on public).
-	It's suppose to work as a bridge between the 3D softwares and the renderer, so
-	I'm only going to fully implement it once I start developing the plugins */
-	Scene3D()
-	{
-		materials = NULL;
-	};
-
-	cl_float3* vertices;
-	cl_int verticesSize;
-
-	cl_int4* faces; // only triangulated meshs are supported, the final component is for the material
-	cl_int facesSize;
-
-	cl_float3* normal;
-	cl_int normalSize;
-
-	Material* materials;
-	cl_int materialSize;
-
-	~Scene3D()
-	{
-		delete[] vertices;
-		delete[] faces;
-		delete[] normal;
-		if (materials != NULL)
-			delete[] materials;
-	}
-};
 
 /* default material to objects that don't have one */
 static const Material s_defaultMaterial = 

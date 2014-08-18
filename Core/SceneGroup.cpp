@@ -20,61 +20,45 @@
 #include "SceneGroup.h"
 
 
-SceneGroup::SceneGroup()
+SceneGroup::SceneGroup(const std::string& name)
 {
-	m_vertices = NULL;
-	m_faces = NULL;
 	m_isUpdated = false;
-	m_verticesSize = 0;
-	m_facesSize = 0;
+	m_material = s_defaultMaterial;
+	m_name = name;
 }
 
 SceneGroup::~SceneGroup()
 {
-	if (m_vertices != NULL)
-		delete[] m_vertices;
-
-	if (m_faces != NULL)
-		delete[] m_faces;
 
 }
 
-void SceneGroup::SetFaces(cl_int3* faces, const int size, const bool copy)
+void SceneGroup::SetFaces(cl_int3* faces, const int size)
 {
 	m_isUpdated = false;
-	m_facesSize = size;
 
-	if (m_faces != NULL)
-		delete[] m_faces;
-
-	if (copy)
-	{
-		m_faces = new cl_int3[size];
-		memcpy(m_faces, faces, sizeof(cl_int3)* size);
-	}
-	else
-	{
-		// copy pointer only
-		m_faces = faces;
-	}
+	m_faces.assign(faces, faces + size);
 }
 
-void SceneGroup::SetVertices(cl_float3* vertices, const int size, const bool copy)
+void SceneGroup::SetVertices(cl_float3* vertices, const int size)
 {
 	m_isUpdated = false;
-	m_verticesSize = size;
 
-	if (m_vertices != NULL)
-		delete[] m_vertices;
+	m_vertices.assign(vertices, vertices + size);
+}
 
-	if (copy)
+bool SceneGroup::CheckCorruptedFaces()
+{
+	int facesAmount = m_faces.size();
+	int verticeAmount = m_vertices.size();
+	for (int a = 0; a < facesAmount; a++)
 	{
-		m_vertices = new cl_float3[size];
-		memcpy(m_vertices, vertices, sizeof(cl_float3)* size);
+		if (m_faces[a].s[0] >= verticeAmount || m_faces[a].s[1] >= verticeAmount || m_faces[a].s[2] >= verticeAmount)
+		{
+			Log::Error("The group " + m_name + " seems to be indexing inexistent vertices.");
+			return false;
+		}
+
 	}
-	else
-	{
-		// copy pointer only
-		m_vertices = vertices;
-	}
+
+	return true;
 }

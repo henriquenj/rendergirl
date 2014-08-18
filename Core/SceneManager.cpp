@@ -72,9 +72,9 @@ void SceneManager::ClearScene()
 
 }
 
-SceneGroup* SceneManager::CreateSceneGroup()
+SceneGroup* SceneManager::CreateSceneGroup(const std::string& name)
 {
-	SceneGroup* newGroup = new SceneGroup();
+	SceneGroup* newGroup = new SceneGroup(name);
 	m_groups.push_back(newGroup);
 
 	return newGroup;
@@ -101,4 +101,9 @@ void SceneManager::SetContext(const OCLContext* context)
 	m_materialsUpdated = false;
 
 	m_context = const_cast<OCLContext*>(context);
+}
+
+bool SceneManager::LoadSceneFromOBJ(const std::string& path)
+{
+	return LoadOBJ(path.c_str());
 }

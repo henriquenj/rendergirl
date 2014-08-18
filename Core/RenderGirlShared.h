@@ -28,6 +28,7 @@
 #include "OCLDevice.h"
 #include "OCLKernel.h"
 #include "CLStructs.h"
+#include "SceneManager.h"
 
 /* Singleton class encapsules the OpenCL status and the renderer status. */
 class RenderGirlShared
@@ -58,11 +59,6 @@ public:
 	/* PrepareRaytracer function prepare the OpenCL raytracer to work on the selected device.
 		You got to have a selected device to call this. Return FALSE if there's an error with the device. */
 	bool PrepareRaytracer();
-
-	/* Send 3D data to the renderer. This should be called after PrepareRaytracer.
-		The renderer will copy the data, so you are free to use it afterwards.
-		Return FALSE if there's an error */
-	bool Set3DScene(Scene3D* pscene);
 
 	/* Render a frame. You should only call this with a kernel ready and a 3D scene.
 		This is a blocking call.
@@ -112,7 +108,7 @@ private:
 	OCLProgram* m_program;
 	OCLKernel* m_kernel;
 	SceneInformation m_scene;
-	bool m_sceneLoaded;
+
 	OCLMemoryObject<cl_uchar4>* m_frame;
 };
 

@@ -22,6 +22,7 @@
 
 #include "RenderGirlCore.h"
 #include "SceneGroup.h"
+#include "OBJLoader.h"
 #include <list>
 #include <assert.h>
 
@@ -45,13 +46,13 @@ public:
 	
 	/* Creates a scene group, you can delete this memory using SceneManager::DeleteSceneGroup.
 		For more information about scene groups, check the documentation at SceneGroup.h */
-	SceneGroup* CreateSceneGroup();
+	SceneGroup* CreateSceneGroup(const std::string& name);
 
 	/* Delete a SceneGroup inside this scene. */
 	void DeleteSceneGroup(SceneGroup* group);
 
-	/* Load an OBJ file into the scene */
-	bool LoadSceneFromOBJ(const char* path);
+	/* Load an OBJ file into the scene providing a path, return FALSE if there was an error */
+	bool LoadSceneFromOBJ(const std::string& path);
 
 	/* Remove all the memory associeated with the scene, including all the groups */
 	void ClearScene();

@@ -55,7 +55,6 @@ Material* LoadMTL(std::vector<std::string>& materialName, const char* file)
 	fread(mtlContent, sizeof(char), size, mtlFile);
 	fclose(mtlFile);
 
-
 	int counter = 0;
 	int currentMaterial = 0; // index of current material
 	Material tempMaterial;
@@ -136,7 +135,7 @@ Material* LoadMTL(std::vector<std::string>& materialName, const char* file)
 }
 
 
-Scene3D* LoadOBJ(const char* fileName)
+bool LoadOBJ(const char* fileName)
 {
 
 	/* Please bear in mind that this loader is not suppose to be comprehensive,
@@ -147,7 +146,10 @@ Scene3D* LoadOBJ(const char* fileName)
 
 	if (objFile == NULL)
 	{
-		return NULL;
+		std::string stripedName;
+		RemoveFileName(stripedName);
+		Log::Error("Coudln't open a file called " + stripedName);
+		return false;
 	}
 
 	fseek(objFile, 0, SEEK_END);
@@ -159,22 +161,21 @@ Scene3D* LoadOBJ(const char* fileName)
 	fread(objContent, sizeof(char), size, objFile);
 	fclose(objFile);
 
-	// now put the data on a nice Scene3D
-	Scene3D* scene = new Scene3D();
-	memset(scene, 0, sizeof(Scene3D));
+	int verticesSize = 0;
+	int facesSize = 0;
+	Material* materials = NULL;
+	int materialSize = 0;
+
+	SceneManager& manager = SceneManager::GetSharedManager();
 
 	/* First pass, count objects */
 	int counter = 0;
 	while (counter < size)
 	{
-		if (objContent[counter] == 'v' && objContent[counter + 1] == 'n')
-			scene->normalSize++;
+		if (objContent[counter] == 'v' && objContent[counter + 1] == ' ')
+			verticesSize++;
 		else if (objContent[counter] == 'f')
-		{
-			scene->facesSize++;
-		}
-		else if (objContent[counter] == 'v' && objContent[counter + 1] == ' ')
-			scene->verticesSize++;
+			facesSize++;
 
 		// jump line
 		while (true)
@@ -188,33 +189,25 @@ Scene3D* LoadOBJ(const char* fileName)
 		}
 	}
 
-	// alloc enough memory
-	scene->faces = new cl_int4[scene->facesSize];
-	scene->normal = new cl_float3[scene->normalSize];
-	scene->vertices = new cl_float3[scene->verticesSize];
+	/* vector to temporarily store the groups */
+	std::vector<SceneGroup*> groups;
+	int currentGroup = -1;
 
-	int faceCount, verticesCount, normalCount;
-	faceCount = verticesCount = normalCount = 0;
+	// alloc enough memory
+	cl_float3* vertices = new cl_float3[verticesSize];
+	cl_int4* faces = new cl_int4[facesSize];
+
+	int verticesCount = 0, facesCount = 0;
 
 	/* Second pass, organize the data*/
 	counter = 0;
 
 	std::vector<std::string> materialNames;
-	int currentMaterial = 0;
 
 	while (counter < size)
 	{
-		// normals
-		if (objContent[counter] == 'v' && objContent[counter + 1] == 'n')
-		{
-			counter += 3;
-			sscanf(objContent + counter, "%f %f %f", &(scene->normal[normalCount].s[0]),
-				&(scene->normal[normalCount].s[1]),
-				&(scene->normal[normalCount].s[2]));
-			normalCount++;
-		}
 		// faces
-		else if (objContent[counter] == 'f')
+		if (objContent[counter] == 'f')
 		{
 			/* check face defintion on each new face (some programs output with all kinds of face definitons)*/
 			int faceDefinition = GetFaceDefinition(objContent, counter, size);
@@ -227,37 +220,44 @@ Scene3D* LoadOBJ(const char* fileName)
 				if (faceDefinition == 1)
 				{
 					sscanf(objContent + counter, "%i %i %i",
-						&(scene->faces[faceCount].s[0]),
-						&(scene->faces[faceCount].s[1]),
-						&(scene->faces[faceCount].s[2]));
+						&(faces[facesCount].s[0]),
+						&(faces[facesCount].s[1]),
+						&(faces[facesCount].s[2]));
 				}
 				else if (faceDefinition == 2)
 				{
 					sscanf(objContent + counter, "%i/%i %i/%i %i/%i",
-						&(scene->faces[faceCount].s[0]), &temp,
-						&(scene->faces[faceCount].s[1]), &temp,
-						&(scene->faces[faceCount].s[2]), &temp);
+						&(faces[facesCount].s[0]), &temp,
+						&(faces[facesCount].s[1]), &temp,
+						&(faces[facesCount].s[2]), &temp);
 				}
 				else if (faceDefinition == 3)
 				{
 					sscanf(objContent + counter, "%i//%i %i//%i %i//%i",
-						&(scene->faces[faceCount].s[0]), &temp,
-						&(scene->faces[faceCount].s[1]), &temp,
-						&(scene->faces[faceCount].s[2]), &temp);
+						&(faces[facesCount].s[0]), &temp,
+						&(faces[facesCount].s[1]), &temp,
+						&(faces[facesCount].s[2]), &temp);
 				}
 				else
 				{
 					sscanf(objContent + counter, "%i/%i/%i %i/%i/%i %i/%i/%i",
-						&(scene->faces[faceCount].s[0]), &temp, &temp,
-						&(scene->faces[faceCount].s[1]), &temp, &temp,
-						&(scene->faces[faceCount].s[2]), &temp, &temp);
+						&(faces[facesCount].s[0]), &temp, &temp,
+						&(faces[facesCount].s[1]), &temp, &temp,
+						&(faces[facesCount].s[2]), &temp, &temp);
 				}
 				// make C-like indexes since OBJ file format use indexes starting in 1
-				scene->faces[faceCount].s[0]--;
-				scene->faces[faceCount].s[1]--;
-				scene->faces[faceCount].s[2]--;
-				scene->faces[faceCount].s[3] = currentMaterial;
-				faceCount++;
+				faces[facesCount].s[0]--;
+				faces[facesCount].s[1]--;
+				faces[facesCount].s[2]--;
+				if (currentGroup == -1)
+				{
+					/* obj not using groups, create a default one */
+					SceneGroup* defaultGroup = manager.CreateSceneGroup("Default group");
+					groups.push_back(defaultGroup);
+				}
+				faces[facesCount].s[3] = currentGroup;
+				facesCount++;
+
 			}
 		}
 		//vertices
@@ -265,9 +265,9 @@ Scene3D* LoadOBJ(const char* fileName)
 		{
 			counter += 2;
 			// load line
-			sscanf(objContent + counter, "%f %f %f", &(scene->vertices[verticesCount].s[0]),
-				&(scene->vertices[verticesCount].s[1]),
-				&(scene->vertices[verticesCount].s[2]));
+			sscanf(objContent + counter, "%f %f %f", &(vertices[verticesCount].s[0]),
+				&(vertices[verticesCount].s[1]),
+				&(vertices[verticesCount].s[2]));
 			verticesCount++;
 		}
 		// material name
@@ -287,11 +287,10 @@ Scene3D* LoadOBJ(const char* fileName)
 				if (t_Name.compare(materialNames[p]) == 0)
 				{
 					// p is the index of our material
-					currentMaterial = p;
+					groups[currentGroup]->SetMaterial(materials[p]);
 					break;
 				}
 			}
-
 		}
 		// mtl lib
 		else if (objContent[counter] == 'm' && objContent[counter + 1] == 't')
@@ -312,9 +311,9 @@ Scene3D* LoadOBJ(const char* fileName)
 			is suppose to fit into an OpenCL device, so I can't use that kind of object there
 			*/
 			// fill material information
-			scene->materials = LoadMTL(materialNames, mtlPath.c_str());
-			if (scene->materials != NULL)
-				scene->materialSize = materialNames.size();
+			materials = LoadMTL(materialNames, mtlPath.c_str());
+			if (materials != NULL)
+				materialSize = materialNames.size();
 
 			/* to find the names of the materials, just look at the materialName vector, they have the same indexes
 			like this: materialName[i] matches the materials[i]   */
@@ -334,33 +333,57 @@ Scene3D* LoadOBJ(const char* fileName)
 
 	}
 
-	/* create a material lib with the default material if there's none by now*/
-	if (scene->materialSize == 0)
-	{
-		if (scene->materials != NULL)
-			delete scene->materials;
-
-		scene->materials = new Material[1]; // this [1] is to make the delete compliant since it's dealloced with delete[]
-		*scene->materials = s_defaultMaterial;
-		scene->materialSize = 1;
-
-	}
-	// iterate through all the faces and see if there's a material for all faces
-	for (unsigned int p = 0; p < scene->facesSize; p++)
-	{
-		if (scene->faces[p].s[3] >= scene->materialSize) // an object cannot reference a material that does not exist
-		{
-			scene->faces[p].s[3] = scene->materialSize - 1; // point to the last valid one
-		}
-	}
 
 	delete[] objContent;
-	return scene;
+
+
+	/* the main task here is to translated all global indexes used in the obj file format into 
+		local indexes that are valid only for a given group */
+
+
+	/* store the vertex already allocated in some group, using the global indexes
+		first int is the global index, second int is the local index */
+	std::map<int,int>* usedVertex = new std::map<int,int>[groups.size()];
+	/* arranje all the date into the scene groups */
+	for (int a = 0; a < facesSize; a++)
+	{
+		std::map<int,int>::iterator it;
+		currentGroup = faces[a].s[3];
+		cl_int3 face;
+		/* check if this vertex already belong to this group*/
+		/* one for each vertex */
+		for (int b = 0; b < 3; b++)
+		{
+			it = usedVertex[currentGroup].find(faces[a].s[b]);
+			if (it != usedVertex[currentGroup].end())
+			{
+				// vertex already used, point to it using the store local index
+				face.s[b] = it->second;
+			}
+			else
+			{
+				groups[currentGroup]->AddVertex(vertices[faces[a].s[b]]);
+				face.s[b] = groups[currentGroup]->GetVerticesNumber();
+				/* vertex not yet in use, put into the usedVertex map */
+				usedVertex[currentGroup].insert(std::pair<int, int>(faces[a].s[b]/* global index */,
+					groups[currentGroup]->GetVerticesNumber()/* local */));
+			}
+		}
+		// insert face on this group
+		groups[currentGroup]->AddFace(face);
+		
+	}
+
+	delete usedVertex;
+	delete vertices;
+	delete faces;
+	delete materials;
+	return true;
 
 }
 
 
-int GetFaceDefinition(char* objContent, int counter, int size)
+const int GetFaceDefinition(const char* objContent, int counter, int size)
 {
 
 	counter += 2;
