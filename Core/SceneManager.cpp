@@ -107,3 +107,11 @@ bool SceneManager::LoadSceneFromOBJ(const std::string& path)
 {
 	return LoadOBJ(path.c_str());
 }
+
+void SceneManager::PrepareScene(OCLKernel* kernel)
+{
+	assert(m_context != NULL && "Context must be set");
+
+
+
+}

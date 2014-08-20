@@ -55,6 +55,7 @@ int main()
 
 	// calls for the singleton RenderGirlShared for the first time, creating it
 	RenderGirlShared& shared = RenderGirlShared::GetRenderGirlShared();
+	SceneManager& scene_m = SceneManager::GetSharedManager();
 
 	/* Just search for OpenCL capable devices on all platforms */
 	shared.InitPlatforms();
@@ -91,19 +92,16 @@ int main()
 	std::string path;
 
 	std::cout << "Please type the path of an OBJ file: ";
-	std::cin >> path;
+	path = "C:\\Users\\henrique\\Desktop\\RenderGirlOpenCL\\Modelos\\objetos.obj";
 	
 
 	if (!path.empty())
 	{
-		Scene3D* scene = LoadOBJ(path.c_str()); // using the provided OBJ loader
-		if (scene != NULL)
+		// using the provided OBJ loader
+		if (scene_m.LoadSceneFromOBJ(path))
 		{
-			// send 3D information to the renderer
-			shared.Set3DScene(scene);
 			// call the render function
 			shared.Render(256, 256, camera, light);
-			delete scene;
 		}
 		else
 		{

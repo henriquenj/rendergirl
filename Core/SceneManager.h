@@ -76,6 +76,9 @@ private:
 	/* set the current working context, filled by RenderGirlShared */
 	void SetContext(const OCLContext* context);
 
+	/* prepare scene for OpenCL, called by RenderGirlShared, kernel arguments are filled by SceneManager */
+	void PrepareScene(OCLKernel* kernel);
+
 	/* booleans to control if a given part of the scene is updated with the OpenCL device */
 	bool m_geometryUpdated;
 	bool m_lightUpdated;

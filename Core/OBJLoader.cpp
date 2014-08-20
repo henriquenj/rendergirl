@@ -254,6 +254,7 @@ bool LoadOBJ(const char* fileName)
 					/* obj not using groups, create a default one */
 					SceneGroup* defaultGroup = manager.CreateSceneGroup("Default group");
 					groups.push_back(defaultGroup);
+					currentGroup = 0;
 				}
 				faces[facesCount].s[3] = currentGroup;
 				facesCount++;
@@ -291,6 +292,20 @@ bool LoadOBJ(const char* fileName)
 					break;
 				}
 			}
+		}
+		// group name
+		else if (objContent[counter] == 'g')
+		{
+			counter += 2;
+			std::string groupName;
+			for (int p = 0; objContent[counter + p] != 10; p++)
+			{
+				groupName.push_back(objContent[counter + p]);
+			}
+
+			SceneGroup* group = manager.CreateSceneGroup(groupName);
+			groups.push_back(group);
+			currentGroup = groups.size()-1;
 		}
 		// mtl lib
 		else if (objContent[counter] == 'm' && objContent[counter + 1] == 't')
@@ -374,10 +389,10 @@ bool LoadOBJ(const char* fileName)
 		
 	}
 
-	delete usedVertex;
-	delete vertices;
-	delete faces;
-	delete materials;
+	delete[] usedVertex;
+	delete[] vertices;
+	delete[] faces;
+	delete[] materials;
 	return true;
 
 }

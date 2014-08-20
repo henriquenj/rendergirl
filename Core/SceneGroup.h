@@ -63,6 +63,11 @@ public:
 		return m_isUpdated;
 	}
 
+	inline const std::string& GetName()const
+	{
+		return m_name;
+	}
+
 	/* set material on this group */
 	inline void SetMaterial(const Material &material)
 	{

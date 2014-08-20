@@ -45,7 +45,7 @@ OBJ file format has 4 different types of face definitions:
 3 = f v1//vn1		(vertex and normal)
 4 = f v1/vt1/vn1	(vertex, texture and normal)
 */
-int GetFaceDefinition(char* objContent, int counter, int size);
+const int GetFaceDefinition(const char* objContent, int counter, int size);
 
 
 #endif // __OBJLOADER__
