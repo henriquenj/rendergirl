@@ -52,12 +52,19 @@ typedef struct SceneInformation
 	cl_int height;
 	cl_int pixelCount;
 	cl_int verticesSize;
-	cl_int normalSize;
 	cl_int facesSize;
 	cl_int materiaslSize;
 	cl_float proportion_x;
 	cl_float proportion_y;
 } SceneInformation;
+
+/* SceneGroupStruct struct holds info about a particular scene group */
+typedef struct SceneGroupStruct
+{
+	cl_int facesSize; /* amount of faces of this particular group */
+	cl_int facesStart;/* the index where the faces of this group start inside the global faces buffer */
+	cl_int material; /* index of the material pointing to the material buffer */
+}SceneGroupStruct;
 
 /*Struct to control material properties */
 typedef struct Material

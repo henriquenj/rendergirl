@@ -18,11 +18,10 @@
 
 
 #include "SceneGroup.h"
-
+#include "SceneManager.h"
 
 SceneGroup::SceneGroup(const std::string& name)
 {
-	m_isUpdated = false;
 	m_material = s_defaultMaterial;
 	m_name = name;
 }
@@ -34,14 +33,34 @@ SceneGroup::~SceneGroup()
 
 void SceneGroup::SetFaces(cl_int3* faces, const int size)
 {
-	m_isUpdated = false;
+	SceneManager& manager = SceneManager::GetSharedManager();
+	manager.SetOutadatedGeometry();
 
 	m_faces.assign(faces, faces + size);
 }
 
+
+void SceneGroup::AddFace(const cl_int3& face)
+{
+	SceneManager& manager = SceneManager::GetSharedManager();
+	manager.SetOutadatedGeometry();
+
+	m_faces.push_back(face);
+}
+
+void SceneGroup::AddVertex(const cl_float3& vertex)
+{
+	SceneManager& manager = SceneManager::GetSharedManager();
+	manager.SetOutadatedGeometry();
+
+	m_vertices.push_back(vertex);
+}
+
+
 void SceneGroup::SetVertices(cl_float3* vertices, const int size)
 {
-	m_isUpdated = false;
+	SceneManager& manager = SceneManager::GetSharedManager();
+	manager.SetOutadatedGeometry();
 
 	m_vertices.assign(vertices, vertices + size);
 }

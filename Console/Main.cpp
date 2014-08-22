@@ -92,7 +92,7 @@ int main()
 	std::string path;
 
 	std::cout << "Please type the path of an OBJ file: ";
-	path = "C:\\Users\\henrique\\Desktop\\RenderGirlOpenCL\\Modelos\\objetos.obj";
+	std::cin >> path;
 	
 
 	if (!path.empty())

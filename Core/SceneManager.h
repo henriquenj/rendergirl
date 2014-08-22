@@ -21,10 +21,12 @@
 #define __SCENEMANAGERCLASS__
 
 #include "RenderGirlCore.h"
-#include "SceneGroup.h"
 #include "OBJLoader.h"
 #include <list>
 #include <assert.h>
+
+
+class SceneGroup;
 
 /* Singleton class that controls the scene creation and management for the raytracer,
 	ultimately converting the scene data into an OpenCL capable format.
@@ -53,6 +55,13 @@ public:
 
 	/* Load an OBJ file into the scene providing a path, return FALSE if there was an error */
 	bool LoadSceneFromOBJ(const std::string& path);
+
+	/* set the scene manager to perform an update on the geometry loaded on the device.
+		Called by SceneGroups if there's any changes */
+	inline void SetOutadatedGeometry()
+	{
+		m_geometryUpdated = false;
+	}
 
 	/* Remove all the memory associeated with the scene, including all the groups */
 	void ClearScene();
@@ -87,6 +96,7 @@ private:
 	/* buffers for this scene */
 	OCLMemoryObject<cl_float3>* m_facesBuffer;
 	OCLMemoryObject<cl_float3>* m_verticesBuffer;
+	OCLMemoryObject<cl_int2>*	m_indexesBuffer;
 
 	std::list<SceneGroup*> m_groups;
 	

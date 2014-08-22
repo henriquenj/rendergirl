@@ -41,6 +41,7 @@
 	Interfaces will be put on another projects */
 
 #include "RenderGirlShared.h"
+#include "SceneGroup.h"
 #include "SceneManager.h"
 #include "Log.h"
 

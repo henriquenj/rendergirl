@@ -389,6 +389,15 @@ bool LoadOBJ(const char* fileName)
 		
 	}
 
+	int groupsSize = groups.size();
+	for (int a = 0; a < groupsSize; a++)
+	{
+		if (!groups[a]->CheckCorruptedFaces())
+		{
+			manager.DeleteSceneGroup(groups[a]);
+		}
+	}
+
 	delete[] usedVertex;
 	delete[] vertices;
 	delete[] faces;

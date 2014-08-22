@@ -22,7 +22,7 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "RenderGirlShared.h"
+#include "RenderGirlCore.h"
 
 // strip a path string from the file name (the last name)
 void RemoveFileName(std::string &path);

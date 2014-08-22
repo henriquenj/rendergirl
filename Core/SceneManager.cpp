@@ -17,7 +17,6 @@
 */
 
 #include "SceneManager.h"
-#include "OCLContext.h"
 
 
 SceneManager::SceneManager()
@@ -112,6 +111,6 @@ void SceneManager::PrepareScene(OCLKernel* kernel)
 {
 	assert(m_context != NULL && "Context must be set");
 
+	/* check if we need to check the groups for chances in the geometry */
 
-
-}
+	if (!m_geometryUpdated)
