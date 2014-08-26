@@ -85,18 +85,19 @@ private:
 	/* set the current working context, filled by RenderGirlShared */
 	void SetContext(const OCLContext* context);
 
-	/* prepare scene for OpenCL, called by RenderGirlShared, kernel arguments are filled by SceneManager */
-	void PrepareScene(OCLKernel* kernel);
+	/* prepare scene for OpenCL, called by RenderGirlShared, kernel arguments are filled by SceneManager.
+		Return false for an error */
+	bool PrepareScene(OCLKernel* kernel);
 
 	/* booleans to control if a given part of the scene is updated with the OpenCL device */
 	bool m_geometryUpdated;
-	bool m_lightUpdated;
 	bool m_materialsUpdated;
-	SceneInformation m_sceneInfo;
+
 	/* buffers for this scene */
-	OCLMemoryObject<cl_float3>* m_facesBuffer;
+	OCLMemoryObject<cl_int3>* m_facesBuffer;
 	OCLMemoryObject<cl_float3>* m_verticesBuffer;
-	OCLMemoryObject<cl_int2>*	m_indexesBuffer;
+	OCLMemoryObject<SceneGroupStruct>* m_groupsBuffer;
+	OCLMemoryObject<Material>* m_materials;
 
 	std::list<SceneGroup*> m_groups;
 	

@@ -353,7 +353,10 @@ bool LoadOBJ(const char* fileName)
 
 
 	/* the main task here is to translated all global indexes used in the obj file format into 
-		local indexes that are valid only for a given group */
+		local indexes that are valid only for a given group.
+		The reason that I'm using an std::map is to prevent vertex being duplicated if they 
+		are indexed by more than one triangle.
+	*/
 
 
 	/* store the vertex already allocated in some group, using the global indexes
@@ -378,10 +381,10 @@ bool LoadOBJ(const char* fileName)
 			else
 			{
 				groups[currentGroup]->AddVertex(vertices[faces[a].s[b]]);
-				face.s[b] = groups[currentGroup]->GetVerticesNumber();
+				face.s[b] = groups[currentGroup]->GetVerticesNumber()-1;
 				/* vertex not yet in use, put into the usedVertex map */
 				usedVertex[currentGroup].insert(std::pair<int, int>(faces[a].s[b]/* global index */,
-					groups[currentGroup]->GetVerticesNumber()/* local */));
+					groups[currentGroup]->GetVerticesNumber()-1/* local */));
 			}
 		}
 		// insert face on this group

@@ -128,6 +128,10 @@ bool RenderGirlShared::SelectDevice(const OCLDevice* select)
 		// prepare this device
 		error = m_selectedDevice->CreateContext();
 		Log::Message("Selected device: " + m_selectedDevice->GetName());
+
+		/* send context do scene manager */
+		SceneManager& manager = SceneManager::GetSharedManager();
+		manager.SetContext(m_selectedDevice->GetContext());
 	}
 
 	return error;
@@ -172,6 +176,7 @@ bool RenderGirlShared::PrepareRaytracer()
 
 bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &light)
 {
+	assert(m_selectedDevice != NULL && "You must have a working context to call this");
 
 	if (height < 1 || width < 1)
 	{
@@ -181,6 +186,11 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 
 	OCLContext* context = m_selectedDevice->GetContext();
 	cl_bool error = false;
+
+	/* setup scene */
+	SceneManager& sceneManager = SceneManager::GetSharedManager();
+	if (!sceneManager.PrepareScene(m_kernel))
+		return false;
 
 	/* Setup render frame */
 
@@ -204,6 +214,7 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 	m_scene.width = width;
 	m_scene.height = height;
 	m_scene.pixelCount = pixelCount;
+	m_scene.groupsSize = sceneManager.GetGroupsCount();
 	m_scene.proportion_x = (float)width / (float)height;
 	m_scene.proportion_y = (float)height / (float)width;
 

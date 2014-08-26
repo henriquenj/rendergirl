@@ -47,8 +47,7 @@ typedef struct SceneInformation
 	int width;
 	int height;
 	int pixelCount;
-	int verticesSize;
-	int facesSize;
+	int groupsSize;
 	int materiaslSize;
 	float proportion_x;
 	float proportion_y;
@@ -59,8 +58,9 @@ typedef struct SceneGroupStruct
 {
 	int facesSize; /* amount of faces of this particular group */
 	int facesStart;/* the index where the faces of this group start inside the global faces buffer */
-	int material; /* index of the material pointing to the material buffer */
-}SceneGroup;
+	float sphereSize; /* bouding sphere size */
+	float3 spherePos; /* bouding sphere position */
+}SceneGroupStruct;
 
 /*Struct to control material properties */
 typedef struct Material
@@ -140,7 +140,7 @@ int Intersect(const float3   V1,  // Triangle vertices
 }
 
 /* Here starts the raytracer*/
-__kernel void Raytrace(__global float3* vertices, __global float3* normals, __global int4* faces, __global Material* materials,
+__kernel void Raytrace(__global float3* vertices, __global int4* faces, __global SceneGroupStruct* groups, __global Material* materials,
 	__global SceneInformation* sceneInfo, __global uchar4* frame, __global Camera* camera, __global Light* light)
 {
 	int id = get_global_id(0);
@@ -166,26 +166,35 @@ __kernel void Raytrace(__global float3* vertices, __global float3* normals, __gl
 	float3 normal; // face normal
 	float3 l_origin = camera->pos; // local copy of origin of rays (camera/eye)
 	float intersectOutput;
-	// for each face, look for intersections with the ray
-	for (unsigned int k = 0; k < sceneInfo->facesSize; k++)
+	/* this is used to correct the offsets of the index inside the faces buffer, since they are using local indexes
+		(related to the group to which they are associated) */
+	int faceOffset = 0;
+	for (unsigned int p = 0; p < sceneInfo->groupsSize; p++)
 	{
-		int result;
-		float3 temp_point; // temporary intersection point
-		float3 temp_normal;// temporary normal vector
-
-		result = Intersect(vertices[faces[k].x], vertices[faces[k].y], vertices[faces[k].z], l_origin, ray_dir, &temp_normal, &temp_point, &distance, &intersectOutput);
-
-		if (result > 0)
+		// for each face, look for intersections with the ray
+		for (unsigned int k = groups[p].facesStart; k < groups[p].facesSize; k++)
 		{
-			//some collision
-			if (distance < maxDistance) // check if it's the closest to the camera so far
+			int result;
+			float3 temp_point; // temporary intersection point
+			float3 temp_normal;// temporary normal vector
+
+			result = Intersect(vertices[faces[k].x + faceOffset], vertices[faces[k].y + faceOffset], vertices[faces[k].z + faceOffset],
+								l_origin, ray_dir, &temp_normal, &temp_point, &distance, &intersectOutput);
+
+			if (result > 0)
 			{
-				maxDistance = distance;
-				face_i = k;
-				point_i = temp_point;
-				normal = temp_normal;
+				//some collision
+				if (distance < maxDistance) // check if it's the closest to the camera so far
+				{
+					maxDistance = distance;
+					face_i = k;
+					point_i = temp_point;
+					normal = temp_normal;
+				}
 			}
 		}
+		/* update offset for the next group */
+		faceOffset += groups[p].facesSize;
 	}
 	// paint pixel
 	if (face_i != -1)
@@ -195,29 +204,29 @@ __kernel void Raytrace(__global float3* vertices, __global float3* normals, __gl
 		float3 L = light->pos - point_i;
 		L = normalize(L);
 
-		/* shot secondary ray directed to the light and see if we have a shadow */
-		l_origin = point_i;
-		bool shadow = false;
-		float3 temp; // info to be discarted
-		for (unsigned int p = 0; p < sceneInfo->facesSize; p++)
-		{
-			if (p != face_i)
-			{
-				if (Intersect(vertices[faces[p].x], vertices[faces[p].y], vertices[faces[p].z], l_origin, L, &temp, &temp, &distance, &intersectOutput) > 0)
-				{
-					shadow = true;
-					break;
-				}
-			}
-		}
-		if (shadow)// if there's a shadow, put black pixel
-		{
-			frame[id].x = 0;
-			frame[id].y = 0;
-			frame[id].z = 0;
-			frame[id].w = 255;
-			return;
-		}
+		///* shot secondary ray directed to the light and see if we have a shadow */
+		//l_origin = point_i;
+		//bool shadow = false;
+		//float3 temp; // info to be discarted
+		//for (unsigned int p = 0; p < sceneInfo->facesSize; p++)
+		//{
+		//	if (p != face_i)
+		//	{
+		//		if (Intersect(vertices[faces[p].x], vertices[faces[p].y], vertices[faces[p].z], l_origin, L, &temp, &temp, &distance, &intersectOutput) > 0)
+		//		{
+		//			shadow = true;
+		//			break;
+		//		}
+		//	}
+		//}
+		//if (shadow)// if there's a shadow, put black pixel
+		//{
+		//	frame[id].x = 0;
+		//	frame[id].y = 0;
+		//	frame[id].z = 0;
+		//	frame[id].w = 255;
+		//	return;
+		//}
 
 		// now that we have the face, calculate illumination
 		float3 amount_color = (float3)(0.0f, 0.0f, 0.0f); //final amount of color that goes to each pixel
