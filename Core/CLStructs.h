@@ -52,7 +52,6 @@ typedef struct SceneInformation
 	cl_int height;
 	cl_int pixelCount;
 	cl_int groupsSize;
-	cl_int materiaslSize;
 	cl_float proportion_x;
 	cl_float proportion_y;
 } SceneInformation;

@@ -85,10 +85,18 @@ bool OCLContext::ExecuteCommands()
 	assert(m_isReady && "You cannot flush a queue if the context is not ready!");
 
 	// the flush!
-	if (clFinish(m_queue) != CL_SUCCESS)
+	cl_int error = clFinish(m_queue);
+	if (error != CL_SUCCESS)
 	{
-		// host probrably out of mememory
-		Log::Error("Failed to flush the command queue on the device " + m_device->GetName());
+		std::string errorString("Failed to flush the command queue on the device " + m_device->GetName() + ": ");
+		if (error == CL_OUT_OF_RESOURCES)
+			errorString += "CL_OUT_OF_HOST_MEMORY";
+		else if (error == CL_INVALID_COMMAND_QUEUE)
+			errorString += "CL_INVALID_COMMAND_QUEUE";
+		else
+			errorString += "unknown error";
+		
+		Log::Error(errorString);
 		return false;
 	}
 

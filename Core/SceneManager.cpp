@@ -181,7 +181,7 @@ bool SceneManager::PrepareScene(OCLKernel* kernel)
 	/* alloc memory dedicated to the materials */
 	m_materials = m_context->CreateMemoryObject<Material>(m_groups.size(), ReadOnly);
 
-	// TODO: make the scenemanager be warned in changes in the groups, preventing redundant transfers
+	// TODO: make the scenemanager be warned in changes in the materials, preventing redundant transfers
 	// build material array
 	groupCount = 0;
 	Material* materials = new Material[m_groups.size()];
@@ -199,6 +199,21 @@ bool SceneManager::PrepareScene(OCLKernel* kernel)
 	kernel->SetArgument(3, m_materials);
 
 	m_context->SyncAllMemoryHostToDevice();
+	m_geometryUpdated = true;
 		
 	return true;
+}
+
+void SceneManager::RemoveEmptyGroups()
+{
+	std::list<SceneGroup*>::iterator it;
+	std::vector<SceneGroup*> toDelete;
+	for (it = m_groups.begin(); it != m_groups.end(); it++)
+	{
+		if ((*it)->GetVerticesNumber() == 0 || (*it)->GetFaceNumber() == 0)
+			toDelete.push_back((*it));
+	}
+
+	for (int p = 0; p < toDelete.size(); p++)
+		m_groups.remove(toDelete[p]);
 }

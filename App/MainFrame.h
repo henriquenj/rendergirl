@@ -86,9 +86,6 @@ private:
 	/* light's color*/
 	wxColor m_lightColor;
 
-	// loaded scene
-	Scene3D* scene;
-
 	/*callback functions*/
 	void OnPlatformSelect(wxCommandEvent& event);
 	void OnDeviceSelect(wxCommandEvent& event);

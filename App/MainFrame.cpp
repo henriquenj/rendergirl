@@ -25,8 +25,6 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
 : wxFrame(NULL, wxID_ANY, title, pos, size, style)
 {	
 
-	scene = NULL;
-
 	/* create top menu bar*/
 	wxMenuBar* topBar = new wxMenuBar();
 	this->SetMenuBar(topBar);
@@ -200,8 +198,6 @@ MainFrame::~MainFrame()
 {
 	delete m_logTarget;
 	wxLog::DontCreateOnDemand();
-	if (scene)
-		delete scene;
 }
 
 void MainFrame::UpdateDevicesInterface()
@@ -255,6 +251,8 @@ void MainFrame::OnDeviceSelect(wxCommandEvent& event)
 
 void MainFrame::OnSelectButtonPressed(wxCommandEvent& WXUNUSED(event))
 {
+	SceneManager& manager = SceneManager::GetSharedManager();
+
 	// prepare the selected device and turn off the interface for selecting
 	m_deviceChoice->Disable();
 	m_platformChoice->Disable();
@@ -278,7 +276,7 @@ void MainFrame::OnSelectButtonPressed(wxCommandEvent& WXUNUSED(event))
 
 	// got here, no errors
 	m_releaseButton->Enable();
-	if (scene != NULL)
+	if (manager.GetGroupsCount() >= 1) /* we must have at least one group loaded */
 	{
 		this->SetStatusText("RenderGirl ready!");
 		m_renderButton->Enable();
@@ -299,10 +297,9 @@ void MainFrame::OnLoadModel(wxCommandEvent& WXUNUSED(event))
 	if (openFileDialog.ShowModal() == wxID_CANCEL)
 		return; // the user has pressed cancel
 
-	if (scene != NULL)
-		delete scene;
-	
-	scene = LoadOBJ(openFileDialog.GetPath());
+	SceneManager& manager = SceneManager::GetSharedManager();
+	manager.ClearScene();
+	manager.LoadSceneFromOBJ(openFileDialog.GetPath().ToStdString());
 
 	RenderGirlShared& shared = RenderGirlShared::GetRenderGirlShared();
 	if (shared.GetSelectedDevice())
@@ -323,9 +320,6 @@ void MainFrame::OnRenderButton(wxCommandEvent& WXUNUSED(event))
 	long height = 32;
 	m_heightField->GetValue().ToLong(&height);
 	/* Send data to OpenCL implementation */
-
-	if (!shared.Set3DScene(scene))
-		return;
 
 	/* grab camera information from interface */
 	Camera camera;

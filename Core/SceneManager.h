@@ -66,6 +66,9 @@ public:
 	/* Remove all the memory associeated with the scene, including all the groups */
 	void ClearScene();
 
+	/* remove groups with no face or vertices */
+	void RemoveEmptyGroups();
+
 	/* Return the amount of scene groups associated with the scene.
 		To render a scene, you must have at least one group loaded. */
 	inline const int GetGroupsCount()const

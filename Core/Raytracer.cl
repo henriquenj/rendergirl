@@ -48,7 +48,6 @@ typedef struct SceneInformation
 	int height;
 	int pixelCount;
 	int groupsSize;
-	int materiaslSize;
 	float proportion_x;
 	float proportion_y;
 } SceneInformation;
@@ -161,6 +160,7 @@ __kernel void Raytrace(__global float3* vertices, __global int4* faces, __global
 
 	float distance = 1000000.0f; // high value for the first ray
 	int face_i = -1; // index of the face that was hit, was -1 I don't now why
+	int groupIndex = -1;
 	float maxDistance = 1000000.0f; //max distance, work as a far view point
 	float3 point_i; // intersection point
 	float3 normal; // face normal
@@ -172,13 +172,16 @@ __kernel void Raytrace(__global float3* vertices, __global int4* faces, __global
 	for (unsigned int p = 0; p < sceneInfo->groupsSize; p++)
 	{
 		// for each face, look for intersections with the ray
-		for (unsigned int k = groups[p].facesStart; k < groups[p].facesSize; k++)
+		int facesEnd = groups[p].facesStart + groups[p].facesSize; // the index where the faces of this group ends
+		for (unsigned int k = groups[p].facesStart; k < facesEnd; k++)
 		{
 			int result;
 			float3 temp_point; // temporary intersection point
 			float3 temp_normal;// temporary normal vector
 
-			result = Intersect(vertices[faces[k].x + faceOffset], vertices[faces[k].y + faceOffset], vertices[faces[k].z + faceOffset],
+			result = Intersect(vertices[faces[k].x + faceOffset], 
+								vertices[faces[k].y + faceOffset], 
+								vertices[faces[k].z + faceOffset],
 								l_origin, ray_dir, &temp_normal, &temp_point, &distance, &intersectOutput);
 
 			if (result > 0)
@@ -190,6 +193,7 @@ __kernel void Raytrace(__global float3* vertices, __global int4* faces, __global
 					face_i = k;
 					point_i = temp_point;
 					normal = temp_normal;
+					groupIndex = p;
 				}
 			}
 		}
@@ -233,18 +237,18 @@ __kernel void Raytrace(__global float3* vertices, __global int4* faces, __global
 
 		normal = normalize(normal);
 
-		int indexMaterial = faces[face_i].w;	// material is stored in the last component of the face vector
+		//int indexMaterial = faces[face_i].w;
 
 		//diffuse
 		float dot_r = dot(normal, L);
 		if (dot_r > 0)
 		{
-			float Kd = ((materials[indexMaterial].diffuseColor.x
-				+ materials[indexMaterial].diffuseColor.y
-				+ materials[indexMaterial].diffuseColor.z) * 0.3333);
+			float Kd = ((materials[groupIndex].diffuseColor.x
+				+ materials[groupIndex].diffuseColor.y
+				+ materials[groupIndex].diffuseColor.z) * 0.3333);
 			float dif = dot_r * Kd;
 			//put diffuse component
-			amount_color += materials[indexMaterial].diffuseColor * light->color * dif;
+			amount_color += materials[groupIndex].diffuseColor * light->color * dif;
 		}
 		//specular
 		//glm::vec3 R = glm::cross(2.0f * glm::dot(L,normal) * normal,L);

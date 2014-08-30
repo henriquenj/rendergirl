@@ -302,10 +302,22 @@ bool LoadOBJ(const char* fileName)
 			{
 				groupName.push_back(objContent[counter + p]);
 			}
-
-			SceneGroup* group = manager.CreateSceneGroup(groupName);
-			groups.push_back(group);
-			currentGroup = groups.size()-1;
+			bool groupAlreadyDefined = false;
+			/* checks if this group has been already defined on other ocasion */
+			for (unsigned int p = 0; p < groups.size(); p++)
+			{
+				if (groups[p]->GetName() == groupName)
+				{
+					currentGroup = p;
+					groupAlreadyDefined = true;;
+				}
+			}
+			if (!groupAlreadyDefined)
+			{
+				SceneGroup* group = manager.CreateSceneGroup(groupName);
+				groups.push_back(group);
+				currentGroup = groups.size() - 1;
+			}
 		}
 		// mtl lib
 		else if (objContent[counter] == 'm' && objContent[counter + 1] == 't')
@@ -391,6 +403,8 @@ bool LoadOBJ(const char* fileName)
 		groups[currentGroup]->AddFace(face);
 		
 	}
+
+	manager.RemoveEmptyGroups();
 
 	int groupsSize = groups.size();
 	for (int a = 0; a < groupsSize; a++)
