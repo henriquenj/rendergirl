@@ -57,8 +57,6 @@ typedef struct SceneGroupStruct
 {
 	int facesSize; /* amount of faces of this particular group */
 	int facesStart;/* the index where the faces of this group start inside the global faces buffer */
-	float sphereSize; /* bouding sphere size */
-	float3 spherePos; /* bouding sphere position */
 }SceneGroupStruct;
 
 /*Struct to control material properties */
