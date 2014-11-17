@@ -30,7 +30,15 @@
 #include "CLStructs.h"
 #include "SceneManager.h"
 
-/* Singleton class encapsules the OpenCL status and the renderer status. */
+enum AntiAliasing
+{
+	noAA,
+	FXAA
+};
+/* Singleton class encapsules the OpenCL status and the renderer status.
+	This singleton architecture was kindly sugested by Loki Astari at
+	http://stackoverflow.com/questions/270947/can-any-one-provide-me-a-sample-of-singleton-in-c/271104#271104
+	*/
 class RenderGirlShared
 {
 
@@ -64,7 +72,7 @@ public:
 		This is a blocking call.
 		Param resolution is the resolution of the resulting image.
 		Return FALSE for an error */
-	bool Render(int width, int height, Camera &camera, Light &light);
+	bool Render(int width, int height, Camera &camera, Light &light, AntiAliasing AAOption = FXAA);
 
 	/* Release the selected device from use, deallocing all memory used */
 	void ReleaseDevice();
@@ -75,7 +83,7 @@ public:
 		return m_selectedDevice;
 	}
 
-	/* return list of avaiable platforms */ 
+	/* return list of avaiable platforms */
 	inline const std::vector<OCLPlatform*>& ReturnPlatforms()
 	{
 		return m_platforms;
@@ -95,7 +103,14 @@ public:
 
 private:
 	RenderGirlShared();
-	// prevent copy by not implementing those methods
+
+	/* DELIO: WRITE WHAT YOUR FUNCTION IS DOING!
+		From our wiki: Always put a comment just above the function signature telling what it does,
+						what each parameter means and what is returning.
+	*/
+	bool PrepareAntiAliasing();
+	bool ExecuteAntiAliasing(int width, int height);
+	// prevent copy by not implementing this methods
 	RenderGirlShared(RenderGirlShared const&);
 	void operator=(RenderGirlShared const&);
 
@@ -107,9 +122,11 @@ private:
 
 	OCLProgram* m_program;
 	OCLKernel* m_kernel;
+	OCLKernel* m_kernel_AA;
 	SceneInformation m_scene;
 
 	OCLMemoryObject<cl_uchar4>* m_frame;
+	OCLMemoryObject<cl_uchar4>* m_frame_AA;
 };
 
 

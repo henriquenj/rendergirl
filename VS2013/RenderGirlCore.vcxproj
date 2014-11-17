@@ -48,6 +48,7 @@
     <ClCompile Include="..\Core\SceneManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Core\FXAA.cl" />
     <None Include="..\Core\Raytracer.cl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

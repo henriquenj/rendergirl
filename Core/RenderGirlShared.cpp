@@ -26,6 +26,8 @@ RenderGirlShared::RenderGirlShared()
 	m_selectedDevice = NULL;
 	m_program = NULL;
 	m_kernel = NULL;
+	m_kernel_AA = NULL;
+	m_sceneLoaded = false;
 	m_frame = NULL;
 }
 RenderGirlShared::~RenderGirlShared()
@@ -153,7 +155,14 @@ bool RenderGirlShared::PrepareRaytracer()
 		return false;
 	}
 
-	if (!m_program->BuildProgram())
+	if (!m_program->LoadSource("FXAA.cl"))
+	{
+		delete m_program;
+		m_program = NULL;
+		return false;
+	}
+
+	if (!m_program->BuildProgram("-D ANTIALIASING"))
 	{
 		delete m_program;
 		m_program = NULL;
@@ -174,9 +183,63 @@ bool RenderGirlShared::PrepareRaytracer()
 	return true;
 }
 
-bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &light)
+bool RenderGirlShared::PrepareAntiAliasing()
 {
-	assert(m_selectedDevice != NULL && "You must have a working context to call this");
+	m_kernel_AA = new OCLKernel(m_program, std::string("AntiAliasingFXAA"));
+	if (!m_kernel_AA->GetOk())
+	{
+		delete m_program;
+		delete m_kernel_AA;
+		m_kernel_AA = NULL;
+		delete m_kernel;
+		m_kernel = NULL;
+		m_program = NULL;
+		return false;
+	}
+	return true;
+}
+
+
+bool RenderGirlShared::ExecuteAntiAliasing( int width, int height)
+{
+	OCLContext* context = m_selectedDevice->GetContext();
+
+	cl_bool error = false;
+
+	cl_int temp = width; 
+	/* DELIO: passing a int pointer to be casted as a cl_int pointer can result in some crazy shit if
+	sizeof(int) is different than sizeof(cl_int), so we let our compiler copy the date to temp */
+	OCLMemoryObject<cl_int>* widthMem = context->CreateMemoryObject<cl_int>(1, ReadOnly, &error);
+	widthMem->SetData(&temp, true);
+	widthMem->SyncHostToDevice();
+	temp = height;
+	OCLMemoryObject<cl_int>* heightMem = context->CreateMemoryObject<cl_int>(1, ReadOnly, &error);
+	heightMem->SetData(&temp, true);
+	heightMem->SyncHostToDevice();
+
+	if (error)
+		return false;
+
+	if (!m_kernel_AA->SetArgument(0, m_frame))
+		return false;
+	if (!m_kernel_AA->SetArgument(1, m_frame_AA))
+		return false;
+	if (!m_kernel_AA->SetArgument(2, widthMem))
+		return false;
+	if (!m_kernel_AA->SetArgument(3, heightMem))
+		return false;
+
+
+	m_kernel_AA->SetGlobalWorkSize(width * height); // one work-iten per pixel
+
+	if (!m_kernel_AA->EnqueueExecution())
+		return false;
+
+	return true;
+}
+
+bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &light, AntiAliasing AAOption)
+{
 
 	if (height < 1 || width < 1)
 	{
@@ -206,6 +269,27 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 	m_frame = context->CreateMemoryObject<cl_uchar4>(pixelCount, WriteOnly, &error);
 	if (error)
 		return false;
+
+	cl_uchar4* frameRawAA;
+	if (AAOption != noAA)		//if there is antialiasing
+	{
+		if (!PrepareAntiAliasing())
+			return false;
+
+		if (m_frame_AA != NULL)
+		{
+			context->DeleteMemoryObject<cl_uchar4>(m_frame_AA);
+			m_frame_AA = NULL;
+		}
+		m_frame_AA = context->CreateMemoryObject<cl_uchar4>(pixelCount, WriteOnly, &error);
+		if (error)
+			return false;
+
+
+		frameRawAA = new cl_uchar4[pixelCount];
+		m_frame_AA->SetData(frameRawAA, false);
+		m_frame_AA->SyncHostToDevice();
+	}
 
 	cl_uchar4* frameRaw = new cl_uchar4[pixelCount];
 	m_frame->SetData(frameRaw,false);
@@ -246,11 +330,30 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 
 	Log::Message("Rendering...");
 
+
 	// start counter
 	auto pretime = std::chrono::high_resolution_clock::now();
 
 	if (!m_kernel->EnqueueExecution())
 		return false;
+
+	//AAOption = noAA;
+
+	if (AAOption != noAA)
+	{
+		if (!ExecuteAntiAliasing(width, height))
+			return false;
+
+		clEnqueueCopyBuffer(context->GetCLQueue(),
+			m_frame_AA->GetDeviceMemory(),
+			m_frame->GetDeviceMemory(),
+			0,
+			0,
+			m_frame_AA->GetSize()*4,
+			0,
+			NULL,
+			NULL);
+	}
 
 	if (!context->ExecuteCommands())
 		return false;
@@ -261,6 +364,12 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 	auto postime = std::chrono::high_resolution_clock::now();
 	std::chrono::nanoseconds ns = std::chrono::duration_cast<std::chrono::nanoseconds>(postime - pretime);
 	Log::Message("Rendering took " + std::to_string((float)(ns.count() / 1000000000.0f)) + " seconds.");
+
+	if (AAOption != noAA)
+	{
+		context->DeleteMemoryObject(m_frame_AA);
+		m_frame_AA = NULL;
+	}
 
 	m_frame->SyncDeviceToHost();
 
@@ -280,6 +389,12 @@ void RenderGirlShared::ReleaseDevice()
 	{
 		delete m_kernel;
 		m_kernel = NULL;
+
+	}
+	if (m_kernel_AA != NULL)
+	{
+		delete m_kernel_AA;
+		m_kernel_AA = NULL;
 	}
 	if (m_program != NULL)
 	{
@@ -291,6 +406,12 @@ void RenderGirlShared::ReleaseDevice()
 		/* this will get deallocated anyway on ReleaseContext so there's no need to delete it here
 			just remove the reference */
 		m_frame = NULL;
+	}
+	if (m_frame_AA != NULL)
+	{
+		/* this will get deallocated anyway on ReleaseContext so there's no need to delete it here
+		just remove the reference */
+		m_frame_AA = NULL;
 	}
 
 	m_selectedDevice->ReleaseContext();

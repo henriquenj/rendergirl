@@ -96,5 +96,8 @@
     <None Include="..\Core\Raytracer.cl">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="..\Core\FXAA.cl">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
