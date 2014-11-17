@@ -33,7 +33,7 @@
 
 
 float FxaaLuma(uchar3 rgb) {
-	return (float)rgb.y * (0.587 / 0.299) + (float)rgb.x;
+	return (float)rgb.y * 1.96321f + (float)rgb.x;
 }
 
 __kernel void AntiAliasingFXAA(__global uchar4* screenInput, __global uchar4* screenOutput, __global int* width, __global int* height)
