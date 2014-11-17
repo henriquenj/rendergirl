@@ -67,6 +67,8 @@ private:
 	wxButton* m_loadModelButton;
 	wxButton* m_renderButton;
 	wxButton* m_releaseButton;
+	/* checkbox button */
+	wxCheckBox* m_FXAAbutton;
 	/* menus */
 	wxMenu* m_windowMenu;
 

@@ -125,6 +125,9 @@ MainFrame::MainFrame(const wxString& title, const wxPoint& pos, const wxSize& si
 	m_renderButton = new wxButton(panel, RenderButton, "Render");
 	m_renderButton->Disable();
 	renderAreaSizer->Add(m_renderButton,0,wxCENTER,20);
+
+	m_FXAAbutton = new wxCheckBox(panel, wxID_ANY, "FXAA");
+	renderAreaSizer->Add(m_FXAAbutton, wxCENTER);
 	
 	wxBoxSizer* resoSizer = new wxStaticBoxSizer(new wxStaticBox(panel, wxID_ANY, "Resolution"), wxVERTICAL);
 	renderAreaSizer->Add(resoSizer, 0, wxALL);
@@ -361,8 +364,13 @@ void MainFrame::OnRenderButton(wxCommandEvent& WXUNUSED(event))
 	light.Ks = 0.2;
 	light.Ka = 0.0;
 
+	AntiAliasingMethod AA;
+	if (m_FXAAbutton->GetValue())
+		AA = FXAA;
+	else AA = noAA;
+
 	// render
-	if (!shared.Render(width, height, camera, light, noAA))
+	if (!shared.Render(width, height, camera, light, AA))
 		return;
 
 	// get data back
