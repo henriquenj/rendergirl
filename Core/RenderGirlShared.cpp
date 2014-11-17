@@ -151,6 +151,13 @@ bool RenderGirlShared::PrepareRaytracer()
 		return false;
 	}
 
+	if (!m_program->LoadSource("FXAA.cl"))
+	{
+		delete m_program;
+		m_program = NULL;
+		return false;
+	}
+
 	if (!m_program->BuildProgram("-D ANTIALIASING"))
 	{
 		delete m_program;
