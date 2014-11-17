@@ -294,7 +294,7 @@ bool LoadOBJ(const char* fileName)
 			}
 		}
 		// group name
-		else if (objContent[counter] == 'g')
+		else if (objContent[counter] == 'g' || objContent[counter] == 'o')
 		{
 			counter += 2;
 			std::string groupName;
