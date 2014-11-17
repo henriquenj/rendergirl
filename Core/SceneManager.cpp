@@ -162,6 +162,7 @@ bool SceneManager::PrepareScene(OCLKernel* kernel)
 			memcpy(&facesRaw[facesOffset], &((*it)->m_faces[0]), (*it)->GetFaceNumber() * sizeof(cl_int3));
 			groupsRaw[groupCount].facesSize = (*it)->GetFaceNumber();
 			groupsRaw[groupCount].facesStart = facesOffset;
+			groupsRaw[groupCount].vertexSize = (*it)->GetVerticesNumber();
 			facesOffset += (*it)->GetFaceNumber();
 
 			memcpy(&vertexRaw[vertexOffset], &((*it)->m_vertices[0]), (*it)->GetVerticesNumber() * sizeof(cl_float3));

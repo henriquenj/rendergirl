@@ -57,6 +57,7 @@ typedef struct SceneGroupStruct
 {
 	int facesSize; /* amount of faces of this particular group */
 	int facesStart;/* the index where the faces of this group start inside the global faces buffer */
+	int vertexSize;/* amount of vertices on this particular group*/
 }SceneGroupStruct;
 
 /*Struct to control material properties */
@@ -166,7 +167,7 @@ __kernel void Raytrace(__global float3* vertices, __global int4* faces, __global
 	float intersectOutput;
 	/* this is used to correct the offsets of the index inside the faces buffer, since they are using local indexes
 		(related to the group to which they are associated) */
-	int faceOffset = 0;
+	int vertexOffset = 0;
 	for (unsigned int p = 0; p < sceneInfo->groupsSize; p++)
 	{
 		// for each face, look for intersections with the ray
@@ -177,9 +178,9 @@ __kernel void Raytrace(__global float3* vertices, __global int4* faces, __global
 			float3 temp_point; // temporary intersection point
 			float3 temp_normal;// temporary normal vector
 
-			result = Intersect(vertices[faces[k].x + faceOffset], 
-								vertices[faces[k].y + faceOffset], 
-								vertices[faces[k].z + faceOffset],
+			result = Intersect(vertices[faces[k].x + vertexOffset],
+								vertices[faces[k].y + vertexOffset],
+								vertices[faces[k].z + vertexOffset],
 								l_origin, ray_dir, &temp_normal, &temp_point, &distance, &intersectOutput);
 
 			if (result > 0)
@@ -196,7 +197,7 @@ __kernel void Raytrace(__global float3* vertices, __global int4* faces, __global
 			}
 		}
 		/* update offset for the next group */
-		faceOffset += groups[p].facesSize;
+		vertexOffset += groups[p].vertexSize;
 	}
 	// paint pixel
 	if (face_i != -1)
