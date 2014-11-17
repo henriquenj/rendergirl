@@ -100,7 +100,7 @@ public:
 		in the amount of elements, NOT the size in bytes.
 		WARNING: the task will only be completed when the current command queue is flushed,
 		call ExecuteCommands on OCLContext to guarantee a copy. Return FALSE if the copy failed */
-	inline const bool CopyFromMemoryBuffer(const OCLMemoryObject<T>* source, const int amount,
+	const bool CopyFromMemoryBuffer(const OCLMemoryObject<T>* source, const int amount,
 		const int sourceOffset = 0, const int destOffset = 0)
 	{
 		assert(source != NULL && "Parameter source cannot be NULL");

@@ -362,7 +362,7 @@ void MainFrame::OnRenderButton(wxCommandEvent& WXUNUSED(event))
 	light.Ka = 0.0;
 
 	// render
-	if (!shared.Render(width, height, camera, light, FXAA))
+	if (!shared.Render(width, height, camera, light, noAA))
 		return;
 
 	// get data back

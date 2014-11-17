@@ -27,7 +27,6 @@ RenderGirlShared::RenderGirlShared()
 	m_program = NULL;
 	m_kernel = NULL;
 	m_kernel_AA = NULL;
-	m_sceneLoaded = false;
 	m_frame = NULL;
 }
 RenderGirlShared::~RenderGirlShared()
@@ -238,8 +237,9 @@ bool RenderGirlShared::ExecuteAntiAliasing( int width, int height)
 	return true;
 }
 
-bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &light, AntiAliasing AAOption)
+bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &light, AntiAliasingMethod AAOption)
 {
+	assert(m_selectedDevice != NULL && "You must have a working context to call this");
 
 	if (height < 1 || width < 1)
 	{
@@ -344,15 +344,7 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 		if (!ExecuteAntiAliasing(width, height))
 			return false;
 
-		clEnqueueCopyBuffer(context->GetCLQueue(),
-			m_frame_AA->GetDeviceMemory(),
-			m_frame->GetDeviceMemory(),
-			0,
-			0,
-			m_frame_AA->GetSize()*4,
-			0,
-			NULL,
-			NULL);
+		m_frame->CopyFromMemoryBuffer(m_frame_AA);
 	}
 
 	if (!context->ExecuteCommands())
