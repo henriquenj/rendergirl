@@ -71,6 +71,8 @@ private:
 	/* vector with a list of pointers to the source code of each file,
 		m_sourceCodeList[x] matches m_sourceFileList[x] */
 	std::vector<char*> m_sourceCodeList;
+	// the sizes of the source code files
+	std::vector<int> m_sourceSizes;
 };
 
 

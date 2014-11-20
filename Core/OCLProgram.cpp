@@ -37,7 +37,7 @@ OCLProgram::~OCLProgram()
 	{
 		delete m_sourceCodeList[a];
 	}
-
+	m_sourceSizes.clear();
 	clReleaseProgram(m_program);
 }
 
@@ -60,19 +60,17 @@ bool OCLProgram::LoadSource(const std::string &sourceFile)
 	fseek(kernelCodeFile, 0L, SEEK_SET);
 
 	//alloc enough memory
-	char* kernelCode = new char[size + 1]; // +1 for the null-terminanting character
+	char* kernelCode = new char[size];
 	memset((char*)kernelCode, 0, size);
 	fread((char*)kernelCode, sizeof(char), size, kernelCodeFile);
 	// end file stuff
 	fclose(kernelCodeFile);
 
-	kernelCode[size] = '\0'; // we need this null terminating string otherwise we the OpenCL loader goes nuts
-	/* for more info abou this issue go to http://www.khronos.org/registry/cl/sdk/1.0/docs/man/xhtml/clCreateProgramWithSource.html
-		and check the "const size_t *lengths" parameter
-	*/
 	// add to the list as a loaded source code
 	m_sourceFilePathList.push_back(sourceFile);
 	m_sourceCodeList.push_back(kernelCode);
+	//keep size of the file
+	m_sourceSizes.push_back(size);
 
 	return true;
 }
@@ -86,19 +84,22 @@ bool OCLProgram::BuildProgram(const char* options)
 	// send source code to OpenCL for each source file
 	int sizeVector = m_sourceCodeList.size();
 	char** sourcePointers = (char**)malloc(sizeof(char*) * sizeVector);
+	size_t* lengths = (size_t*)malloc(sizeof(size_t) * sizeVector);
 	std::string messageLog("Compiling: ");
-	// group all pointers on the same array and build log message
+	// group all pointers on the same array, set source size array and build log message
 	for (unsigned int a = 0; a < sizeVector; a++)
 	{
 		sourcePointers[a] = m_sourceCodeList[a];
+		lengths[a] = m_sourceSizes[a];
 		messageLog += m_sourceFilePathList[a];
 		messageLog += " ";
 	}
 	
 	Log::Message(messageLog);
 
-	m_program = clCreateProgramWithSource(m_context->GetCLContext(), sizeVector, (const char**)sourcePointers, NULL, &error);
+	m_program = clCreateProgramWithSource(m_context->GetCLContext(), sizeVector, (const char**)sourcePointers, lengths, &error);
 	free(sourcePointers);
+	free(lengths);
 
 	if (error != CL_SUCCESS)
 	{
