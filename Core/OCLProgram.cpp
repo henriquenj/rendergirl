@@ -37,7 +37,6 @@ OCLProgram::~OCLProgram()
 	{
 		delete m_sourceCodeList[a];
 	}
-	m_sourceSizes.clear();
 	clReleaseProgram(m_program);
 }
 

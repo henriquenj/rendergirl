@@ -154,14 +154,7 @@ bool RenderGirlShared::PrepareRaytracer()
 		return false;
 	}
 
-	if (!m_program->LoadSource("FXAA.cl"))
-	{
-		delete m_program;
-		m_program = NULL;
-		return false;
-	}
-
-	if (!m_program->BuildProgram("-D ANTIALIASING"))
+	if (!m_program->BuildProgram())
 	{
 		delete m_program;
 		m_program = NULL;
@@ -206,8 +199,7 @@ bool RenderGirlShared::ExecuteAntiAliasing( int width, int height)
 	cl_bool error = false;
 
 	cl_int temp = width; 
-	/* DELIO: passing a int pointer to be casted as a cl_int pointer can result in some crazy shit if
-	sizeof(int) is different than sizeof(cl_int), so we let our compiler copy the date to temp */
+
 	OCLMemoryObject<cl_int>* widthMem = context->CreateMemoryObject<cl_int>(1, ReadOnly, &error);
 	widthMem->SetData(&temp, true);
 	widthMem->SyncHostToDevice();

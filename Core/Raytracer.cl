@@ -18,6 +18,8 @@
 
 #define SMALL_NUM  0.00000001f // anything that avoids division overflow
 
+#include "FXAA.cl"
+
 /*Any change on those structs should be copied back to the host code on CLStructs.h */
 
 /* Stores the concept of a Camera */

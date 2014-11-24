@@ -38,7 +38,7 @@ public:
 		of options to the OpenCL compiler (can be NULL), return FALSE if there was a problem.
 		For the list of avaiable options, please refer to
 		http://www.khronos.org/registry/cl/sdk/1.0/docs/man/xhtml/clBuildProgram.html */
-	bool BuildProgram(const char* options =  NULL);
+	bool BuildProgram(const char* options =  nullptr);
 
 	/* Return TRUE if this program is ready to be executed */
 	inline bool IsCompiled() const
