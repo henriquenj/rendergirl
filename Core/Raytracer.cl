@@ -80,8 +80,7 @@ int Intersect(const float3   V1,  // Triangle vertices
 	const float3    D,  //Ray direction
 	float3*	 normal,
 	float3*	 point_i,
-	float*	 dist,
-	float* out)
+	float*	 dist)
 {
 
 	float3 e1, e2;  //Edge1, Edge2
@@ -128,7 +127,6 @@ int Intersect(const float3   V1,  // Triangle vertices
 		*point_i = (O)+(D)* r; // intersect point of ray and plane
 
 		*dist = r;
-		*out = t;
 
 		return 1;
 	}
@@ -166,7 +164,6 @@ __kernel void Raytrace(__global float3* vertices, __global int4* faces, __global
 	float3 point_i; // intersection point
 	float3 normal; // face normal
 	float3 l_origin = camera->pos; // local copy of origin of rays (camera/eye)
-	float intersectOutput;
 	/* this is used to correct the offsets of the index inside the faces buffer, since they are using local indexes
 		(related to the group to which they are associated) */
 	int vertexOffset = 0;
@@ -183,7 +180,7 @@ __kernel void Raytrace(__global float3* vertices, __global int4* faces, __global
 			result = Intersect(vertices[faces[k].x + vertexOffset],
 								vertices[faces[k].y + vertexOffset],
 								vertices[faces[k].z + vertexOffset],
-								l_origin, ray_dir, &temp_normal, &temp_point, &distance, &intersectOutput);
+								l_origin, ray_dir, &temp_normal, &temp_point, &distance);
 
 			if (result > 0)
 			{
