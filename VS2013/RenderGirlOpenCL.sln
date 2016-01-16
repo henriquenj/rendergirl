@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenderGirlApp", "RenderGirlOpenCL.vcxproj", "{118A0C67-BB56-4918-AD2B-FB5882F23DF8}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -152,6 +152,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_custom_build", "..\App\wxW
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenderGirlConsole", "RenderGirlConsole.vcxproj", "{E4D7DC6B-01CD-411B-9493-B5AB1EEFAB0D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1110E5D3-904D-46B6-99F2-91BF554C3EC4} = {1110E5D3-904D-46B6-99F2-91BF554C3EC4}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenderGirlBlender", "RenderGirlBlender.vcxproj", "{34E9C017-6E8E-4B98-B4EE-3F66FBA7B39B}"
 	ProjectSection(ProjectDependencies) = postProject
 		{1110E5D3-904D-46B6-99F2-91BF554C3EC4} = {1110E5D3-904D-46B6-99F2-91BF554C3EC4}
 	EndProjectSection
@@ -490,6 +495,17 @@ Global
 		{E4D7DC6B-01CD-411B-9493-B5AB1EEFAB0D}.Release|Win32.Build.0 = Release|Win32
 		{E4D7DC6B-01CD-411B-9493-B5AB1EEFAB0D}.Release|x64.ActiveCfg = Release|x64
 		{E4D7DC6B-01CD-411B-9493-B5AB1EEFAB0D}.Release|x64.Build.0 = Release|x64
+		{34E9C017-6E8E-4B98-B4EE-3F66FBA7B39B}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{34E9C017-6E8E-4B98-B4EE-3F66FBA7B39B}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{34E9C017-6E8E-4B98-B4EE-3F66FBA7B39B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{34E9C017-6E8E-4B98-B4EE-3F66FBA7B39B}.Debug|Win32.Build.0 = Debug|Win32
+		{34E9C017-6E8E-4B98-B4EE-3F66FBA7B39B}.Debug|x64.ActiveCfg = Debug|Win32
+		{34E9C017-6E8E-4B98-B4EE-3F66FBA7B39B}.Debug|x64.Build.0 = Debug|Win32
+		{34E9C017-6E8E-4B98-B4EE-3F66FBA7B39B}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{34E9C017-6E8E-4B98-B4EE-3F66FBA7B39B}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{34E9C017-6E8E-4B98-B4EE-3F66FBA7B39B}.Release|Win32.ActiveCfg = Release|Win32
+		{34E9C017-6E8E-4B98-B4EE-3F66FBA7B39B}.Release|Win32.Build.0 = Release|Win32
+		{34E9C017-6E8E-4B98-B4EE-3F66FBA7B39B}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
