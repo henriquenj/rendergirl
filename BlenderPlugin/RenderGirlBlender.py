@@ -26,11 +26,32 @@ class RenderGirl(bpy.types.RenderEngine):
         self.size_x = int(scene.render.resolution_x * scale)
         self.size_y = int(scene.render.resolution_y * scale)
 
+        pixel_count = self.size_x * self.size_y
 
+        rect = []
+        counter = 0
+        color = 0.0
+
+        while True:
+            rect.append([ color, color, 0.5, 1.0])
+            color += 0.1
+            counter = counter + 1
+            if color > 1:
+                color = 0
+            if counter == pixel_count:
+                break
+
+        # Here we write the pixel values to the RenderResult
+        result = self.begin_result(0, 0, self.size_x, self.size_y)
+        layer = result.layers[0]
+        layer.rect = rect
+        self.end_result(result)
 
 def register():
     # Register the RenderEngine
     bpy.utils.register_class(RenderGirl)
+    # TODO: consider using blender modules, more info here
+    # http://www.blender.org/api/blender_python_api_2_64_release/info_overview.html#multiple-classes
 
     # Register render properties UI elements
     from bl_ui import properties_render
