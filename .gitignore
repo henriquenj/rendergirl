@@ -94,36 +94,6 @@ _ReSharper*/
 # JustCode is a .NET coding addin-in
 .JustCode
 
-# TeamCity is a build add-in
-_TeamCity*
-
-# DotCover is a Code Coverage Tool
-*.dotCover
-
-# NCrunch
-_NCrunch_*
-.*crunch*.local.xml
-
-# MightyMoose
-*.mm.*
-AutoTest.Net/
-
-# Web workbench (sass)
-.sass-cache/
-
-# Installshield output folder
-[Ee]xpress/
-
-# DocProject is a documentation generator add-in
-DocProject/buildhelp/
-DocProject/Help/*.HxT
-DocProject/Help/*.HxC
-DocProject/Help/*.hhc
-DocProject/Help/*.hhk
-DocProject/Help/*.hhp
-DocProject/Help/Html2
-DocProject/Help/html
-
 # Click-Once directory
 publish/
 
@@ -142,19 +112,6 @@ packages/*
 ## uncomment the next line
 #!packages/repositories.config
 
-# Enable "build/" folder in the NuGet Packages folder since
-# NuGet packages use it for MSBuild targets.
-# This line needs to be after the ignore of the build folder
-# (and the packages folder if the line above has been uncommented)
-!packages/build/
-
-# Windows Azure Build Output
-csx/
-*.build.csdef
-
-# Windows Store app package directory
-AppPackages/
-
 # Others
 sql/
 *.Cache
@@ -167,9 +124,6 @@ ClientBin/
 *.pfx
 *.publishsettings
 node_modules/
-
-# RIA/Silverlight projects
-Generated_Code/
 
 # Backup & report files from converting an old project file
 # to a newer Visual Studio version. Backup files are not needed,
