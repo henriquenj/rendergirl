@@ -1,4 +1,21 @@
+# RenderGirl - OpenCL raytracer renderer
+# Copyright (c) 2015, Henrique Jung, All rights reserved.
+
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3.0 of the License, or any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# Lesser General Public License for more details.
+
+# You should have received a copy of the GNU Lesser General Public
+# License along with this program.
+
 import bpy
+from .RenderGirl import RenderGirl
 
 # Metadata for blender internal plugin system
 bl_info = {
@@ -15,11 +32,12 @@ bl_info = {
     "category": "Render"}
 
 
-class RenderGirl(bpy.types.RenderEngine):
+class RenderGirlBlender(bpy.types.RenderEngine):
     """ This class provides interface between blender UI and the RenderGirl Core """
     bl_idname = 'RenderGirl'
     bl_label = 'RenderGirl'
     bl_use_preview = True
+    render_girl = None
 
     def render(self, scene):
         scale = scene.render.resolution_percentage / 100.0
@@ -49,7 +67,7 @@ class RenderGirl(bpy.types.RenderEngine):
 
 def register():
     # Register the RenderEngine
-    bpy.utils.register_class(RenderGirl)
+    bpy.utils.register_class(RenderGirlBlender)
     # TODO: consider using blender modules, more info here
     # http://www.blender.org/api/blender_python_api_2_64_release/info_overview.html#multiple-classes
 
@@ -58,6 +76,10 @@ def register():
     properties_render.RENDER_PT_render.COMPAT_ENGINES.add('RenderGirl')
     del properties_render
 
+    # create RenderGirl instance
+    RenderGirlBlender.render_girl = RenderGirl()
 
 def unregister():
-    bpy.utils.unregister_class(RenderGirl)
+    bpy.utils.unregister_class(RenderGirlBlender)
+    del RenderGirlBlender.render_girl
+    RenderGirlBlender.render_girl = None

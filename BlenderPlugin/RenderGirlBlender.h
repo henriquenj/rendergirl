@@ -26,8 +26,11 @@
 
 extern "C" // make it callable from Ctypes
 {
-
-bool start_rendergirl();
+	/* Start rendergirl, set up the log callbacks and probe the computer
+		for OpenCL capable devices
+		Return 0 for success	
+	*/
+	int StartRendergirl();
 }
 
 #endif //__RENDERGIRL_BLENDER__

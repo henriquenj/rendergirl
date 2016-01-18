@@ -20,9 +20,33 @@
 #include "RenderGirlShared.h"
 #include "Log.h"
 
-bool start_rendergirl()
+
+/* 
+	BlenderLogOutput class will call a C callback accesible from Python 
+*/
+class BlenderLogOutput : public LogListener
+{
+public:
+
+	void PrintLog(const char * message)
+	{
+	}
+
+	void PrintError(const char * error)
+	{
+	}
+
+};
+
+int StartRendergirl()
 {	
-	return true;
+
+	/* Register log stuff */
+	BlenderLogOutput* logOutput = new BlenderLogOutput();
+	Log::AddListener(logOutput);
+
+
+	return 0;
 }
 
 
