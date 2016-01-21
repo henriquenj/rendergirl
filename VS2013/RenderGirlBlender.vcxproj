@@ -102,6 +102,9 @@
       <AdditionalLibraryDirectories>..\lib\$(Configuration)_$(Platform)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>RenderGirlBlenderExport.def</ModuleDefinitionFile>
     </Link>
+    <PostBuildEvent>
+      <Command>deploy_blender_plugin.bat $(Configuration)_$(Platform) $(ProjectName)_$(Platform)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -116,6 +119,9 @@
       <AdditionalLibraryDirectories>..\lib\$(Configuration)_$(Platform)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>RenderGirlBlenderExport.def</ModuleDefinitionFile>
     </Link>
+    <PostBuildEvent>
+      <Command>deploy_blender_plugin.bat $(Configuration)_$(Platform) $(ProjectName)_$(Platform)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -134,6 +140,9 @@
       <AdditionalLibraryDirectories>..\lib\$(Configuration)_$(Platform)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>RenderGirlBlenderExport.def</ModuleDefinitionFile>
     </Link>
+    <PostBuildEvent>
+      <Command>deploy_blender_plugin.bat $(Configuration)_$(Platform) $(ProjectName)_$(Platform)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -152,6 +161,9 @@
       <AdditionalLibraryDirectories>..\lib\$(Configuration)_$(Platform)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>RenderGirlBlenderExport.def</ModuleDefinitionFile>
     </Link>
+    <PostBuildEvent>
+      <Command>deploy_blender_plugin.bat $(Configuration)_$(Platform) $(ProjectName)_$(Platform)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\BlenderPlugin\RenderGirlBlender.h" />
