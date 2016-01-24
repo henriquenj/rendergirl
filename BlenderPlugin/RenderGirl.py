@@ -15,6 +15,8 @@
 # License along with this program.
 
 import ctypes
+import os
+import sys
 
 class RenderGirl:
     """Class that loads the RenderGirl shared library and holds most of
@@ -30,18 +32,15 @@ class RenderGirl:
         """ Init function load the shared library with C code """
 
         # load shared library containing RenderGirl
-        # first attempting to load realease version, and then debug versions
-        try:
-            RenderGirl.render_girl_shared = ctypes.cdll.LoadLibrary(
-                "C:\\Users\\henrique\\Desktop\\Projetos\\rendergirl\\lib\\Release_x64\\RenderGirlBlender_x64")
-        except Exception:
-            pass
-        # fall back to debug library
-        if RenderGirl.render_girl_shared == None:
-            RenderGirl.render_girl_shared = ctypes.cdll.LoadLibrary(
-                "C:\\Users\\henrique\\Desktop\\Projetos\\rendergirl\\lib\\Debug_x64\\RenderGirlBlender_x64")
-        # TODO: this will be hardcoded to my personal location for now
-        # it's ungly, I know, it just for the beginning
+        # it's installed alongide the .py files on the same folder
+        render_girl_directory = os.path.dirname(os.path.realpath(__file__)) + os.sep
+        render_girl_path = render_girl_directory + "RenderGirlBlender_x86"
+        # rendergirl shared library name may change based on compilation details
+        # such as target architecture, OS, etc
+        is_64bits = sys.maxsize > 2**32
+        if is_64bits:
+            render_girl_path += "_64"
+        RenderGirl.render_girl_shared = ctypes.cdll.LoadLibrary(render_girl_path)
 
         error = RenderGirl.render_girl_shared.StartRendergirl();
         print("RenderGirl started with code: {0}".format(error))
