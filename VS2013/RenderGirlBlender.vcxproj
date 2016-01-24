@@ -67,25 +67,25 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>$(IncludePath)</IncludePath>
-    <TargetName>$(ProjectName)_$(Platform)</TargetName>
+    <TargetName>$(ProjectName)_x86</TargetName>
     <IntDir>$(Platform)\$(ProjectName)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)\..\lib\$(Configuration)_$(Platform)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(IncludePath)</IncludePath>
-    <TargetName>$(ProjectName)_$(Platform)</TargetName>
+    <TargetName>$(ProjectName)_x86</TargetName>
     <IntDir>$(Platform)\$(ProjectName)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)\..\lib\$(Configuration)_$(Platform)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(IncludePath)</IncludePath>
-    <TargetName>$(ProjectName)_$(Platform)</TargetName>
+    <TargetName>$(ProjectName)_x86_64</TargetName>
     <IntDir>$(Platform)\$(ProjectName)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)\..\lib\$(Configuration)_$(Platform)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(IncludePath)</IncludePath>
-    <TargetName>$(ProjectName)_$(Platform)</TargetName>
+    <TargetName>$(ProjectName)_x86_64</TargetName>
     <IntDir>$(Platform)\$(ProjectName)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)\..\lib\$(Configuration)_$(Platform)\</OutDir>
   </PropertyGroup>
@@ -103,7 +103,7 @@
       <ModuleDefinitionFile>RenderGirlBlenderExport.def</ModuleDefinitionFile>
     </Link>
     <PostBuildEvent>
-      <Command>deploy_blender_plugin.bat $(Configuration)_$(Platform) $(ProjectName)_$(Platform)</Command>
+      <Command>deploy_blender_plugin.bat $(Configuration)_$(Platform) $(ProjectName)_x86</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -120,7 +120,7 @@
       <ModuleDefinitionFile>RenderGirlBlenderExport.def</ModuleDefinitionFile>
     </Link>
     <PostBuildEvent>
-      <Command>deploy_blender_plugin.bat $(Configuration)_$(Platform) $(ProjectName)_$(Platform)</Command>
+      <Command>deploy_blender_plugin.bat $(Configuration)_$(Platform) $(ProjectName)_x86_64</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -141,7 +141,7 @@
       <ModuleDefinitionFile>RenderGirlBlenderExport.def</ModuleDefinitionFile>
     </Link>
     <PostBuildEvent>
-      <Command>deploy_blender_plugin.bat $(Configuration)_$(Platform) $(ProjectName)_$(Platform)</Command>
+      <Command>deploy_blender_plugin.bat $(Configuration)_$(Platform) $(ProjectName)_x86</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -162,7 +162,7 @@
       <ModuleDefinitionFile>RenderGirlBlenderExport.def</ModuleDefinitionFile>
     </Link>
     <PostBuildEvent>
-      <Command>deploy_blender_plugin.bat $(Configuration)_$(Platform) $(ProjectName)_$(Platform)</Command>
+      <Command>deploy_blender_plugin.bat $(Configuration)_$(Platform) $(ProjectName)_x86_64</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
