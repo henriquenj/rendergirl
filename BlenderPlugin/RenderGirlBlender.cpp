@@ -69,15 +69,13 @@ void StartLogSystem(const c_log_callback log_callback)
 }
 
 int StartRendergirl()
-{	
-	Log::Message("Starting RenderGirlBlender");
-
+{
 	// calls for the singleton RenderGirlShared for the first time, creating it
 	RenderGirlShared& shared = RenderGirlShared::GetRenderGirlShared();
 	SceneManager& scene_m = SceneManager::GetSharedManager();
 
-	Log::Message("RenderGirlBlender started");
-	Log::Error("This is an error example");
+	shared.InitPlatforms();
+	shared.InitDevices();
 
 	return 0;
 }
