@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this program.
 
-import ctypes
+from ctypes import *
 import os
 import sys
 
@@ -23,10 +23,9 @@ class RenderGirl:
     the wrappers. It is called from RenderGirlBlender class. The
     difference between RenderGirl and RenderGirlBlender is that
     RenderGirl class is a singleton that is not suppose to be deleted
-    across several renderings. So it's useful to retain states.
+    across several renderings. So it's useful to retain states and perform
+    init operations.
     """
-    # holds the shared library instance containing C function calls
-    render_girl_shared = None
 
     def __init__(self):
         """ Init function load the shared library with C code """
@@ -40,10 +39,31 @@ class RenderGirl:
         is_64bits = sys.maxsize > 2**32
         if is_64bits:
             render_girl_path += "_64"
-        RenderGirl.render_girl_shared = ctypes.cdll.LoadLibrary(render_girl_path)
+        # holds the shared library instance containing C function calls
+        self.render_girl_shared = cdll.LoadLibrary(render_girl_path)
 
-        error = RenderGirl.render_girl_shared.StartRendergirl();
-        print("RenderGirl started with code: {0}".format(error))
+        # create pointer to function according to the expected type
+        # from StartLogSystem
+        C_LOG_FUNCTION = CFUNCTYPE(None, c_char_p, c_bool)
+        self.c_log_function = C_LOG_FUNCTION(self.log_callback)
+        self.render_girl_shared.StartLogSystem(self.c_log_function)
+        # now start the raytracer
+        error = self.render_girl_shared.StartRendergirl();
+
+        print("RenderGirl started")
+
+
+    def log_callback(self, message, error):
+        """Called from RenderGirlCore when there's a new message to be printed
+        @param message Message of type c_char_p to be printed
+        @param error Boolean telling if it's a error message
+        """
+        if error:
+            print("*ERROR* " + message.decode("ascii"))
+        else:
+            print(message.decode("ascii"))
+
+
 
     def __del__(self):
         print("Finishing RenderGirl")
