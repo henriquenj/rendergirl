@@ -29,7 +29,7 @@ extern "C" // make it callable from Ctypes
 	/* Function type used for registering callbacks on Python side*/
 	typedef void (*c_log_callback)(const char* message, bool error);
 
-	/* Star log subsystem providing a pointer to function to call when
+	/* Start log subsystem providing a pointer to function to call when
 		there's a new message to be trasmitted */
 	void StartLogSystem(const c_log_callback callback);
 
