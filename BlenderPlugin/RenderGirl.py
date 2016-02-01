@@ -28,8 +28,15 @@ class RenderGirl:
     """
 
     def __init__(self):
-        """ Init function load the shared library with C code """
+        # the current instance of RenderGirlBlender running
+        self.session = None
+        self.device_selected = False
 
+
+    def start(self):
+        """ Start function load the shared library with C code
+        @return -1 on error
+        """
         # load shared library containing RenderGirl
         # it's installed alongide the .py files on the same folder
         render_girl_directory = os.path.dirname(os.path.realpath(__file__)) + os.sep
@@ -48,9 +55,14 @@ class RenderGirl:
         self.c_log_function = C_LOG_FUNCTION(self.log_callback)
         self.render_girl_shared.StartLogSystem(self.c_log_function)
         # now start the raytracer
-        error = self.render_girl_shared.StartRendergirl();
+        error = self.render_girl_shared.StartRendergirl()
+        if error != 0:
+            self.render_girl_shared.FinishLogSystem()
+            return -1
 
+        self.device_selected = True
         print("RenderGirl started")
+        return 0
 
 
     def log_callback(self, message, error):
@@ -58,12 +70,26 @@ class RenderGirl:
         @param message Message of type c_char_p to be printed
         @param error Boolean telling if it's a error message
         """
+        # Blender does not offer any reporting apart from the usual
+        # print calls when there's no rendering going on, so we only
+        # print messages through "report" function calls when we are
+        # rendering
+        log_message = ''
         if error:
-            print("*ERROR* " + message.decode("ascii"))
+            message_type = {'ERROR'}
+            log_message = "*ERROR* " + message.decode("ascii")
         else:
-            print(message.decode("ascii"))
+            message_type = {'INFO'}
+            log_message = message.decode("ascii")
 
+        if self.session == None:
+            # no rendering happening, use print
+            print(log_message)
+        else: # use "report"
+            self.session.report(message_type,log_message);
 
-
-    def __del__(self):
-        print("Finishing RenderGirl")
+    def finish(self):
+        if self.device_selected == True:
+            self.render_girl_shared.FinishRenderGirl()
+        self.render_girl_shared.FinishLogSystem()
+        print("Rendergirl finished")

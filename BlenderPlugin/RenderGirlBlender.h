@@ -37,6 +37,12 @@ extern "C" // make it callable from Ctypes
 		Return 0 for success
 	*/
 	int StartRendergirl();
+
+	/* Finish RenderGirl and release resources from OpenCL devices */
+	void FinishRenderGirl();
+
+	/* Finish log system*/
+	void FinishLogSystem();
 }
 
 #endif //__RENDERGIRL_BLENDER__

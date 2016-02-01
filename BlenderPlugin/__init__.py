@@ -39,6 +39,14 @@ class RenderGirlBlender(bpy.types.RenderEngine):
     bl_use_preview = True
     render_girl = None
 
+    def __init__(self):
+        # update pointer instance pointer to the static class with
+        # this session
+        RenderGirlBlender.render_girl.session = self
+
+    def __del__(self):
+        RenderGirlBlender.render_girl.session = None
+
     def render(self, scene):
         scale = scene.render.resolution_percentage / 100.0
         self.size_x = int(scene.render.resolution_x * scale)
@@ -66,6 +74,13 @@ class RenderGirlBlender(bpy.types.RenderEngine):
         self.end_result(result)
 
 def register():
+    # create RenderGirl instance and start it
+    RenderGirlBlender.render_girl = RenderGirl()
+    error = RenderGirlBlender.render_girl.start()
+
+    if error != 0:
+        raise ValueError("Error starting rendergirl")
+
     # Register the RenderEngine
     bpy.utils.register_class(RenderGirlBlender)
     # TODO: consider using blender modules, more info here
@@ -76,10 +91,8 @@ def register():
     properties_render.RENDER_PT_render.COMPAT_ENGINES.add('RenderGirl')
     del properties_render
 
-    # create RenderGirl instance
-    RenderGirlBlender.render_girl = RenderGirl()
 
 def unregister():
     bpy.utils.unregister_class(RenderGirlBlender)
-    del RenderGirlBlender.render_girl
+    RenderGirlBlender.render_girl.finish()
     RenderGirlBlender.render_girl = None

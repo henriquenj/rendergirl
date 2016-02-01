@@ -2,3 +2,5 @@ LIBRARY
 EXPORTS
    StartRendergirl
    StartLogSystem
+   FinishRenderGirl
+   FinishLogSystem
