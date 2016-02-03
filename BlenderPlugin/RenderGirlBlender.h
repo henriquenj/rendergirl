@@ -43,6 +43,9 @@ extern "C" // make it callable from Ctypes
 
 	/* Finish log system*/
 	void FinishLogSystem();
+
+	/* Set source path where RenderGirl will look for the .cl source files */
+	void SetSourcePath(const char* path);
 }
 
 #endif //__RENDERGIRL_BLENDER__

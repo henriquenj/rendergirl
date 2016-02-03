@@ -19,6 +19,8 @@
 #include "OCLProgram.h"
 #include "OCLDevice.h"
 
+std::string OCLProgram::s_path;
+
 OCLProgram::OCLProgram(OCLContext* context)
 {
 	assert(context != NULL);
@@ -45,11 +47,13 @@ bool OCLProgram::LoadSource(const std::string &sourceFile)
 
 	assert(!m_isCompiled && "Can't load another source code if the program is already compiled");
 
+	std::string sourcePath = s_path + sourceFile;
+
 	// load kernel code from file
-	FILE* kernelCodeFile = fopen(sourceFile.c_str(), "rb");
+	FILE* kernelCodeFile = fopen(sourcePath.c_str(), "rb");
 	if (kernelCodeFile == NULL)
 	{
-		Log::Error("The program couldn't find the source file " + sourceFile);
+		Log::Error("The program couldn't find the source file " + sourcePath);
 		return false;
 	}
 
@@ -74,7 +78,7 @@ bool OCLProgram::LoadSource(const std::string &sourceFile)
 	return true;
 }
 
-bool OCLProgram::BuildProgram(const char* options)
+bool OCLProgram::BuildProgram(const std::string &options)
 {
 	// now the building phase
 
@@ -106,7 +110,16 @@ bool OCLProgram::BuildProgram(const char* options)
 		return false;
 	}
 
-	error = clBuildProgram(m_program, 0, NULL, options, NULL, NULL);
+	std::string options_str = options;
+
+	if (!s_path.empty())
+	{
+		// We must provide the include paths for OpenCL compiler for includes
+		// within .cl files (e.g. FXAA.cl)
+		options_str += "-I \"" + s_path + "\"";
+	}
+
+	error = clBuildProgram(m_program, 0, NULL, options_str.c_str(), NULL, NULL);
 
 	if (error != CL_SUCCESS)
 	{

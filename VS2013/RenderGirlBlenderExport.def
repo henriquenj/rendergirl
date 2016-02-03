@@ -4,3 +4,4 @@ EXPORTS
    StartLogSystem
    FinishRenderGirl
    FinishLogSystem
+   SetSourcePath

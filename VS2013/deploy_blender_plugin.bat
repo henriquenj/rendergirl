@@ -7,7 +7,7 @@ set output_dir=%1
 set target_name=%2
 set project_dir=%cd%
 
-REM Blender holds the user scripts on 
+REM Blender holds the user scripts on
 REM %appdata%\Blender Foundation\Blender\<blender-version>\scripts\addons
 REM The trick part is to fetch the blender version folder
 
@@ -40,5 +40,9 @@ copy %target_name%.dll "%render_girl_path%"
 REM Now move python scripts
 cd ..\..\BlenderPlugin
 copy *.py "%render_girl_path%"
+
+REM Move .cl files
+cd ..\Core
+copy *.cl "%render_girl_path%"
 
 echo "Files installed on %render_girl_path%"

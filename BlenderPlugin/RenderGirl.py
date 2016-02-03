@@ -54,6 +54,8 @@ class RenderGirl:
         C_LOG_FUNCTION = CFUNCTYPE(None, c_char_p, c_bool)
         self.c_log_function = C_LOG_FUNCTION(self.log_callback)
         self.render_girl_shared.StartLogSystem(self.c_log_function)
+        # set source path for .cl sources (the same directory as everything else)
+        self.render_girl_shared.SetSourcePath(render_girl_directory.encode("ascii"))
         # now start the raytracer
         error = self.render_girl_shared.StartRendergirl()
         if error != 0:

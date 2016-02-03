@@ -34,11 +34,17 @@ public:
 		Return FALSE if there was a problem with the source code */
 	bool LoadSource(const std::string &sourceFile);
 
-	/* Build the loaded OpenCL program in a given context, options argument is a set 
+	/* Build the loaded OpenCL program in a given context, options argument is a set
 		of options to the OpenCL compiler (can be NULL), return FALSE if there was a problem.
-		For the list of avaiable options, please refer to
-		http://www.khronos.org/registry/cl/sdk/1.0/docs/man/xhtml/clBuildProgram.html */
-	bool BuildProgram(const char* options =  nullptr);
+		For the list of avaiable options, please refer to OpenCL documentation */
+	bool BuildProgram(const std::string &options = std::string());
+
+
+	/* Add a directory for RenderGirl to search for .cl source files */
+	inline static void SetDirectoryToPath(const std::string& directory)
+	{
+		s_path = directory;
+	}
 
 	/* Return TRUE if this program is ready to be executed */
 	inline bool IsCompiled() const
@@ -73,6 +79,8 @@ private:
 	std::vector<char*> m_sourceCodeList;
 	// the sizes of the source code files
 	std::vector<int> m_sourceSizes;
+    // path to look for .cl sources
+    static std::string s_path;
 };
 
 

@@ -19,6 +19,7 @@
 #include "RenderGirlBlender.h"
 #include "RenderGirlShared.h"
 #include "Log.h"
+#include "OCLProgram.h"
 
 
 /* 
@@ -95,7 +96,15 @@ int StartRendergirl()
 		return -1;
 	}
 
-	shared.SelectDevice(devices[0]);
+	if (!shared.SelectDevice(devices[0]))
+	{
+		return -1;
+	}
+
+	if (!shared.PrepareRaytracer())
+	{
+		return -1;
+	}
 
 	return 0;
 }
@@ -110,6 +119,12 @@ void FinishRenderGirl()
 void FinishLogSystem()
 {
 	Log::RemoveAllListeners();
+}
+
+void SetSourcePath(const char* path)
+{
+	// set to global path of RenderGirl
+	OCLProgram::SetDirectoryToPath(std::string(path));
 }
 
 
