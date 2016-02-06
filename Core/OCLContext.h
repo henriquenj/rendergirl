@@ -97,7 +97,7 @@ public:
 		return m_queue;
 	}
 	// Is this context ready to receive kernels?
-	inline const bool IsReady()const
+	inline bool IsReady()const
 	{
 		return m_isReady;
 	}

@@ -68,7 +68,7 @@ public:
 	}
 
 	// get the total amount of work-itens in all work-groups for this kernel
-	inline int const GetGlobalWorkSize() const
+	inline int GetGlobalWorkSize() const
 	{
 		return m_globalWorkSize;
 	}

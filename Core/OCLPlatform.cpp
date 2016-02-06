@@ -98,7 +98,7 @@ bool OCLPlatform::InitDevices(OCLDevice::DeviceType type)
 	return allOk;
 }
 
-const std::string OCLPlatform::GetStringFromPlatform(cl_platform_info name)
+std::string OCLPlatform::GetStringFromPlatform(cl_platform_info name)
 {
 	size_t size;
 	if (!m_id || clGetPlatformInfo(m_id, name, 0, 0, &size) != CL_SUCCESS)

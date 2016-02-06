@@ -106,7 +106,7 @@ bool OCLDevice::CreateContext()
 	return true;
 }
 
-const std::string OCLDevice::GetStringFromDevice(cl_device_info name)const
+std::string OCLDevice::GetStringFromDevice(cl_device_info name)const
 {
 	size_t size;
 	if (!m_id || clGetDeviceInfo(m_id, name, 0, 0, &size) != CL_SUCCESS)
@@ -122,7 +122,7 @@ const std::string OCLDevice::GetStringFromDevice(cl_device_info name)const
 }
 
 
-const cl_ulong OCLDevice::GetULongFromDevice(cl_device_info name)const
+cl_ulong OCLDevice::GetULongFromDevice(cl_device_info name)const
 {
 	cl_ulong value;
 	clGetDeviceInfo(m_id, name, sizeof(value), &value, 0);
@@ -130,7 +130,7 @@ const cl_ulong OCLDevice::GetULongFromDevice(cl_device_info name)const
 	return value;
 }
 
-const cl_uint OCLDevice::GetUIntFromDevice(cl_device_info name)const
+cl_uint OCLDevice::GetUIntFromDevice(cl_device_info name)const
 {
 	cl_uint value;
 	clGetDeviceInfo(m_id, name, sizeof(value), &value, 0);
@@ -138,7 +138,7 @@ const cl_uint OCLDevice::GetUIntFromDevice(cl_device_info name)const
 	return value;
 }
 
-const size_t OCLDevice::GetSizeTFromDevice(cl_device_info name)const
+size_t OCLDevice::GetSizeTFromDevice(cl_device_info name)const
 {
 	size_t value;
 	clGetDeviceInfo(m_id, name, sizeof(value), &value, 0);

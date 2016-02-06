@@ -53,7 +53,7 @@ public:
 	}
 
 	/* Return OpenCL program pointer */
-	inline cl_program GetCLProgram()const
+	inline const cl_program GetCLProgram()const
 	{
 		return m_program;
 	}

@@ -50,9 +50,9 @@ public:
 	Each vertice is described as an three floating point values that should be referenced in the faces array. 
 	Data will be copied, so you are free to use the memory afterwards.
 	Peivous loaded data will be deleted. */
-	void SetVertices(cl_float3* vertices, const int size);
+	void SetVertices(const cl_float3* vertices, const int size);
 
-	inline const std::string& GetName()const
+	inline std::string GetName()const
 	{
 		return m_name;
 	}
@@ -64,18 +64,18 @@ public:
 	}
 
 	/* get material associated with this group */
-	inline Material& GetMaterial()
+	inline Material GetMaterial()
 	{
 		return m_material;
 	}
 
 	/* Return the amount of faces in this group */
-	inline const int GetFaceNumber()const
+	inline int GetFaceNumber()const
 	{
 		return m_faces.size();
 	}
 	/* Return the amount of vertices in this group */
-	inline const int GetVerticesNumber()const
+	inline int GetVerticesNumber()const
 	{
 		return m_vertices.size();
 	}

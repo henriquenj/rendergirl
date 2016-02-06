@@ -57,7 +57,7 @@ void SceneGroup::AddVertex(const cl_float3& vertex)
 }
 
 
-void SceneGroup::SetVertices(cl_float3* vertices, const int size)
+void SceneGroup::SetVertices(const cl_float3* vertices, const int size)
 {
 	SceneManager& manager = SceneManager::GetSharedManager();
 	manager.SetOutadatedGeometry();

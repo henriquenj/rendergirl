@@ -44,27 +44,27 @@ public:
 
 
 	// Get name of this platform
-	inline const std::string& GetName()const
+	inline std::string GetName()const
 	{
 		return m_name;
 	}
 	// get vendor name
-	inline const std::string& GetVendor() const
+	inline std::string GetVendor() const
 	{
 		return m_vendor;
 	}
 	// get extensions list, return empty string if there's no known extensions
-	inline const std::string& GetExtensions() const
+	inline std::string GetExtensions() const
 	{
 		return m_extensions;
 	}
 	// Get OpenCL version of this platform
-	inline const std::string& GetVersion()const
+	inline std::string GetVersion()const
 	{
 		return m_version;
 	}
 	// get profile type, TRUE for FULL_PROFILE and FALSE for EMBEDDED PROFILE
-	inline const bool GetProfileType() const
+	inline bool GetProfileType() const
 	{
 		if (m_profile.compare("FULL_PROFILE") == 0)
 		{
@@ -74,7 +74,7 @@ public:
 	}
 
 	// get platform ID
-	inline const cl_platform_id& GetID()const
+	inline const cl_platform_id GetID()const
 	{
 		return m_id;
 	}
@@ -86,14 +86,14 @@ public:
 	}
 
 	// Get the amount of devices on this platform
-	inline const int GetDeviceAmount()const
+	inline int GetDeviceAmount()const
 	{
 		return m_devices.size();
 	}
 private:
 
 	// helper function to query information about platforms (thanks QT project for this hint)
-	const std::string GetStringFromPlatform(cl_platform_info name);
+	std::string GetStringFromPlatform(cl_platform_info name);
 
 	std::string m_name;
 	std::string m_vendor;

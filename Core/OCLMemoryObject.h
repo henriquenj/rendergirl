@@ -82,7 +82,7 @@ public:
 	}
 
 	/* Get number of elements on this memory */
-	inline const int GetSize()const
+	inline int GetSize()const
 	{
 		return m_size;
 	}
@@ -100,7 +100,7 @@ public:
 		in the amount of elements, NOT the size in bytes.
 		WARNING: the task will only be completed when the current command queue is flushed,
 		call ExecuteCommands on OCLContext to guarantee a copy. Return FALSE if the copy failed */
-	const bool CopyFromMemoryBuffer(const OCLMemoryObject<T>* source, const int amount,
+	bool CopyFromMemoryBuffer(const OCLMemoryObject<T>* source, const int amount,
 		const int sourceOffset = 0, const int destOffset = 0)
 	{
 		assert(source != NULL && "Parameter source cannot be NULL");
@@ -124,7 +124,7 @@ public:
 
 	/* Differs from the above function only in the arguments that receives. The amount of elements copied will be
 		the size of the smallest buffer */
-	inline const bool CopyFromMemoryBuffer(const OCLMemoryObject<T>* source, const int sourceOffset = 0, const int destOffset = 0)
+	inline bool CopyFromMemoryBuffer(const OCLMemoryObject<T>* source, const int sourceOffset = 0, const int destOffset = 0)
 	{
 		int amount = std::min(source->GetSize(), m_size);
 
@@ -205,7 +205,7 @@ private:
 	OCLMemoryObject(OCLMemoryObject<T> const&);
 	void operator=(OCLMemoryObject<T> const&);
 
-	~OCLMemoryObject()
+	virtual ~OCLMemoryObject()
 	{
 		// dealloc resources and free memory on both host and device
 		clReleaseMemObject(m_data_device);

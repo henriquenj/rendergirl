@@ -75,7 +75,7 @@ public:
 	void ReleaseDevice();
 
 	/* Return selected device, return NULL for no device */
-	const OCLDevice* GetSelectedDevice()
+	inline const OCLDevice* GetSelectedDevice()
 	{
 		return m_selectedDevice;
 	}
@@ -93,7 +93,7 @@ public:
 	}
 
 	/* return number of avaiable platforms */
-	inline const int GetPlatformsSize()
+	inline int GetPlatformsSize()
 	{
 		return m_platforms.size();
 	}

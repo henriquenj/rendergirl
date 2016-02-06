@@ -41,60 +41,60 @@ public:
 	void ReleaseContext();
 	
 	// return name of this device
-	inline const std::string& GetName()const
+	inline std::string GetName()const
 	{
 		return m_name;
 	}
 	// get vendor of this vendor
-	inline const std::string& GetVendor()const
+	inline std::string GetVendor()const
 	{
 		return m_vendor;
 	}
 	// get version of software on this device
-	inline const std::string& GetVersion()const
+	inline std::string GetVersion()const
 	{
 		return m_version;
 	}
 	// get extensions of this aviable on this device
-	inline const std::string& GetExtensions()const
+	inline std::string GetExtensions()const
 	{
 		return m_extensions;
 	}
 	// get OpenCL version
-	inline const std::string& GetClVersion()const
+	inline std::string GetClVersion()const
 	{
 		return m_cldriverVersion;
 	}
 	// Get memory size of this device in BYTES
-	inline const cl_ulong GetMemSize()const
+	inline cl_ulong GetMemSize()const
 	{
 		return m_memSize;
 	}
 
 	// get clock of this device in MHz
-	inline const cl_uint GetClock()const
+	inline cl_uint GetClock()const
 	{
 		return m_clock;
 	}
 
 	// Get number of OpenCL cores on this platform
-	inline const cl_uint GetCLCores()const
+	inline cl_uint GetCLCores()const
 	{
 		return m_clCores;
 	}
 
 	// Get maximum number of work itens in a work group (additional limitations may apply)
-	inline const size_t GetMaxWorkItens()const
+	inline size_t GetMaxWorkItens()const
 	{
 		return m_maxWorkItens;
 	}
 	// return if this device is ready for execute (with a context and all the rest)
-	inline const bool IsReady()const
+	inline bool IsReady()const
 	{
 		return m_isReady;
 	}
 	// get cl_device_id of this device
-	inline const cl_device_id GetID()const
+	inline cl_device_id GetID()const
 	{
 		return m_id;
 	}
@@ -118,10 +118,10 @@ public:
 
 private:
 	// helper function to query information about devices (thanks QT project for this hint)
-	const std::string GetStringFromDevice(cl_device_info name)const;
-	const cl_ulong GetULongFromDevice(cl_device_info name) const;
-	const cl_uint GetUIntFromDevice(cl_device_info name) const;
-	const size_t GetSizeTFromDevice(cl_device_info name) const;
+	std::string GetStringFromDevice(cl_device_info name)const;
+	cl_ulong GetULongFromDevice(cl_device_info name) const;
+	cl_uint GetUIntFromDevice(cl_device_info name) const;
+	size_t GetSizeTFromDevice(cl_device_info name) const;
 
 	// a device is considered ready when there's a context ready to use
 	bool m_isReady;

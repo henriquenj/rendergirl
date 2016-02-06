@@ -71,7 +71,7 @@ public:
 
 	/* Return the amount of scene groups associated with the scene.
 		To render a scene, you must have at least one group loaded. */
-	inline const int GetGroupsCount()const
+	inline int GetGroupsCount()const
 	{
 		return m_groups.size();
 	}
