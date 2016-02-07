@@ -94,7 +94,7 @@ public:
 		return m_isReady;
 	}
 	// get cl_device_id of this device
-	inline cl_device_id GetID()const
+	inline const cl_device_id GetID()const
 	{
 		return m_id;
 	}
