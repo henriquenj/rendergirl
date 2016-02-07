@@ -38,7 +38,7 @@ public:
 		Each face is described as an three int values acting as indexes in the
 		vertices array. Data will be copied, so you are free to use the memory afterwards.
 		Peivous loaded data will be deleted. */
-	void SetFaces(cl_int3* faces, const int size);
+	void SetFaces(const cl_int3* faces, const int size);
 
 	/* add a face to this group. Must be a combination of three integer pointing to somewhere in the vertex array */
 	void AddFace(const cl_int3& face);
@@ -47,7 +47,7 @@ public:
 	void AddVertex(const cl_float3& vertex);
 
 	/* Set vertices on this object. Size is the amount of vertices.
-	Each vertice is described as an three floating point values that should be referenced in the faces array. 
+	Each vertice is described as an three floating point values that should be referenced in the faces array.
 	Data will be copied, so you are free to use the memory afterwards.
 	Peivous loaded data will be deleted. */
 	void SetVertices(const cl_float3* vertices, const int size);

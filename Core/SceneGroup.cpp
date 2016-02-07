@@ -31,7 +31,7 @@ SceneGroup::~SceneGroup()
 
 }
 
-void SceneGroup::SetFaces(cl_int3* faces, const int size)
+void SceneGroup::SetFaces(const cl_int3* faces, const int size)
 {
 	SceneManager& manager = SceneManager::GetSharedManager();
 	manager.SetOutadatedGeometry();
