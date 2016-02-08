@@ -14,7 +14,12 @@
 
 	You should have received a copy of the GNU Lesser General Public
 	License along with this library.
-*/
+	*/
+
+#include "glm/glm/mat4x4.hpp"
+#include "glm/glm/gtc/matrix_transform.hpp"
+#include "glm/glm/gtx/transform.hpp"
+
 
 #include "SceneManager.h"
 
@@ -152,22 +157,53 @@ bool SceneManager::PrepareScene(OCLKernel* kernel)
 		cl_int3* facesRaw = new cl_int3[facesCount];
 		cl_float3* vertexRaw = new cl_float3[vertexCount];
 		SceneGroupStruct* groupsRaw = new SceneGroupStruct[m_groups.size()];
-		
+
 		int facesOffset = 0;
 		int vertexOffset = 0;
 		groupCount = 0;
-		/* fill the buffers */
+
 		for (it = m_groups.begin(); it != m_groups.end(); it++, groupCount++)
 		{
+			/****************************************************************************************
+			* Apply all transformations on each SceneGroup vertex buffer, this will convert all local
+			* coordinates of each vertex info a Scenegroup to global coordinates,
+			* so we can save these computations on OpenCL the device.
+			* This code can reduce a lot when there's native support for OpenCL types on GLM
+			******************************************************************************************/
+
+			/* build transformation matrix to apply to vertex data, starting with scaling */
+			glm::mat4x4 scale = glm::scale(glm::uvec3((*it)->m_scale.s[0], (*it)->m_scale.s[1], (*it)->m_scale.s[2]));
+			// rotation
+			glm::mat4x4 rot = glm::rotate((*it)->m_rotation.s[0], glm::vec3(1.0f, 0.0f, 0.0f));
+			rot = glm::rotate(rot, (*it)->m_rotation.s[1], glm::vec3(0.0f, 1.0f, 0.0f));
+			rot = glm::rotate(rot, (*it)->m_rotation.s[2], glm::vec3(0.0f, 0.0f, 1.0f));
+			// translation
+			glm::mat4x4 translation = glm::translate(glm::vec3((*it)->m_pos.s[0], (*it)->m_pos.s[1], (*it)->m_pos.s[2]));
+
+			// build transformation matrix
+			glm::mat4x4 transform = scale * rot * translation;
+			/* apply object transformations on vertex data */
+			for (int i = 0; i < (*it)->GetVerticesNumber(); i++)
+			{
+				/* vertex to be transformed */
+				glm::vec4 temp((*it)->m_vertices[i].s[0], 
+								(*it)->m_vertices[i].s[1],
+								(*it)->m_vertices[i].s[2],
+								1.0f /* identity */);
+
+				glm::vec4 translated_vertex = temp * transform;
+				vertexRaw[vertexOffset + i] = { { translated_vertex.x, translated_vertex.y, translated_vertex.z } };
+					
+			}
+			vertexOffset += (*it)->GetVerticesNumber();
+
+			/* fill the buffers */
 			memcpy(&facesRaw[facesOffset], &((*it)->m_faces[0]), (*it)->GetFaceNumber() * sizeof(cl_int3));
 			groupsRaw[groupCount].facesSize = (*it)->GetFaceNumber();
 			groupsRaw[groupCount].facesStart = facesOffset;
 			groupsRaw[groupCount].vertexSize = (*it)->GetVerticesNumber();
 			facesOffset += (*it)->GetFaceNumber();
 
-			memcpy(&vertexRaw[vertexOffset], &((*it)->m_vertices[0]), (*it)->GetVerticesNumber() * sizeof(cl_float3));
-			vertexOffset += (*it)->GetVerticesNumber();
-			
 		}
 
 		// set date on memroy objects
@@ -186,7 +222,7 @@ bool SceneManager::PrepareScene(OCLKernel* kernel)
 	// build material array
 	groupCount = 0;
 	Material* materials = new Material[m_groups.size()];
-	for (it = m_groups.begin(); it != m_groups.end(); it++,groupCount++)
+	for (it = m_groups.begin(); it != m_groups.end(); it++, groupCount++)
 	{
 		materials[groupCount] = (*it)->GetMaterial();
 	}

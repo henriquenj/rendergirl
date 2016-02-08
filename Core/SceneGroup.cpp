@@ -24,6 +24,11 @@ SceneGroup::SceneGroup(const std::string& name)
 {
 	m_material = s_defaultMaterial;
 	m_name = name;
+
+	/* Default transformation matrix */
+	m_pos = { { 0.0f, 0.0f, 0.0f, 0.0f } };
+	m_scale = { { 1.0f, 1.0f, 1.0f } };
+	m_rotation = { { 0.0f, 0.0f, 0.0f } };
 }
 
 SceneGroup::~SceneGroup()

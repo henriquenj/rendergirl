@@ -99,6 +99,11 @@ private:
 	std::vector<cl_float3> m_vertices;
 	std::vector<cl_int3> m_faces;
 
+	/* Global transformations applied to all geometry prior rendering */
+	cl_float3 m_pos;
+	cl_float3 m_scale;
+	cl_float3 m_rotation; /* rotation around itself given an angle expressed in degrees*/
+
 	// local mateiral of this group
 	//TODO: move the material to its own class later on
 	Material m_material;
