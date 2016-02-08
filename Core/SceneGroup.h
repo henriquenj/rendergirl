@@ -52,6 +52,42 @@ public:
 	Peivous loaded data will be deleted. */
 	void SetVertices(const cl_float3* vertices, const int size);
 
+	/* Set position on this scene group. It will be applied to all geometry prior rendering. */
+	inline void SetPosition(const cl_float3& pos)
+	{
+		m_pos = pos;
+	}
+
+	/* Get position of this SceneGroup */
+	inline cl_float3 GetPosision()const
+	{
+		return m_pos;
+	}
+
+	/* Set rotation of this scene group in angles. It will be applied to all geometry prior rendering. */
+	inline void SetRotation(const cl_float3& rot)
+	{
+		m_rotation = rot;
+	}
+
+	/* Get rotation of this SceneGroup */
+	inline cl_float3 GetRotation()const
+	{
+		return m_rotation;
+	}
+
+	/* Set scale on a 0-1 scale on this scene group. It will be applied to all geometry prior rendering. */
+	inline void SetScale(const cl_float3& scale)
+	{
+		m_scale = scale;
+	}
+
+	/* Get scale of this SceneGroup */
+	inline cl_float3 GetScale()const
+	{
+		return m_scale;
+	}
+
 	inline std::string GetName()const
 	{
 		return m_name;
