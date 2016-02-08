@@ -166,8 +166,8 @@ bool SceneManager::PrepareScene(OCLKernel* kernel)
 		{
 			/****************************************************************************************
 			* Apply all transformations on each SceneGroup vertex buffer, this will convert all local
-			* coordinates of each vertex info a Scenegroup to global coordinates,
-			* so we can save these computations on OpenCL the device.
+			* coordinates of each vertex info from Scenegroup to global coordinates,
+			* so we can save these computations on OpenCL device.
 			* This code can reduce a lot when there's native support for OpenCL types on GLM
 			******************************************************************************************/
 
