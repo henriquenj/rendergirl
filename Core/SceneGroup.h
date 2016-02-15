@@ -116,7 +116,8 @@ public:
 		return m_vertices.size();
 	}
 
-	/* check this group for corrupted indexes (such as faces pointing to non-existent vertices) */
+	/* check this group for corrupted indexes (such as faces pointing to non-existent vertices).
+		Return true if no corrupted face was found. */
 	bool CheckCorruptedFaces();
 private:
 
