@@ -64,7 +64,7 @@ public:
 		return m_pos;
 	}
 
-	/* Set rotation of this scene group in angles. It will be applied to all geometry prior rendering. */
+	/* Set rotation of this scene group in radians. It will be applied to all geometry prior rendering. */
 	inline void SetRotation(const cl_float3& rot)
 	{
 		m_rotation = rot;
