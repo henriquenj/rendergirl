@@ -18,6 +18,8 @@ from ctypes import *
 import os
 import sys
 
+import bmesh
+
 class RenderGirl:
     """Class that loads the RenderGirl shared library and holds most of
     the wrappers. It is called from RenderGirlBlender class. The
@@ -65,6 +67,80 @@ class RenderGirl:
         self.device_selected = True
         print("RenderGirl started")
         return 0
+
+    def add_scene_group(self, bmesh_tuple):
+        """Add an object to RenderGirl scene
+        @param bmesh_tuple namedtuple composed of a tringulated bmesh
+        alongside its name, position, scale and rotation
+        """
+        if bmesh_tuple == None:
+            return -1
+
+        # blender 2.73 introduced "ensure_lookup_table" option for
+        # faster geometry lookup, more info at
+        # http://wiki.blender.org/index.php/Dev:Ref/Release_Notes/2.73/Addons
+        # since we need faces -> vert mapping we will have to call at
+        # least for faces
+        if hasattr(bmesh_tuple.bmesh.faces, "ensure_lookup_table"):
+            bmesh_tuple.bmesh.faces.ensure_lookup_table()
+
+        faces_list = [] # each face is composed of three integer that
+                        # points to the vertex dictionary
+        vertex_dict = {} # vertex_dict will hold a pointer to vertex
+                         # object (which will act as key) alongside an
+                         # integer, this integer is used by faces_list
+                         # indexing. Dictionary properties will make
+                         # sure vertices are not repeated
+        vertex_dict_last_index = 0 # next index to be added to
+                                   # vertex_dict
+        for i in range(len(bmesh_tuple.bmesh.faces)):
+            for vert in bmesh_tuple.bmesh.faces[i].verts:
+                if vert not in vertex_dict:
+                    # vertex will be added for the first time
+                    vertex_dict[vert] = vertex_dict_last_index
+                    faces_list.append(vertex_dict_last_index)
+                    vertex_dict_last_index += 1
+                else:
+                    # vertex will be retrived
+                    faces_list.append(vertex_dict.get(vert))
+
+        # Since elements not ordered in the dictionary, we
+        # will have to use an aux list with the elements sorted by
+        # value
+        ordered_vertex = sorted(vertex_dict,key=vertex_dict.get)
+
+        # the faces look like this
+        # faces_list = [ 1, 2, 4 , 4, 5, 6 , 6, 4, 3 ]
+        # each of them points to a position in ordered_vertex
+        c_faces_buffer = (c_int * len(faces_list))(*faces_list)
+
+        vertex_list = []
+        # convert dictionary to an array suitable for transmission to
+        # ctypes.
+        for i in range(len(ordered_vertex)):
+            # 3 elements per vertex
+            vertex_list.append(ordered_vertex[i].co.x)
+            vertex_list.append(ordered_vertex[i].co.y)
+            vertex_list.append(ordered_vertex[i].co.z)
+
+
+        c_vertex_buffer = (c_float * len(vertex_list))(*vertex_list)
+        c_position = (c_float * 3)(*bmesh_tuple.position)
+        c_rotation = (c_float * 3)(*bmesh_tuple.rotation)
+        c_scale = (c_float * 3)(*bmesh_tuple.scale)
+        c_name = c_char_p(bmesh_tuple.name.encode("ascii"))
+
+        ret = self.render_girl_shared.AddSceneGroup(c_name,
+                                              c_vertex_buffer, len(vertex_list),
+                                              c_faces_buffer, len(faces_list),
+                                              c_position, c_rotation, c_scale)
+
+        return ret
+
+
+    def clear_scene(self):
+        " Clear all geometry loaded on the core "
+        self.render_girl_shared.ClearScene()
 
 
     def log_callback(self, message, error):

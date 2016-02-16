@@ -15,6 +15,8 @@
 # License along with this program.
 
 import bpy
+import bmesh
+import collections
 from .RenderGirl import RenderGirl
 
 # Metadata for blender internal plugin system
@@ -40,8 +42,7 @@ class RenderGirlBlender(bpy.types.RenderEngine):
     render_girl = None
 
     def __init__(self):
-        # update pointer instance pointer to the static class with
-        # this session
+        # update pointer of the static class with this session
         RenderGirlBlender.render_girl.session = self
 
     def __del__(self):
@@ -54,13 +55,50 @@ class RenderGirlBlender(bpy.types.RenderEngine):
 
         pixel_count = self.size_x * self.size_y
 
+        # loads all geometry on the the core
+        # we are only interested in MESH objects for now
+        objects = scene.objects
+
+        # bsmeshs list will contains a bmeshs object alongside its name,
+        # position, rotation and scale
+        BMeshPlus = collections.namedtuple('BMeshPlus',
+                                ['bmesh','name','position','scale','rotation'])
+        bmeshs = []
+        for i in range(len(objects)):
+           if objects[i].type == 'MESH':
+               # triangulate modifier will triangulate the mesh and be
+               # deleted afterwards
+               tri_modifier = objects[i].modifiers.new(
+                   name="triangulate",type='TRIANGULATE')
+               # convert to bmesh objects (modifiers will be applied at this step)
+               bmesh_object = bmesh.new()
+               bmesh_object.from_object(objects[i],scene,deform=True,
+                                        render=True,face_normals=False)
+               # position is held within matrix_world, we
+               # just extract it
+               matrix = objects[i].matrix_world
+               pos = [ matrix[0][3] , matrix[1][3] , matrix[2][3] ]
+               bmesh_tuple = BMeshPlus(bmesh_object,objects[i].name,
+                                           pos,objects[i].scale,
+                                           objects[i].rotation_euler)
+               bmeshs.append(bmesh_tuple)
+               objects[i].modifiers.remove(tri_modifier)
+
+        # add to rendergirl core
+        for i in range(len(bmeshs)):
+            ret = RenderGirlBlender.render_girl.add_scene_group(bmeshs[i])
+            if ret != 0:
+                raise ValueError("Error adding object {1} to RenderGirl"
+                                 .format(bmeshs[i].name))
+            bmeshs[i].bmesh.free()
+
+
         rect = []
         counter = 0
         color = 0.0
-
         while True:
             rect.append([ color, color, 0.5, 1.0])
-            color += 0.1
+            color += 0.5
             counter = counter + 1
             if color > 1:
                 color = 0
@@ -70,8 +108,12 @@ class RenderGirlBlender(bpy.types.RenderEngine):
         # Here we write the pixel values to the RenderResult
         result = self.begin_result(0, 0, self.size_x, self.size_y)
         layer = result.layers[0]
-        layer.rect = rect
+        layer.passes[0].rect = rect
         self.end_result(result)
+
+        # clear all geometry of this rendering
+        # this will be removed as soon as we have a cache mechanism
+        RenderGirlBlender.render_girl.clear_scene()
 
 def register():
     # create RenderGirl instance and start it

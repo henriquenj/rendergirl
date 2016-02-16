@@ -16,14 +16,16 @@
 	License along with this program.
 */
 
+#include <assert.h>
+
 #include "RenderGirlBlender.h"
 #include "RenderGirlShared.h"
 #include "Log.h"
 #include "OCLProgram.h"
 
 
-/* 
-	BlenderLogOutput class will call a C callback accesible from Python 
+/*
+	BlenderLogOutput class will call a C callback accesible from Python
 */
 class BlenderLogOutput : public LogListener
 {
@@ -109,9 +111,89 @@ int StartRendergirl()
 	return 0;
 }
 
+int AddSceneGroup(
+    const char* name, const float* vertex,
+    const int vertex_size,
+	const int* faces, const int faces_size,
+	const float position[3],
+	const float rotation[3],
+    const float scale[3])
+{
+	// static check to make sure sizes are multiple of 3
+	assert((vertex_size % 3) == 0 && "Vertex size is not a product of 3");
+	assert((faces_size % 3) == 0 && "Faces size is not a product of 3");
+
+	assert(name != nullptr && "Received null string from Blender");
+
+	SceneManager& manager = SceneManager::GetSharedManager();
+
+	/* create group */
+	SceneGroup* group = manager.CreateSceneGroup(std::string(name));
+
+	/* set global transformations */
+	cl_float3 float3 = {position[0], position[1], position[2]};
+	group->SetPosition(float3);
+	float3.s[0] = rotation[0]; float3.s[1] = rotation[1]; float3.s[2] = rotation[2];
+	group->SetRotation(float3);
+	float3.s[0] = scale[0]; float3.s[1] = scale[1]; float3.s[2] = scale[2];
+	group->SetScale(float3);
+
+	/* wihtin rendergirl, vertices and faces are grouped by 3, so we compute the buffers size now */
+	int group_vertex_size = vertex_size / 3;
+	int group_face_size = faces_size / 3;
+
+	/* alloc memory for this object */
+	cl_float3* group_vertex = new cl_float3[group_vertex_size];
+	cl_int3* group_faces = new cl_int3[group_face_size];
+
+	/* copy vertex data */
+	for (int i = 0, a = 0; i < group_vertex_size; i++, a += 3)
+	{
+		group_vertex[i].s[0] = vertex[a];
+		group_vertex[i].s[1] = vertex[a+1];
+		group_vertex[i].s[2] = vertex[a+2];
+	}
+
+	group->SetVertices(group_vertex, group_vertex_size);
+
+	/* copy faces data */
+	for (int i = 0, a = 0; i < group_face_size; i++, a += 3)
+	{
+		group_faces[i].s[0] = faces[a];
+		group_faces[i].s[1] = faces[a+1];
+		group_faces[i].s[2] = faces[a+2];
+	}
+
+	group->SetFaces(group_faces, group_face_size);
+
+	if (!group->CheckCorruptedFaces())
+	{
+		return -1;
+	}
+
+	delete group_vertex;
+	delete group_faces;
+
+	return 0;
+}
+
+void ClearScene()
+{
+	SceneManager& manager = SceneManager::GetSharedManager();
+	manager.ClearScene();
+}
+
+int Render(const float camera_pos[3], const float camera_look_at[3], const float light_pos[3],
+	const float color[3], const float light_ks, const float light_ka)
+{
+	return 0;
+}
 
 void FinishRenderGirl()
 {
+	SceneManager& manager = SceneManager::GetSharedManager();
+	manager.ClearScene();
+
 	RenderGirlShared& shared = RenderGirlShared::GetRenderGirlShared();
 	shared.ReleaseDevice();
 }
@@ -126,6 +208,3 @@ void SetSourcePath(const char* path)
 	// set to global path of RenderGirl
 	OCLProgram::SetDirectoryToPath(std::string(path));
 }
-
-
-

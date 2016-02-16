@@ -5,3 +5,6 @@ EXPORTS
    FinishRenderGirl
    FinishLogSystem
    SetSourcePath
+   Render
+   ClearScene
+   AddSceneGroup
