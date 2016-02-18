@@ -74,10 +74,9 @@ class RenderGirlBlender(bpy.types.RenderEngine):
                bmesh_object = bmesh.new()
                bmesh_object.from_object(objects[i],scene,deform=True,
                                         render=True,face_normals=False)
-               # position is held within matrix_world, we
-               # just extract it
-               matrix = objects[i].matrix_world
-               pos = [ matrix[0][3] , matrix[1][3] , matrix[2][3] ]
+               # position is held within matrix_world, we just extract
+               # it
+               pos = objects[i].matrix_world.translation
                bmesh_tuple = BMeshPlus(bmesh_object,objects[i].name,
                                            pos,objects[i].scale,
                                            objects[i].rotation_euler)
