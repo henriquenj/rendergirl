@@ -72,6 +72,7 @@ class RenderGirl:
         """Add an object to RenderGirl scene
         @param bmesh_tuple namedtuple composed of a tringulated bmesh
         alongside its name, position, scale and rotation
+        @return 0 for success, -1 for error
         """
         if bmesh_tuple == None:
             return -1
