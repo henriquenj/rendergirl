@@ -71,12 +71,12 @@ extern "C" // make it callable from Ctypes
 		Return 0 for no errror, -1 otherwise
 	*/
 	int Render(
+		const int width, // width of the frame in pixels
+		const int height, // height of the frame in pixels
 		const float camera_pos[3], // camera XYZ position (eye)
 		const float camera_look_at[3], // camera looking at vector
 		const float light_pos[3], // light XYZ position
-		const float color[3], // RGB color component of the light
-		const float light_ks, // amount of specular light
-		const float light_ka // amount of ambient light
+		const float color[3] // RGB color component of the light
 		);
 
 	/* Finish RenderGirl and release resources from OpenCL devices */

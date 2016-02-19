@@ -50,10 +50,10 @@ class RenderGirlBlender(bpy.types.RenderEngine):
 
     def render(self, scene):
         scale = scene.render.resolution_percentage / 100.0
-        self.size_x = int(scene.render.resolution_x * scale)
-        self.size_y = int(scene.render.resolution_y * scale)
+        size_x = int(scene.render.resolution_x * scale)
+        size_y = int(scene.render.resolution_y * scale)
 
-        pixel_count = self.size_x * self.size_y
+        pixel_count = size_x * size_y
 
         # loads all geometry on the the core
         # we are only interested in MESH objects for now
@@ -92,7 +92,24 @@ class RenderGirlBlender(bpy.types.RenderEngine):
             bmeshs[i].bmesh.free()
 
 
-        rect = []
+        light = None
+        # grab first light found on the scene and use it to render
+        # currently rendergirl supports only one light
+        for i in range(len(objects)):
+            if objects[i].type == 'LAMP':
+                light = objects[i]
+                break
+
+        # objects set up, now render
+        rect = RenderGirlBlender.render_girl.render(size_x, size_y,
+                                                    scene.camera, light)
+
+        if rect == None:
+            RenderGirlBlender.render_girl.clear_scene()
+            raise ValueError("Error rendering frame, please check the logs")
+
+
+        # rect = []
         counter = 0
         color = 0.0
         while True:
@@ -105,7 +122,7 @@ class RenderGirlBlender(bpy.types.RenderEngine):
                 break
 
         # Here we write the pixel values to the RenderResult
-        result = self.begin_result(0, 0, self.size_x, self.size_y)
+        result = self.begin_result(0, 0, size_x, size_y)
         layer = result.layers[0]
         layer.passes[0].rect = rect
         self.end_result(result)

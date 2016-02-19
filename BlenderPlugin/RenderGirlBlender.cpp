@@ -183,9 +183,47 @@ void ClearScene()
 	manager.ClearScene();
 }
 
-int Render(const float camera_pos[3], const float camera_look_at[3], const float light_pos[3],
-	const float color[3], const float light_ks, const float light_ka)
+int Render(const int width, const int height,
+	const float camera_pos[3], const float camera_look_at[3],
+	const float light_pos[3], const float color[3])
 {
+
+	Light light;
+
+	light.pos.s[0] = light_pos[0];
+	light.pos.s[1] = light_pos[1];
+	light.pos.s[2] = light_pos[2];
+
+	/* hardcoded spectular and ambient for now */
+	light.Ks = 0.2;
+	light.Ka = 0.0;
+
+	light.color.s[0] = color[0];
+	light.color.s[1] = color[1];
+	light.color.s[2] = color[2];
+
+	Camera cam;	
+	// set up vector to the be just pointing up
+	cam.up.s[0] = 0.0;
+	cam.up.s[1] = 1.0;
+	cam.up.s[2] = 0.0;
+
+	cam.pos.s[0] = camera_pos[0];
+	cam.pos.s[1] = camera_pos[1];
+	cam.pos.s[2] = camera_pos[2];
+
+	cam.lookAt.s[0] = camera_look_at[0];
+	cam.lookAt.s[1] = camera_look_at[1];
+	cam.lookAt.s[2] = camera_look_at[2];
+
+	RenderGirlShared& shared = RenderGirlShared::GetRenderGirlShared();
+	bool ret = shared.Render(width, height, cam, light);
+
+	if (!ret)
+	{ 
+		return -1;
+	}
+
 	return 0;
 }
 

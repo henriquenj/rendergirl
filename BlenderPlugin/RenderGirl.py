@@ -19,6 +19,7 @@ import os
 import sys
 
 import bmesh
+from mathutils import Vector
 
 class RenderGirl:
     """Class that loads the RenderGirl shared library and holds most of
@@ -137,6 +138,42 @@ class RenderGirl:
                                               c_position, c_rotation, c_scale)
 
         return ret
+
+
+    def render(self, width, height, camera, light):
+        """ Render a frmae using the currently loaded objects on the core
+        @param width width of the frame in pixels
+        @param height height of the frame in pixels
+        @param camera camera to be used on rendering
+        @param light object representing the light (only one supported so far)
+        @return list with height * width pixels
+        """
+
+        # extract positions from world matrix
+        cam_pos = camera.matrix_world.translation
+        light_pos = light.matrix_world.translation
+
+        # compute look_at vector
+        look_at = camera.matrix_world.to_quaternion() * Vector((0.0, 0.0, -1.0))
+
+        # get light color
+        light_color = [light.data.color.r, light.data.color.g, light.data.color.b]
+
+        # C types
+        c_cam_pos = (c_float * 3)(*cam_pos)
+        c_look_at = (c_float * 3)(*look_at)
+        c_light_pos = (c_float * 3)(*light_pos)
+        c_light_color = (c_float * 3)(*light_color)
+
+        ret = self.render_girl_shared.Render(width, height, c_cam_pos,
+                                             c_look_at, c_light_pos,
+                                             c_light_color)
+
+        if ret == -1:
+            return None
+
+        return []
+
 
 
     def clear_scene(self):
