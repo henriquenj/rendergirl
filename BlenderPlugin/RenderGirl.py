@@ -149,6 +149,8 @@ class RenderGirl:
         @return list with height * width pixels
         """
 
+        pixel_count = width * height
+
         # extract positions from world matrix
         cam_pos = camera.matrix_world.translation
         light_pos = light.matrix_world.translation
@@ -165,14 +167,28 @@ class RenderGirl:
         c_light_pos = (c_float * 3)(*light_pos)
         c_light_color = (c_float * 3)(*light_color)
 
+        # alloc the frame buffer
+        c_frame_size = pixel_count * 4
+        c_out_frame = (c_ubyte * c_frame_size)()
+
         ret = self.render_girl_shared.Render(width, height, c_cam_pos,
                                              c_look_at, c_light_pos,
-                                             c_light_color)
+                                             c_light_color, byref(c_out_frame))
 
         if ret == -1:
             return None
 
-        return []
+        frame = []
+        # copy frame to format accepted by blender
+        for i in range(0,c_frame_size,4):
+            pixel = []
+            pixel.append(c_out_frame[i] / 256.0) # red
+            pixel.append(c_out_frame[i + 1] / 256.0) # green
+            pixel.append(c_out_frame[i + 2] / 256.0) # blue
+            pixel.append(c_out_frame[i + 3] / 256.0) # alpha
+            frame.append(pixel)
+
+        return frame
 
 
 

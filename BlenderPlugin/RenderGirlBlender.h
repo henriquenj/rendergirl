@@ -68,7 +68,7 @@ extern "C" // make it callable from Ctypes
 	void ClearScene();
 
 	/* Render the scene current loaded on RenderGirl core
-		Return 0 for no errror, -1 otherwise
+		Return 0 for no errror, -1 otherwise.
 	*/
 	int Render(
 		const int width, // width of the frame in pixels
@@ -76,7 +76,11 @@ extern "C" // make it callable from Ctypes
 		const float camera_pos[3], // camera XYZ position (eye)
 		const float camera_look_at[3], // camera looking at vector
 		const float light_pos[3], // light XYZ position
-		const float color[3] // RGB color component of the light
+		const float color[3], // RGB color component of the light
+		unsigned char* frame_out /* The rendered frame as an array of chars, each pixels composed by 4 values (reg, green, blue and alpha).
+									This memory must have been previously allocated by the caller, otherwise there might
+									be a segfault. The amount of memory used is width * height * 4 bytes. In case of error, no change
+									to the contents of the memory pointed by frame_out is performed. */
 		);
 
 	/* Finish RenderGirl and release resources from OpenCL devices */

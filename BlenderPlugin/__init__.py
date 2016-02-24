@@ -108,23 +108,10 @@ class RenderGirlBlender(bpy.types.RenderEngine):
             RenderGirlBlender.render_girl.clear_scene()
             raise ValueError("Error rendering frame, please check the logs")
 
-
-        # rect = []
-        counter = 0
-        color = 0.0
-        while True:
-            rect.append([ color, color, 0.5, 1.0])
-            color += 0.5
-            counter = counter + 1
-            if color > 1:
-                color = 0
-            if counter == pixel_count:
-                break
-
         # Here we write the pixel values to the RenderResult
         result = self.begin_result(0, 0, size_x, size_y)
         layer = result.layers[0]
-        layer.passes[0].rect = rect
+        layer.rect = rect
         self.end_result(result)
 
         # clear all geometry of this rendering

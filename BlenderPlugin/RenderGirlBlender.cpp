@@ -185,7 +185,8 @@ void ClearScene()
 
 int Render(const int width, const int height,
 	const float camera_pos[3], const float camera_look_at[3],
-	const float light_pos[3], const float color[3])
+	const float light_pos[3], const float color[3],
+	unsigned char* frame_out)
 {
 
 	Light light;
@@ -222,6 +223,21 @@ int Render(const int width, const int height,
 	if (!ret)
 	{ 
 		return -1;
+	}
+
+	int frame_size = width * height;
+	const cl_uchar4* frame = shared.GetFrame();
+	/* copy frame to frame_out */
+	for (int a = 0, b = 0; a < frame_size; a++, b+=4)
+	{
+		/* red */
+		frame_out[b] = frame[a].s[0];
+		/* green */
+		frame_out[b + 1] = frame[a].s[1];
+		/* blue */
+		frame_out[b + 2] = frame[a].s[2];
+		/* alpha */
+		frame_out[b + 3] = frame[a].s[3];
 	}
 
 	return 0;
