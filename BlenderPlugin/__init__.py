@@ -14,8 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this program.
 
+
 import bpy
-import bmesh
 import collections
 from .RenderGirl import RenderGirl
 
@@ -59,38 +59,35 @@ class RenderGirlBlender(bpy.types.RenderEngine):
         # we are only interested in MESH objects for now
         objects = scene.objects
 
-        # bsmeshs list will contains a bmeshs object alongside its name,
+        # meshs list will contains a mesh object alongside its name,
         # position, rotation and scale
-        BMeshPlus = collections.namedtuple('BMeshPlus',
-                                ['bmesh','name','position','scale','rotation'])
-        bmeshs = []
+        MeshPlus = collections.namedtuple('MeshPlus',
+                                ['mesh','name','position','scale','rotation'])
+        meshs = []
         for i in range(len(objects)):
            if objects[i].type == 'MESH':
                # triangulate modifier will triangulate the mesh and be
                # deleted afterwards
                tri_modifier = objects[i].modifiers.new(
                    name="triangulate",type='TRIANGULATE')
-               # convert to bmesh objects (modifiers will be applied at this step)
-               bmesh_object = bmesh.new()
-               bmesh_object.from_object(objects[i],scene,deform=True,
-                                        render=True,face_normals=False)
+               # convert to mesh objects (modifiers will be applied at this step)
+               mesh = objects[i].to_mesh(scene,True,'RENDER')
                # position is held within matrix_world, we just extract
-               # it
-               pos = objects[i].matrix_world.translation
-               bmesh_tuple = BMeshPlus(bmesh_object,objects[i].name,
-                                           pos,objects[i].scale,
-                                           objects[i].rotation_euler)
-               bmeshs.append(bmesh_tuple)
+               # it. Blender uses XZY coordinate system, so we swap
+               # the positions here.
+               pos = objects[i].matrix_world.translation.xzy
+               mesh_tuple = MeshPlus(mesh,objects[i].name,
+                                     pos,objects[i].scale,
+                                     objects[i].rotation_euler)
+               meshs.append(mesh_tuple)
                objects[i].modifiers.remove(tri_modifier)
 
         # add to rendergirl core
-        for i in range(len(bmeshs)):
-            ret = RenderGirlBlender.render_girl.add_scene_group(bmeshs[i])
+        for i in range(len(meshs)):
+            ret = RenderGirlBlender.render_girl.add_scene_group(meshs[i])
             if ret != 0:
                 raise ValueError("Error adding object {1} to RenderGirl"
-                                 .format(bmeshs[i].name))
-            bmeshs[i].bmesh.free()
-
+                                 .format(meshs[i].name))
 
         light = None
         # grab first light found on the scene and use it to render
