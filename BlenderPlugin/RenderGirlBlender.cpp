@@ -184,7 +184,7 @@ void ClearScene()
 }
 
 int Render(const int width, const int height,
-	const float camera_pos[3], const float camera_look_at[3],
+	const float camera_pos[3], const float camera_up[3], const float camera_dir[3],
 	const float light_pos[3], const float color[3],
 	unsigned char* frame_out)
 {
@@ -205,17 +205,19 @@ int Render(const int width, const int height,
 
 	Camera cam;	
 	// set up vector to the be just pointing up
-	cam.up.s[0] = 0.0;
-	cam.up.s[1] = 1.0;
-	cam.up.s[2] = 0.0;
+	cam.up.s[0] = camera_up[0];
+	cam.up.s[1] = -camera_up[1]; // TODO: find out why this is necessary
+	cam.up.s[2] = camera_up[2];
 
 	cam.pos.s[0] = camera_pos[0];
 	cam.pos.s[1] = camera_pos[1];
 	cam.pos.s[2] = camera_pos[2];
 
-	cam.lookAt.s[0] = camera_look_at[0];
-	cam.lookAt.s[1] = camera_look_at[1];
-	cam.lookAt.s[2] = camera_look_at[2];
+	cam.dir.s[0] = camera_dir[0];
+	cam.dir.s[1] = camera_dir[1];
+	cam.dir.s[2] = camera_dir[2];
+
+	cam.from_lookAt = false;
 
 	RenderGirlShared& shared = RenderGirlShared::GetRenderGirlShared();
 	bool ret = shared.Render(width, height, cam, light);

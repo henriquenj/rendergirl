@@ -348,6 +348,8 @@ void MainFrame::OnRenderButton(wxCommandEvent& WXUNUSED(event))
 	camera.up.s[1] = 1.0;
 	camera.up.s[2] = 0.0;
 
+	camera.from_lookAt = true;
+
 	/* set light*/
 	Light light;
 	m_lightPosXField->GetValue().ToCDouble(&l_double);

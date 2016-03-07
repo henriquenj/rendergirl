@@ -74,7 +74,8 @@ extern "C" // make it callable from Ctypes
 		const int width, // width of the frame in pixels
 		const int height, // height of the frame in pixels
 		const float camera_pos[3], // camera XYZ position (eye)
-		const float camera_look_at[3], // camera looking at vector
+		const float camera_up[3], // camera up vector
+		const float camera_dir[3], // camera looking at vector
 		const float light_pos[3], // light XYZ position
 		const float color[3], // RGB color component of the light
 		unsigned char* frame_out /* The rendered frame as an array of chars, each pixels composed by 4 values (reg, green, blue and alpha).

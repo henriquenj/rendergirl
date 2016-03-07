@@ -303,7 +303,11 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 	
 	/* Precompute some camera stuff*/
 	// based on the algorithm provided by this user here http://stackoverflow.com/a/13078758/1335511
-	camera.dir = subtract(camera.lookAt,camera.pos);
+	if (camera.from_lookAt)
+	{ 
+		// compute direction form lookAt (temporary workarounf until camera API is ready)
+		camera.dir = subtract(camera.lookAt, camera.pos);
+	}
 	camera.dir = normalize(camera.dir);
 	camera.right = cross(camera.dir, camera.up);
 	camera.up = cross(camera.right, camera.dir); //This corrects for any slop in the choice of "up"

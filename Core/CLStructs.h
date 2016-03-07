@@ -24,7 +24,7 @@
 
 //Any change on those structs should be copied back to the device code on Raytracer.cl* /
 
-/* Stores the concept of a Camera. The interface only needs to fill the pos, lookAt and the up information. */
+/* Stores the concept of a Camera. The interface only needs to fill the pos, lookAt (or dir) and the up information. */
 typedef struct Camera
 {
 	cl_float3 pos;
@@ -32,6 +32,8 @@ typedef struct Camera
 	cl_float3 lookAt;
 	cl_float3 up; // upvector
 	cl_float3 right;
+	cl_bool from_lookAt;/* Compute direction from lookAt.
+						 this is a temporary workaround until we have a better API for camera */
 }Camera;
 
 /* Stores the concept of a light */

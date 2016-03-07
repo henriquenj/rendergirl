@@ -30,6 +30,8 @@ typedef struct Camera
 	float3 lookAt;
 	float3 up; // upvector
 	float3 right;
+	bool from_lookAt;/* Compute direction from lookAt.
+						this is a temporary workaround until we have a better API for camera */
 }Camera;
 
 /* Stores the concept of a light */
@@ -151,7 +153,7 @@ __kernel void Raytrace(__global float3* vertices, __global int4* faces, __global
 	So use the XYZ to access the members of any vector types */
 
 	/* build direction of the ray based on camera and the current pixel */
-	float normalized_i = -((float)((float)x / (float)(sceneInfo->width) * (float)(sceneInfo->proportion_x)) - 0.5f);
+	float normalized_i = ((float)((float)x / (float)(sceneInfo->width) * (float)(sceneInfo->proportion_x)) - 0.5f);
 	float normalized_j = -((float)((float)y / (float)(sceneInfo->height) * (float)(sceneInfo->proportion_y)) - 0.5f);
 	float3 ray_dir = (float3)(camera->right * normalized_i) + (float3)(camera->up * normalized_j) + camera->dir;
 

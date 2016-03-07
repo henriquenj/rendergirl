@@ -140,18 +140,21 @@ class RenderGirl:
         pixel_count = width * height
 
         # extract positions from world matrix
-        cam_pos = camera.matrix_world.translation
-        light_pos = light.matrix_world.translation
+        cam_pos = camera.matrix_world.translation.xzy
+        light_pos = light.matrix_world.translation.xzy
 
-        # compute look_at vector
-        look_at = camera.matrix_world.to_quaternion() * Vector((0.0, 0.0, -1.0))
+        quat = camera.matrix_world.to_quaternion()
+        # compute direction an up vector
+        cam_up = quat * Vector((0.0 , 1.0 , 0.0))
+        cam_dir = quat * Vector((0.0 , 0.0 , -1.0))
 
         # get light color
         light_color = [light.data.color.r, light.data.color.g, light.data.color.b]
 
         # C types
         c_cam_pos = (c_float * 3)(*cam_pos)
-        c_look_at = (c_float * 3)(*look_at)
+        c_cam_up = (c_float * 3)(*cam_up.xzy)
+        c_cam_dir = (c_float * 3)(*cam_dir.xzy)
         c_light_pos = (c_float * 3)(*light_pos)
         c_light_color = (c_float * 3)(*light_color)
 
@@ -160,8 +163,10 @@ class RenderGirl:
         c_out_frame = (c_ubyte * c_frame_size)()
 
         ret = self.render_girl_shared.Render(width, height, c_cam_pos,
-                                             c_look_at, c_light_pos,
-                                             c_light_color, byref(c_out_frame))
+                                             c_cam_up, c_cam_dir,
+                                             c_light_pos,
+                                             c_light_color,
+                                             byref(c_out_frame))
 
         if ret == -1:
             return None
