@@ -19,6 +19,8 @@ import bpy
 import collections
 from .RenderGirl import RenderGirl
 
+from mathutils import Vector
+
 # Metadata for blender internal plugin system
 bl_info = {
     "name": "RenderGirl",
@@ -74,11 +76,14 @@ class RenderGirlBlender(bpy.types.RenderEngine):
                mesh = objects[i].to_mesh(scene,True,'RENDER')
                # position is held within matrix_world, we just extract
                # it. Blender uses XZY coordinate system, so we swap
-               # the positions here.
+               # the positions where needed it.
+               rot = Vector()
+               rot.x = objects[i].rotation_euler.x
+               rot.y = objects[i].rotation_euler.z
+               rot.z = objects[i].rotation_euler.y
                pos = objects[i].matrix_world.translation.xzy
                mesh_tuple = MeshPlus(mesh,objects[i].name,
-                                     pos,objects[i].scale,
-                                     objects[i].rotation_euler)
+                                     pos,objects[i].scale.xzy, rot)
                meshs.append(mesh_tuple)
                objects[i].modifiers.remove(tri_modifier)
 
