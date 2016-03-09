@@ -172,7 +172,7 @@ bool SceneManager::PrepareScene(OCLKernel* kernel)
 			******************************************************************************************/
 
 			/* build transformation matrix to apply to vertex data, starting with scaling */
-			glm::mat4x4 scale = glm::scale(glm::uvec3((*it)->m_scale.s[0], (*it)->m_scale.s[1], (*it)->m_scale.s[2]));
+			glm::mat4x4 scale = glm::scale(glm::vec3((*it)->m_scale.s[0], (*it)->m_scale.s[1], (*it)->m_scale.s[2]));
 			// rotation
 			glm::mat4x4 rot = glm::rotate((*it)->m_rotation.s[0], glm::vec3(1.0f, 0.0f, 0.0f));
 			rot = glm::rotate(rot, (*it)->m_rotation.s[1], glm::vec3(0.0f, 1.0f, 0.0f));
