@@ -196,8 +196,8 @@ int Render(const int width, const int height,
 	light.pos.s[2] = light_pos[2];
 
 	/* hardcoded spectular and ambient for now */
-	light.Ks = 0.2;
-	light.Ka = 0.0;
+	light.Ks = 0.2f;
+	light.Ka = 0.0f;
 
 	light.color.s[0] = color[0];
 	light.color.s[1] = color[1];
