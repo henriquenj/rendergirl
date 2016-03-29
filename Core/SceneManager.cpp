@@ -19,6 +19,7 @@
 #include "glm/glm/mat4x4.hpp"
 #include "glm/glm/gtc/matrix_transform.hpp"
 #include "glm/glm/gtx/transform.hpp"
+#include "glm/glm/gtx/quaternion.hpp"
 
 
 #include "SceneManager.h"
@@ -173,15 +174,14 @@ bool SceneManager::PrepareScene(OCLKernel* kernel)
 
 			/* build transformation matrix to apply to vertex data, starting with scaling */
 			glm::mat4x4 scale = glm::scale(glm::vec3((*it)->m_scale.s[0], (*it)->m_scale.s[1], (*it)->m_scale.s[2]));
-			// rotation
-			glm::mat4x4 rot = glm::rotate((*it)->m_rotation.s[0], glm::vec3(1.0f, 0.0f, 0.0f));
-			rot = glm::rotate(rot, (*it)->m_rotation.s[1], glm::vec3(0.0f, 1.0f, 0.0f));
-			rot = glm::rotate(rot, (*it)->m_rotation.s[2], glm::vec3(0.0f, 0.0f, 1.0f));
+			// rotation using quaternions
+			glm::quat rot(glm::vec3((*it)->m_rotation.s[0], (*it)->m_rotation.s[1], (*it)->m_rotation.s[2]));
 			// translation
 			glm::mat4x4 translation = glm::translate(glm::vec3((*it)->m_pos.s[0], (*it)->m_pos.s[1], (*it)->m_pos.s[2]));
-
+			
 			// build transformation matrix
-			glm::mat4x4 transform = scale * rot * translation;
+			glm::mat4x4 transform = translation * glm::mat4x4(rot) * scale;
+
 			/* apply object transformations on vertex data */
 			for (int i = 0; i < (*it)->GetVerticesNumber(); i++)
 			{
@@ -191,7 +191,7 @@ bool SceneManager::PrepareScene(OCLKernel* kernel)
 								(*it)->m_vertices[i].s[2],
 								1.0f /* identity */);
 
-				glm::vec4 translated_vertex = temp * transform;
+				glm::vec4 translated_vertex = transform * temp;
 				vertexRaw[vertexOffset + i] = { { translated_vertex.x, translated_vertex.y, translated_vertex.z } };
 					
 			}

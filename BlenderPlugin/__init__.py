@@ -74,14 +74,24 @@ class RenderGirlBlender(bpy.types.RenderEngine):
                    name="triangulate",type='TRIANGULATE')
                # convert to mesh objects (modifiers will be applied at this step)
                mesh = objects[i].to_mesh(scene,True,'RENDER')
-               # position is held within matrix_world, we just extract
-               # it. Blender uses XZY coordinate system, so we swap
-               # the positions where needed it.
+
+               # Remark:
+               # Blender uses XZY coordinate system, so we swap
+               # the Y by Z where needed it.
+
                rot = Vector()
-               rot.x = objects[i].rotation_euler.x
-               rot.y = objects[i].rotation_euler.z
-               rot.z = objects[i].rotation_euler.y
+               # Rendergirl needs rotations to be XYZ ordered (XZY
+               # from blender perspective), we get the Euler directly
+               # from the matrix world passing the order we want on
+               # the conversion.
+               euler = objects[i].matrix_world.to_euler('XZY')
+               rot.x = euler.x
+               rot.y = euler.z
+               rot.z = euler.y
+
+               # extract position from matrix world
                pos = objects[i].matrix_world.translation.xzy
+
                mesh_tuple = MeshPlus(mesh,objects[i].name,
                                      pos,objects[i].scale.xzy, rot)
                meshs.append(mesh_tuple)

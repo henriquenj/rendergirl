@@ -133,7 +133,7 @@ int AddSceneGroup(
 	/* set global transformations */
 	cl_float3 float3 = {position[0], position[1], position[2]};
 	group->SetPosition(float3);
-	float3.s[0] = rotation[0]; float3.s[1] = rotation[1]; float3.s[2] = rotation[2];
+	float3.s[0] = -rotation[0]; float3.s[1] = -rotation[1]; float3.s[2] = -rotation[2];
 	group->SetRotation(float3);
 	float3.s[0] = scale[0]; float3.s[1] = scale[1]; float3.s[2] = scale[2];
 	group->SetScale(float3);
