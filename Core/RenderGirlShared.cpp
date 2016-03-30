@@ -233,6 +233,9 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 {
 	assert(m_selectedDevice != NULL && "You must have a working context to call this");
 
+	// start counter
+	auto pretime = std::chrono::high_resolution_clock::now();
+
 	if (height < 1 || width < 1)
 	{
 		Log::Error("You have to choose a positive resolution");
@@ -326,10 +329,6 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 
 	Log::Message("Rendering...");
 
-
-	// start counter
-	auto pretime = std::chrono::high_resolution_clock::now();
-
 	if (!m_kernel->EnqueueExecution())
 		return false;
 
@@ -346,13 +345,6 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 	if (!context->ExecuteCommands())
 		return false;
 
-
-	// finish timer
-	// got that from here http://stackoverflow.com/questions/1487695/c-cross-platform-high-resolution-timer
-	auto postime = std::chrono::high_resolution_clock::now();
-	std::chrono::nanoseconds ns = std::chrono::duration_cast<std::chrono::nanoseconds>(postime - pretime);
-	Log::Message("Rendering took " + std::to_string((float)(ns.count() / 1000000000.0f)) + " seconds.");
-
 	if (AAOption != noAA)
 	{
 		context->DeleteMemoryObject(m_frame_AA);
@@ -360,6 +352,11 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 	}
 
 	m_frame->SyncDeviceToHost();
+
+	// finish timer
+	auto postime = std::chrono::high_resolution_clock::now();
+	std::chrono::nanoseconds ns = std::chrono::duration_cast<std::chrono::nanoseconds>(postime - pretime);
+	Log::Message("Rendering took " + std::to_string((float)(ns.count() / 1000000000.0f)) + " seconds.");
 
 	return true;
 }
