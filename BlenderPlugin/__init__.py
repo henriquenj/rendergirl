@@ -26,7 +26,7 @@ bl_info = {
     "name": "RenderGirl",
     "author": "Henrique Jung",
     "version": (0, 0, 1),
-    "blender": (2, 70, 0), # TODO(Henrique Jung): test with other versions of blender
+    "blender": (2, 76, 0),
     "location": "Info header, render engine menu",
     "description": "RenderGirl raytracer for Blender",
     "warning": "Still on very early stage of development!",
@@ -123,7 +123,7 @@ class RenderGirlBlender(bpy.types.RenderEngine):
         # Here we write the pixel values to the RenderResult
         result = self.begin_result(0, 0, size_x, size_y)
         layer = result.layers[0]
-        layer.rect = rect
+        layer.passes[0].rect = rect
         self.end_result(result)
 
         # clear all geometry of this rendering
