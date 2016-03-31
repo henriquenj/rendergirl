@@ -150,6 +150,5 @@ def register():
 
 
 def unregister():
-    bpy.utils.unregister_class(RenderGirlBlender)
     RenderGirlBlender.render_girl.finish()
-    RenderGirlBlender.render_girl = None
+    bpy.utils.unregister_class(RenderGirlBlender)
