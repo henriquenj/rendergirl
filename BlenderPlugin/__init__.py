@@ -146,9 +146,13 @@ def register():
     # Register render properties UI elements
     from bl_ui import properties_render
     properties_render.RENDER_PT_render.COMPAT_ENGINES.add('RenderGirl')
-    del properties_render
-
+    properties_render.RENDER_PT_dimensions.COMPAT_ENGINES.add('RenderGirl')
 
 def unregister():
     RenderGirlBlender.render_girl.finish()
     bpy.utils.unregister_class(RenderGirlBlender)
+
+    # Unregister render properties UI elements
+    from bl_ui import properties_render
+    properties_render.RENDER_PT_render.COMPAT_ENGINES.remove('RenderGirl')
+    properties_render.RENDER_PT_dimensions.COMPAT_ENGINES.remove('RenderGirl')
