@@ -22,17 +22,20 @@ from mathutils import Vector
 
 class RenderGirl:
     """Class that loads the RenderGirl shared library and holds most of
-    the wrappers. It is called from RenderGirlBlender class. The
-    difference between RenderGirl and RenderGirlBlender is that
-    RenderGirl class is a singleton that is not suppose to be deleted
-    across several renderings. So it's useful to retain states and perform
-    init operations.
+    the wrappers. The difference between RenderGirl and
+    RenderGirlBlender is that RenderGirl class is a singleton that is
+    not suppose to be deleted across several renderings. So it's
+    useful to retain states and perform init operations.
+
     """
+
+    instance = None
 
     def __init__(self):
         # the current instance of RenderGirlBlender running
         self.session = None
         self.device_selected = False
+        RenderGirl.instance = self
 
 
     def start(self):

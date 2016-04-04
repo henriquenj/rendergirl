@@ -41,14 +41,13 @@ class RenderGirlBlender(bpy.types.RenderEngine):
     bl_idname = 'RenderGirl'
     bl_label = 'RenderGirl'
     bl_use_preview = True
-    render_girl = None
 
     def __init__(self):
         # update pointer of the static class with this session
-        RenderGirlBlender.render_girl.session = self
+        RenderGirl.instance.session = self
 
     def __del__(self):
-        RenderGirlBlender.render_girl.session = None
+        RenderGirl.instance.session = None
 
     def render(self, scene):
         scale = scene.render.resolution_percentage / 100.0
@@ -99,7 +98,7 @@ class RenderGirlBlender(bpy.types.RenderEngine):
 
         # add to rendergirl core
         for i in range(len(meshs)):
-            ret = RenderGirlBlender.render_girl.add_scene_group(meshs[i])
+            ret = RenderGirl.instance.add_scene_group(meshs[i])
             if ret != 0:
                 raise ValueError("Error adding object {1} to RenderGirl"
                                  .format(meshs[i].name))
@@ -113,11 +112,11 @@ class RenderGirlBlender(bpy.types.RenderEngine):
                 break
 
         # objects set up, now render
-        rect = RenderGirlBlender.render_girl.render(size_x, size_y,
+        rect = RenderGirl.instance.render(size_x, size_y,
                                                     scene.camera, light)
 
         if rect == None:
-            RenderGirlBlender.render_girl.clear_scene()
+            RenderGirl.instance.clear_scene()
             raise ValueError("Error rendering frame, please check the logs")
 
         # Here we write the pixel values to the RenderResult
@@ -128,12 +127,12 @@ class RenderGirlBlender(bpy.types.RenderEngine):
 
         # clear all geometry of this rendering
         # this will be removed as soon as we have a cache mechanism
-        RenderGirlBlender.render_girl.clear_scene()
+        RenderGirl.instance.clear_scene()
 
 def register():
     # create RenderGirl instance and start it
-    RenderGirlBlender.render_girl = RenderGirl()
-    error = RenderGirlBlender.render_girl.start()
+    RenderGirl()
+    error = RenderGirl.instance.start()
 
     if error != 0:
         raise ValueError("Error starting rendergirl")
@@ -149,7 +148,7 @@ def register():
     properties_render.RENDER_PT_dimensions.COMPAT_ENGINES.add('RenderGirl')
 
 def unregister():
-    RenderGirlBlender.render_girl.finish()
+    RenderGirl.instance.finish()
     bpy.utils.unregister_class(RenderGirlBlender)
 
     # Unregister render properties UI elements
