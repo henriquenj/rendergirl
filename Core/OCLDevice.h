@@ -45,6 +45,13 @@ public:
 	{
 		return m_name;
 	}
+
+	// return name of this device as a read-only C string
+	inline const char* GetCName()const
+	{
+		return m_name.c_str();
+	}
+
 	// get vendor of this vendor
 	inline std::string GetVendor()const
 	{

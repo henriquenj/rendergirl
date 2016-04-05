@@ -8,3 +8,5 @@ EXPORTS
    Render
    ClearScene
    AddSceneGroup
+   FetchDevicesSize
+   FetchDevicesName

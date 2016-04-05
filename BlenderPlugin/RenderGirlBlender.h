@@ -38,6 +38,30 @@ extern "C" // make it callable from Ctypes
 	*/
 	int StartRendergirl();
 
+	/* Fetch the amount of devices available on this computer */
+	int FetchDevicesSize();
+
+	/*
+	Fetch device names from RenderGirl core.
+	devices_out parameter is a pointer to an array of null terminated read-only strings containing the name of the devices,
+	the array must have been previously allocated. To get the size of the array, call FetchDevicesSize;
+	Example usage: 
+		int device_size = FetchDevicesSize();
+		char const ** devices_out = (const char**)malloc(device_size * sizeof(const char **));
+		FetchDevicesName(devices_out);
+		for (int i = 0; i < device_size; i++)
+		{
+			printf("%s\n", devices_out[i]);
+		}
+		free(devices_out);
+	*/
+	void FetchDevicesName(char const ** devices_out);
+
+	/* Select an OpenCL capalable device
+	device parameter is the index of the device within the "devices_out" argument from FetchDevices function
+	*/
+	int SelectDevice(const int device);
+
 	/* Add a scenegroup to rendergirl core.
 		To keep arguments simple, pointers do not point to array objects, instead
 		all data must be transmitted as a single array. For instance:

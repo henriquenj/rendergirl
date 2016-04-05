@@ -111,6 +111,42 @@ int StartRendergirl()
 	return 0;
 }
 
+int FetchDevicesSize()
+{
+	RenderGirlShared& shared = RenderGirlShared::GetRenderGirlShared();
+	int devicesAmount = 0;
+	
+	std::vector<OCLPlatform*> platforms = shared.ReturnPlatforms();
+	/* iterate over all platforms looking for devices */
+	for (auto plat : platforms)
+	{
+		devicesAmount += plat->GetDeviceAmount();
+	}
+
+	return devicesAmount;
+}
+
+void FetchDevicesName(char const ** devices_out)
+{
+	RenderGirlShared& shared = RenderGirlShared::GetRenderGirlShared();
+	int devicesAmount = 0;
+
+	std::vector<OCLPlatform*> platforms = shared.ReturnPlatforms();
+	/* iterate over all platforms looking for devices */
+	int shift = 0;
+	for (int i = 0; i < platforms.size(); i++)
+	{
+		std::vector<OCLDevice*> devices = platforms[i]->GetDevices();
+		int size = devices.size();
+		for (int p = 0; p < size; p++)
+		{
+			devices_out[shift + p] = devices[p]->GetCName();
+		}
+		shift += size;
+	}
+}
+
+
 int AddSceneGroup(
     const char* name, const float* vertex,
     const int vertex_size,
