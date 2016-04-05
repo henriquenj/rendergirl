@@ -17,6 +17,7 @@
 
 import bpy
 import collections
+from .Ui import *
 from .RenderGirl import RenderGirl
 
 from mathutils import Vector
@@ -142,16 +143,25 @@ def register():
     # TODO: consider using blender modules, more info here
     # http://www.blender.org/api/blender_python_api_2_64_release/info_overview.html#multiple-classes
 
+    # Register the render properties class
+    bpy.utils.register_class(RenderGirlRenderSettings)
+
     # Register render properties UI elements
     from bl_ui import properties_render
     properties_render.RENDER_PT_render.COMPAT_ENGINES.add('RenderGirl')
     properties_render.RENDER_PT_dimensions.COMPAT_ENGINES.add('RenderGirl')
+    # add function for drawning new buttons to the render panel
+    properties_render.RENDER_PT_render.append(render_girl_render_options)
 
 def unregister():
     RenderGirl.instance.finish()
-    bpy.utils.unregister_class(RenderGirlBlender)
 
     # Unregister render properties UI elements
     from bl_ui import properties_render
     properties_render.RENDER_PT_render.COMPAT_ENGINES.remove('RenderGirl')
     properties_render.RENDER_PT_dimensions.COMPAT_ENGINES.remove('RenderGirl')
+
+    bpy.utils.unregister_class(RenderGirlBlender)
+    bpy.utils.unregister_class(RenderGirlRenderSettings)
+
+    properties_render.RENDER_PT_render.remove(render_girl_render_options)

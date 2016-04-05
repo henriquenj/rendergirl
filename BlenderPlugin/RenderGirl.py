@@ -68,6 +68,20 @@ class RenderGirl:
             return -1
 
         self.device_selected = True
+
+        # fetch device amount and device names
+        devices_amount = int(self.render_girl_shared.FetchDevicesSize())
+
+        strings_ptr = (c_char_p * devices_amount)()
+        self.render_girl_shared.FetchDevicesName(byref(strings_ptr))
+
+        self.device_names = []
+        for a in range(0, devices_amount):
+            # fill list with devices name
+            name = str(strings_ptr[a].decode("ascii"))
+            self.device_names.append(name)
+
+
         print("RenderGirl started")
         return 0
 
