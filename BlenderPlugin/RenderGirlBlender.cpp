@@ -248,7 +248,7 @@ void ClearScene()
 int Render(const int width, const int height,
 	const float camera_pos[3], const float camera_up[3], const float camera_dir[3],
 	const float light_pos[3], const float color[3],
-	unsigned char* frame_out)
+	unsigned char* frame_out, const bool fxaa)
 {
 
 	Light light;
@@ -282,7 +282,13 @@ int Render(const int width, const int height,
 	cam.from_lookAt = false;
 
 	RenderGirlShared& shared = RenderGirlShared::GetRenderGirlShared();
-	bool ret = shared.Render(width, height, cam, light);
+
+	AntiAliasingMethod antiAlias = noAA;
+	if (fxaa == true)
+		antiAlias = FXAA;
+	
+
+	bool ret = shared.Render(width, height, cam, light, antiAlias);
 
 	if (!ret)
 	{ 

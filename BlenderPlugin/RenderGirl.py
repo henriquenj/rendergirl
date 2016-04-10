@@ -200,11 +200,15 @@ class RenderGirl:
         c_frame_size = pixel_count * 4
         c_out_frame = (c_ubyte * c_frame_size)()
 
+        # fxaa option
+        fxaa = bpy.context.scene.rgirl_settings.fxaa
+
         ret = self.render_girl_shared.Render(width, height, c_cam_pos,
                                              c_cam_up, c_cam_dir,
                                              c_light_pos,
                                              c_light_color,
-                                             byref(c_out_frame))
+                                             byref(c_out_frame),
+                                             fxaa)
 
         if ret == -1:
             return None

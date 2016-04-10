@@ -54,11 +54,24 @@ class RenderGirlRenderSettings(bpy.types.PropertyGroup):
                 items=ocl_devices,
                 )
 
+        cls.fxaa = BoolProperty(name="FXAA")
+
     @classmethod
     def unregister(cls):
         del bpy.types.Scene.rgirl_settings
 
 
+class RenderGirlPostProcessingPanel(bpy.types.Panel):
+    """Class to register RenderGirl own post-processing panel, the
+    default one has too many options we don't plan to support
+    """
+    bl_label = "Post Processing"
+    bl_context = "render"
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+
+    def draw(self, context):
+        self.layout.prop(context.scene.rgirl_settings,"fxaa")
 
 
 def render_girl_render_options(self, context):

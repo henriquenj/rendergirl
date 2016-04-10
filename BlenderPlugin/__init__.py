@@ -145,6 +145,8 @@ def register():
 
     # Register the render properties class
     bpy.utils.register_class(RenderGirlRenderSettings)
+    # register rendergirl own's post processing panel
+    bpy.utils.register_class(RenderGirlPostProcessingPanel)
 
     # Register render properties UI elements
     from bl_ui import properties_render
@@ -163,5 +165,6 @@ def unregister():
 
     bpy.utils.unregister_class(RenderGirlBlender)
     bpy.utils.unregister_class(RenderGirlRenderSettings)
+    bpy.utils.unregister_class(RenderGirlPostProcessingPanel)
 
     properties_render.RENDER_PT_render.remove(render_girl_render_options)
