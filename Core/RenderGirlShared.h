@@ -58,7 +58,10 @@ public:
 	   param type define which type of device will be initialized */
 	bool InitDevices(OCLDevice::DeviceType type = OCLDevice::All);
 
-	/* Prepare a given device for executing the OpenCL program, return FALSE if there's an error with device*/
+	/* 
+	Prepare a given device for executing the OpenCL program. This function will release any previously used
+	device. Return FALSE if there's an error with device
+	*/
 	bool SelectDevice(const OCLDevice* select);
 
 	/* PrepareRaytracer function prepare the OpenCL raytracer to work on the selected device.
