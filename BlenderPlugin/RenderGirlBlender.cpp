@@ -80,31 +80,11 @@ int StartRendergirl()
 	shared.InitPlatforms();
 	shared.InitDevices();
 
-	// TODO: this is hardcoded init preserved until we have GUI on Blender side
-
 	// select list of platforms
 	std::vector<OCLPlatform*> platforms = shared.ReturnPlatforms();
 	if (platforms.empty())
 	{
 		Log::Error("No platform found. Maybe you should install some OpenCL drivers.");
-		return -1;
-	}
-
-	// get first device on first platform
-	std::vector<OCLDevice*> devices = platforms[0]->GetDevices();
-	if (devices.empty())
-	{
-		Log::Error("No device found on platform " + platforms[0]->GetName());
-		return -1;
-	}
-
-	if (!shared.SelectDevice(devices[0]))
-	{
-		return -1;
-	}
-
-	if (!shared.PrepareRaytracer())
-	{
 		return -1;
 	}
 
@@ -146,6 +126,52 @@ void FetchDevicesName(char const ** devices_out)
 	}
 }
 
+int SelectDevice(const int device)
+{
+	RenderGirlShared& shared = RenderGirlShared::GetRenderGirlShared();
+
+	OCLDevice* device_ptr = nullptr;
+
+	std::vector<OCLPlatform*> platforms = shared.ReturnPlatforms();
+	/* iterate over all platforms looking for devices,
+		which is basically what you see on the FetchDevicesName function*/
+	int shift = 0;
+	for (int i = 0; i < platforms.size(); i++)
+	{
+		std::vector<OCLDevice*> devices = platforms[i]->GetDevices();
+		int size = devices.size();
+		for (int p = 0; p < size; p++)
+		{
+			if (shift + p == device) // found device
+			{
+				device_ptr = devices[p];
+				break;
+			}
+		}
+		shift += size;
+	}
+
+	if (device_ptr == nullptr)
+	{ 
+		//device not found with this index
+		Log::Error("Device not found");
+		return -1;
+	}
+	
+	// init stuff
+
+	if (!shared.SelectDevice(device_ptr))
+	{
+		return -1;
+	}
+
+	if (!shared.PrepareRaytracer())
+	{
+		return -1;
+	}
+
+	return 0;
+}
 
 int AddSceneGroup(
     const char* name, const float* vertex,

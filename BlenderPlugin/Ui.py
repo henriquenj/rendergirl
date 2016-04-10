@@ -24,17 +24,17 @@ from .RenderGirl import RenderGirl
 
 
 def ocl_devices(scene, context):
-    """ Fetch devices list from RenderGirl """
+    """ Fetch and fille devices list from RenderGirl """
     devices = []
 
     rgirl_devices = RenderGirl.instance.device_names
-
+    unique_id = 0
     for name in rgirl_devices:
-        name_tupple = (name,name,"")
+        name_tupple = (str(unique_id),name,"")
         devices.append(name_tupple)
+        unique_id += 1
 
     return devices
-
 
 class RenderGirlRenderSettings(bpy.types.PropertyGroup):
     """ Class to register and controls the RenderGirl properties within Blender

@@ -17,6 +17,7 @@
 from ctypes import *
 import os
 import sys
+import bpy
 
 from mathutils import Vector
 
@@ -34,7 +35,8 @@ class RenderGirl:
     def __init__(self):
         # the current instance of RenderGirlBlender running
         self.session = None
-        self.device_selected = False
+        # positive number means some device is ready to render
+        self.device_selected = -1
         RenderGirl.instance = self
 
 
@@ -67,10 +69,11 @@ class RenderGirl:
             self.render_girl_shared.FinishLogSystem()
             return -1
 
-        self.device_selected = True
-
         # fetch device amount and device names
         devices_amount = int(self.render_girl_shared.FetchDevicesSize())
+        if devices_amount < 1: # no device on this platform
+            self.render_girl_shared.FinishLogSystem()
+            retunr -1
 
         strings_ptr = (c_char_p * devices_amount)()
         self.render_girl_shared.FetchDevicesName(byref(strings_ptr))
@@ -78,6 +81,7 @@ class RenderGirl:
         self.device_names = []
         for a in range(0, devices_amount):
             # fill list with devices name
+            # order matters because we have to retrieve the index later on
             name = str(strings_ptr[a].decode("ascii"))
             self.device_names.append(name)
 
@@ -153,6 +157,23 @@ class RenderGirl:
         @param light object representing the light (only one supported so far)
         @return list with height * width pixels
         """
+
+        # first step is to check if we need to select and prepare a
+        # device before rendering. A -1 device means there's no device
+        # currently selected. Positive values means some device was
+        # selected and prepared in the past. We must also check if the
+        # user dind't pick a different device before hitting render
+        # button, in this case we should change the selected device as
+        # well. Since the UI never returns -1, this condition cover
+        # all these cases.
+        if (self.device_selected !=
+            int(bpy.context.scene.rgirl_settings.device)):
+            index = int(bpy.context.scene.rgirl_settings.device)
+            ret = self.render_girl_shared.SelectDevice(index)
+            if ret == -1:
+                self.device_selected = -1
+                return None
+            self.device_selected = index
 
         pixel_count = width * height
 
@@ -231,7 +252,7 @@ class RenderGirl:
             self.session.report(message_type,log_message);
 
     def finish(self):
-        if self.device_selected == True:
+        if self.device_selected >= 0:
             self.render_girl_shared.FinishRenderGirl()
         self.render_girl_shared.FinishLogSystem()
         print("Rendergirl finished")

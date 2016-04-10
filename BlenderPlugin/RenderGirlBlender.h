@@ -59,6 +59,7 @@ extern "C" // make it callable from Ctypes
 
 	/* Select an OpenCL capalable device
 	device parameter is the index of the device within the "devices_out" argument from FetchDevices function
+	return 0 if the selection was successfully, return -1 for error
 	*/
 	int SelectDevice(const int device);
 
