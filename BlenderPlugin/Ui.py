@@ -54,7 +54,8 @@ class RenderGirlRenderSettings(bpy.types.PropertyGroup):
                 items=ocl_devices,
                 )
 
-        cls.fxaa = BoolProperty(name="FXAA")
+        cls.fxaa = BoolProperty(name="FXAA",
+                description="Apply fast approximate anti-aliasing over the rendered frame")
 
     @classmethod
     def unregister(cls):
