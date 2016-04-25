@@ -327,12 +327,8 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 
 	m_kernel->SetGlobalWorkSize(pixelCount); // one work-iten per pixel
 
-	Log::Message("Rendering...");
-
 	if (!m_kernel->EnqueueExecution())
 		return false;
-
-	//AAOption = noAA;
 
 	if (AAOption != noAA)
 	{
