@@ -65,8 +65,9 @@ public:
 	bool SelectDevice(const OCLDevice* select);
 
 	/* PrepareRaytracer function prepare the OpenCL raytracer to work on the selected device.
+		efficiency controls if RenderGirl should show efficiency information on the log
 		You got to have a selected device to call this. Return FALSE if there's an error with the device. */
-	bool PrepareRaytracer();
+	bool PrepareRaytracer(const bool efficiency = false);
 
 	/* Render a frame. You should only call this with a kernel ready and a 3D scene.
 		This is a blocking call.
@@ -123,6 +124,9 @@ private:
 
 	OCLMemoryObject<cl_uchar4>* m_frame;
 	OCLMemoryObject<cl_uchar4>* m_frame_AA;
+
+	// bool to control if kernel is compiled with efficiency metrics
+	bool m_efficiencyInfo;
 };
 
 

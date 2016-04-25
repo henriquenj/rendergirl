@@ -141,7 +141,8 @@ int Intersect(const float3   V1,  // Triangle vertices
 
 /* Here starts the raytracer*/
 __kernel void Raytrace(__global float3* vertices, __global int4* faces, __global SceneGroupStruct* groups, __global Material* materials,
-	__global SceneInformation* sceneInfo, __global uchar4* frame, __global Camera* camera, __global Light* light)
+	__global SceneInformation* sceneInfo, __global uchar4* frame, __global Camera* camera, __global Light* light,
+    __global uint* intersectCounter, __global uint* intersectHitCounter)
 {
 	int id = get_global_id(0);
 	// grab XY coordinate of this instance
@@ -179,6 +180,11 @@ __kernel void Raytrace(__global float3* vertices, __global int4* faces, __global
 			float3 temp_point; // temporary intersection point
 			float3 temp_normal;// temporary normal vector
 
+#ifdef EFFICIENCY_METRICS
+            /* metrics are not compiled depending on user configuration */
+            atomic_inc(intersectCounter);
+#endif // EFFICIENCY_METRICS
+
 			result = Intersect(vertices[faces[k].x + vertexOffset],
 								vertices[faces[k].y + vertexOffset],
 								vertices[faces[k].z + vertexOffset],
@@ -195,6 +201,10 @@ __kernel void Raytrace(__global float3* vertices, __global int4* faces, __global
 					normal = temp_normal;
 					groupIndex = p;
 				}
+#ifdef EFFICIENCY_METRICS
+            /* metrics are not compiled depending on user configuration */
+            atomic_inc(intersectHitCounter);
+#endif // EFFICIENCY_METRICS
 			}
 		}
 		/* update offset for the next group */

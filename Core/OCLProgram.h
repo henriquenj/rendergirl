@@ -35,7 +35,7 @@ public:
 	bool LoadSource(const std::string &sourceFile);
 
 	/* Build the loaded OpenCL program in a given context, options argument is a set
-		of options to the OpenCL compiler (can be NULL), return FALSE if there was a problem.
+		of options to the OpenCL compiler, return FALSE if there was a problem.
 		For the list of avaiable options, please refer to OpenCL documentation */
 	bool BuildProgram(const std::string &options = std::string());
 

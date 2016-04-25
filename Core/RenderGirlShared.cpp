@@ -28,6 +28,8 @@ RenderGirlShared::RenderGirlShared()
 	m_kernel = NULL;
 	m_kernel_AA = NULL;
 	m_frame = NULL;
+
+	m_efficiencyInfo = false;
 }
 RenderGirlShared::~RenderGirlShared()
 {
@@ -138,7 +140,7 @@ bool RenderGirlShared::SelectDevice(const OCLDevice* select)
 	return error;
 }
 
-bool RenderGirlShared::PrepareRaytracer()
+bool RenderGirlShared::PrepareRaytracer(const bool efficiency)
 {
 	assert(m_selectedDevice != NULL);
 	assert(m_program == NULL);
@@ -154,7 +156,21 @@ bool RenderGirlShared::PrepareRaytracer()
 		return false;
 	}
 
-	if (!m_program->BuildProgram())
+	std::string program_options = std::string();
+	if (efficiency)
+	{
+		/* tells the OpenCL compiler that code marked within
+		EFFICIENCY_METRICS should be compiled
+		*/
+		program_options += "-D EFFICIENCY_METRICS";
+		this->m_efficiencyInfo = true;
+	}
+	else
+	{
+		this->m_efficiencyInfo = false;
+	}
+
+	if (!m_program->BuildProgram(program_options))
 	{
 		delete m_program;
 		m_program = NULL;
@@ -319,11 +335,37 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 	OCLMemoryObject<Camera>* mem_cam = context->CreateMemoryObjectWithData(1, &camera, true, ReadOnly);
 	mem_cam->SyncHostToDevice();
 
+	/*
+	Efficiency metrics for now consist of two integer counters. The intersectCounter will count the 
+	amount of calls to the Intersect function within the OpenCL kernel. 
+	The intersectHitCounter will count the amount of intersecitons that actually hit a triangle. 
+	To count, we will use OpenCL atomic operatations.
+
+	KNOWN ISSUE: Unsigned integers will easily overflow on the intersect counter since a couple of 
+	thousand faces on a reasonably low resolution (740p) can generate 4 billion intersects. 
+	This will be currently a limitation since 64 bits atomic operations in OpenCL are done using 
+	an extension, which to the best of our knowledge NVIDIA does not implement.
+	*/
+	cl_uint temp = 0;
+	OCLMemoryObject<cl_uint>* mem_intersectCounter = context->CreateMemoryObject<cl_uint>(1);
+	mem_intersectCounter->SetData(&temp);
+
+	OCLMemoryObject<cl_uint>* mem_intersectHitCounter = context->CreateMemoryObject<cl_uint>(1);
+	mem_intersectHitCounter->SetData(&temp);
+	
+	if (m_efficiencyInfo)
+	{
+		mem_intersectCounter->SyncHostToDevice();
+		mem_intersectHitCounter->SyncHostToDevice();
+	}
+
 	// set remaining arguments
 	m_kernel->SetArgument(4, sceneInfoMem);
 	m_kernel->SetArgument(5, m_frame);
 	m_kernel->SetArgument(6, mem_cam);
 	m_kernel->SetArgument(7, mem_light);
+	m_kernel->SetArgument(8, mem_intersectCounter);
+	m_kernel->SetArgument(9, mem_intersectHitCounter);
 
 	m_kernel->SetGlobalWorkSize(pixelCount); // one work-iten per pixel
 
@@ -353,6 +395,26 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 	auto postime = std::chrono::high_resolution_clock::now();
 	std::chrono::nanoseconds ns = std::chrono::duration_cast<std::chrono::nanoseconds>(postime - pretime);
 	Log::Message("Rendering took " + std::to_string((float)(ns.count() / 1000000000.0f)) + " seconds.");
+
+	if (m_efficiencyInfo)
+	{
+		float hitPercentage = 0;
+		mem_intersectCounter->SyncDeviceToHost();
+		mem_intersectHitCounter->SyncDeviceToHost();
+		/* compute efficiency of ray collisions */
+		cl_uint intersectCounter = (*mem_intersectCounter)[0];
+		cl_uint intersectHitCounter = (*mem_intersectHitCounter)[0];
+
+		if (intersectCounter > 0 && intersectHitCounter > 0)
+		{
+			hitPercentage = (100.0f * intersectHitCounter) / intersectCounter;
+		}
+
+		Log::Message("Amount of intersect tests: " + std::to_string(intersectCounter));
+		Log::Message("Amount of hits on intersect tests " + std::to_string(intersectHitCounter));
+		Log::Message("Percentage of successful hits is " + std::to_string(hitPercentage) + "%");
+	}
+
 
 	return true;
 }

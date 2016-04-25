@@ -59,9 +59,10 @@ extern "C" // make it callable from Ctypes
 
 	/* Select an OpenCL capalable device
 	device parameter is the index of the device within the "devices_out" argument from FetchDevices function
+	efficiency_info controls if RenderGirl should print efficiency information on the log
 	return 0 if the selection was successfully, return -1 for error
 	*/
-	int SelectDevice(const int device);
+	int SelectDevice(const int device, const bool efficiency_info);
 
 	/* Add a scenegroup to rendergirl core.
 		To keep arguments simple, pointers do not point to array objects, instead

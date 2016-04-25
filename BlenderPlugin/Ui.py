@@ -57,6 +57,9 @@ class RenderGirlRenderSettings(bpy.types.PropertyGroup):
         cls.fxaa = BoolProperty(name="FXAA",
                 description="Apply fast approximate anti-aliasing over the rendered frame")
 
+        cls.efficiency_info = BoolProperty(name="Efficiency information",
+                description="If enabled, RenderGirl will print efficiency information on the console. May degrade performance. It will only takes effect after a device change or first render.")
+
     @classmethod
     def unregister(cls):
         del bpy.types.Scene.rgirl_settings
@@ -81,3 +84,4 @@ def render_girl_render_options(self, context):
     # we don't draw unless we have rendergirl selected
     if context.scene.render.engine == 'RenderGirl':
         self.layout.prop(context.scene.rgirl_settings,"device")
+        self.layout.prop(context.scene.rgirl_settings,"efficiency_info")

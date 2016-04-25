@@ -116,7 +116,7 @@ bool OCLProgram::BuildProgram(const std::string &options)
 	{
 		// We must provide the include paths for OpenCL compiler for includes
 		// within .cl files (e.g. FXAA.cl)
-		options_str += "-I \"" + s_path + "\"";
+		options_str += " -I \"" + s_path + "\"";
 	}
 
 	error = clBuildProgram(m_program, 0, NULL, options_str.c_str(), NULL, NULL);

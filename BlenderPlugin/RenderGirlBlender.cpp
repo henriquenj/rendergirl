@@ -126,7 +126,7 @@ void FetchDevicesName(char const ** devices_out)
 	}
 }
 
-int SelectDevice(const int device)
+int SelectDevice(const int device, const bool efficiency_info)
 {
 	RenderGirlShared& shared = RenderGirlShared::GetRenderGirlShared();
 
@@ -165,7 +165,7 @@ int SelectDevice(const int device)
 		return -1;
 	}
 
-	if (!shared.PrepareRaytracer())
+	if (!shared.PrepareRaytracer(efficiency_info))
 	{
 		return -1;
 	}

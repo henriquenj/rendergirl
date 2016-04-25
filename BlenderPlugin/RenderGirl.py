@@ -169,7 +169,8 @@ class RenderGirl:
         if (self.device_selected !=
             int(bpy.context.scene.rgirl_settings.device)):
             index = int(bpy.context.scene.rgirl_settings.device)
-            ret = self.render_girl_shared.SelectDevice(index)
+            efficiency_info = bpy.context.scene.rgirl_settings.efficiency_info
+            ret = self.render_girl_shared.SelectDevice(index,efficiency_info)
             if ret == -1:
                 self.device_selected = -1
                 return None
