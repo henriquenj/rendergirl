@@ -181,8 +181,8 @@ __kernel void Raytrace(__global float3* vertices, __global int4* faces, __global
 			float3 temp_normal;// temporary normal vector
 
 #ifdef EFFICIENCY_METRICS
-            /* metrics are not compiled depending on user configuration */
-            atomic_inc(intersectCounter);
+			/* metrics are not compiled depending on user configuration */
+			atomic_inc(intersectCounter);
 #endif // EFFICIENCY_METRICS
 
 			result = Intersect(vertices[faces[k].x + vertexOffset],
@@ -202,8 +202,8 @@ __kernel void Raytrace(__global float3* vertices, __global int4* faces, __global
 					groupIndex = p;
 				}
 #ifdef EFFICIENCY_METRICS
-            /* metrics are not compiled depending on user configuration */
-            atomic_inc(intersectHitCounter);
+				/* metrics are not compiled depending on user configuration */
+				atomic_inc(intersectHitCounter);
 #endif // EFFICIENCY_METRICS
 			}
 		}
