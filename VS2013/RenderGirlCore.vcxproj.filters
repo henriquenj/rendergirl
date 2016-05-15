@@ -59,6 +59,12 @@
     <ClInclude Include="..\Core\OBJLoader.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Core\BVH.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Core\AABB.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Core\Log.cpp">
@@ -89,6 +95,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Core\OBJLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Core\BVH.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Core\AABB.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

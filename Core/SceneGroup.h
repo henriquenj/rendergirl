@@ -24,6 +24,7 @@
 #include "RenderGirlCore.h"
 #include "CL\cl.h"
 #include "Log.h"
+#include "BVH.h"
 #include <string.h>
 #include <string>
 #include <vector>
@@ -51,6 +52,12 @@ public:
 	Data will be copied, so you are free to use the memory afterwards.
 	Peivous loaded data will be deleted. */
 	void SetVertices(const cl_float3* vertices, const int size);
+
+	/* 
+		Get AABB of this object. If called twice, the result will be cached and no new computing will be performed. 
+		Pay attention if the vertices are in local or global mode, which will also apply to the resulting AABB.
+	*/
+	AABB GetAABB();
 
 	/* Set position on this scene group. It will be applied to all geometry prior rendering. */
 	inline void SetPosition(const cl_float3& pos)
@@ -157,6 +164,9 @@ private:
 	/* tells if the position, scale and rotation have been applied to vertices yet.
 		In other words, if the vertices are in local space or global space. */
 	bool m_local_vertices;
+
+	/* The AABB of this object which all vertices lie, generated on demand only */
+	AABB* m_aabb;
 };
 
 

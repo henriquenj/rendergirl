@@ -19,6 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Core\AABB.h" />
+    <ClInclude Include="..\Core\BVH.h" />
     <ClInclude Include="..\Core\CLMath.h" />
     <ClInclude Include="..\Core\CLStructs.h" />
     <ClInclude Include="..\Core\Log.h" />
@@ -36,6 +38,8 @@
     <ClInclude Include="..\Core\UtilitiesFuncions.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Core\AABB.cpp" />
+    <ClCompile Include="..\Core\BVH.cpp" />
     <ClCompile Include="..\Core\Log.cpp" />
     <ClCompile Include="..\Core\OBJLoader.cpp" />
     <ClCompile Include="..\Core\OCLContext.cpp" />

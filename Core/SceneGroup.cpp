@@ -36,11 +36,13 @@ SceneGroup::SceneGroup(const std::string& name)
 	m_rotation = { { 0.0f, 0.0f, 0.0f } };
 
 	m_local_vertices = true;
+	m_aabb == nullptr;
 }
 
 SceneGroup::~SceneGroup()
 {
-
+	if (m_aabb)
+		delete m_aabb;
 }
 
 void SceneGroup::SetFaces(const cl_int3* faces, const int size)
@@ -68,6 +70,8 @@ void SceneGroup::AddVertex(const cl_float3& vertex)
 	manager.SetOutadatedGeometry();
 
 	m_vertices.push_back(vertex);
+	if (m_aabb)
+		delete m_aabb;
 }
 
 
@@ -78,6 +82,19 @@ void SceneGroup::SetVertices(const cl_float3* vertices, const int size)
 
 	m_vertices.assign(vertices, vertices + size);
 	m_local_vertices = true;
+	if (m_aabb)
+		delete m_aabb;
+}
+
+AABB SceneGroup::GetAABB()
+{
+	if (m_aabb) { return *m_aabb; }
+
+	assert(!m_vertices.empty() && "SceneGroup must have a geometry loaded");
+
+	m_aabb = new AABB(m_vertices);
+
+	return *m_aabb;
 }
 
 bool SceneGroup::CheckCorruptedFaces()
@@ -132,4 +149,6 @@ void SceneGroup::TransformLocalToGlobalVertices()
 	}
 
 	m_local_vertices = false;
+	if (m_aabb)
+		delete m_aabb;
 }
