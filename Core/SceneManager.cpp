@@ -16,12 +16,6 @@
 	License along with this library.
 	*/
 
-#include "glm/glm/mat4x4.hpp"
-#include "glm/glm/gtc/matrix_transform.hpp"
-#include "glm/glm/gtx/transform.hpp"
-#include "glm/glm/gtx/quaternion.hpp"
-
-
 #include "SceneManager.h"
 
 
@@ -165,44 +159,19 @@ bool SceneManager::PrepareScene(OCLKernel* kernel)
 
 		for (it = m_groups.begin(); it != m_groups.end(); it++, groupCount++)
 		{
-			/****************************************************************************************
-			* Apply all transformations on each SceneGroup vertex buffer, this will convert all local
-			* coordinates of each vertex info from Scenegroup to global coordinates,
-			* so we can save these computations on OpenCL device.
-			* This code can reduce a lot when there's native support for OpenCL types on GLM
-			******************************************************************************************/
-
-			/* build transformation matrix to apply to vertex data, starting with scaling */
-			glm::mat4x4 scale = glm::scale(glm::vec3((*it)->m_scale.s[0], (*it)->m_scale.s[1], (*it)->m_scale.s[2]));
-			// rotation using quaternions
-			glm::quat rot(glm::vec3((*it)->m_rotation.s[0], (*it)->m_rotation.s[1], (*it)->m_rotation.s[2]));
-			// translation
-			glm::mat4x4 translation = glm::translate(glm::vec3((*it)->m_pos.s[0], (*it)->m_pos.s[1], (*it)->m_pos.s[2]));
-			
-			// build transformation matrix
-			glm::mat4x4 transform = translation * glm::mat4x4(rot) * scale;
-
-			/* apply object transformations on vertex data */
-			for (int i = 0; i < (*it)->GetVerticesNumber(); i++)
+			if ((*it)->AreVerticesInLocalSpace())
 			{
-				/* vertex to be transformed */
-				glm::vec4 temp((*it)->m_vertices[i].s[0], 
-								(*it)->m_vertices[i].s[1],
-								(*it)->m_vertices[i].s[2],
-								1.0f /* identity */);
-
-				glm::vec4 translated_vertex = transform * temp;
-				vertexRaw[vertexOffset + i] = { { translated_vertex.x, translated_vertex.y, translated_vertex.z } };
-					
+				(*it)->TransformLocalToGlobalVertices();
 			}
-			vertexOffset += (*it)->GetVerticesNumber();
-
 			/* fill the buffers */
 			memcpy(&facesRaw[facesOffset], &((*it)->m_faces[0]), (*it)->GetFaceNumber() * sizeof(cl_int3));
 			groupsRaw[groupCount].facesSize = (*it)->GetFaceNumber();
 			groupsRaw[groupCount].facesStart = facesOffset;
 			groupsRaw[groupCount].vertexSize = (*it)->GetVerticesNumber();
 			facesOffset += (*it)->GetFaceNumber();
+
+			memcpy(&vertexRaw[vertexOffset], &((*it)->m_vertices[0]), (*it)->GetVerticesNumber() * sizeof(cl_float3));
+			vertexOffset += (*it)->GetVerticesNumber();
 
 		}
 

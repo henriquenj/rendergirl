@@ -119,6 +119,15 @@ public:
 	/* check this group for corrupted indexes (such as faces pointing to non-existent vertices).
 		Return true if no corrupted face was found. */
 	bool CheckCorruptedFaces();
+
+	/* Apply the scale, position and transform operations on the geometry of this SceneGroup. */
+	void TransformLocalToGlobalVertices();
+
+	/* Return true if the vertices are in local space.*/
+	inline bool AreVerticesInLocalSpace()
+	{
+		return m_local_vertices;
+	}
 private:
 
 	SceneGroup(const std::string& name);
@@ -144,6 +153,10 @@ private:
 	// local mateiral of this group
 	//TODO: move the material to its own class later on
 	Material m_material;
+
+	/* tells if the position, scale and rotation have been applied to vertices yet.
+		In other words, if the vertices are in local space or global space. */
+	bool m_local_vertices;
 };
 
 
