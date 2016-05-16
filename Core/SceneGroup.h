@@ -24,7 +24,7 @@
 #include "RenderGirlCore.h"
 #include "CL\cl.h"
 #include "Log.h"
-#include "BVH.h"
+#include "AABB.h"
 #include <string.h>
 #include <string>
 #include <vector>

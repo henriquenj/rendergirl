@@ -24,6 +24,7 @@ BVH::BVH()
 	m_left = nullptr;
 	m_right = nullptr;
 	m_object_index = -1;
+	m_x_split = true; /* root node will perform an X split */
 }
 
 
@@ -35,8 +36,81 @@ BVH::~BVH()
 		delete m_right;
 }
 
-AABB BVH::Create(std::vector<SceneGroup*>& objects, std::vector<int>& objects_index, bool x_split)
+AABB BVH::Create(const std::vector<SceneGroup*>& objects, std::vector<int>& objects_index)
 {
-	/* TODO: recursive create the BVH*/
-	return AABB();
+	/* 
+	
+	This function implements the partitioning scheme proposed by Kay and Kajiya
+	in their paper "Ray Tracing Complex Scenes" (1986). At each level, objects 
+	are sorted either by their X position or Y position. From this sorted list, 
+	we split the objects in half, and each of the two subsets of objects are
+	send to the child nodes (two new BVH objects) until it reaches a BVH that
+	has only one object (a leaf node).
+
+	*/
+
+	assert(objects_index.size() > 0 && "At lest one object is necessary");
+	assert(m_left == nullptr && "BVH can only be created once");
+	assert(m_right == nullptr && "BVH can only be created once");
+
+
+	/* if we have more than one object on this vector, it means we are not
+		on a leaf node and the BVH contruction must preceed downwards */
+	if (objects_index.size() > 1)
+	{
+		m_left = new BVH();
+		m_right = new BVH();
+
+		/* sort objects_index */
+		if (m_x_split)
+		{
+			/* this is a root node or middle node with an X split, 
+			 * so we must sort the objects in objects_index vector in X position */
+			std::sort(objects_index.begin(), objects_index.end(), 
+				[&](const int a, const int b)
+			{
+				return objects[a]->GetAABB().GetCenterPoint().s[0] < 
+					objects[b]->GetAABB().GetCenterPoint().s[0];
+			});
+			/* next split is an Y split */
+			m_left->m_x_split = false;
+			m_right->m_x_split = false;
+		}
+		else
+		{
+			/* this is a middle node with an Y split,
+		     * so we must sort the objects in objects_index vector in Y position */
+			std::sort(objects_index.begin(), objects_index.end(),
+				[&](const int a, const int b)
+			{
+				return objects[a]->GetAABB().GetCenterPoint().s[1] <
+					objects[b]->GetAABB().GetCenterPoint().s[1];
+			});
+			/* next split is an X split, so no action must be done on m_left and m_right */
+		}
+
+		/* time for split the objects */
+		std::size_t half_size = objects_index.size() / 2;
+		std::vector<int> left_objects(objects_index.begin(), objects_index.begin() + half_size);
+		std::vector<int> right_objects(objects_index.begin() + half_size, objects_index.end());
+
+		/* generate the two child nodes */
+		AABB left_aabb;
+		AABB right_aabb;
+
+		left_aabb = m_left->Create(objects, left_objects);
+		right_aabb = m_right->Create(objects, right_objects);
+
+		/* combining the two childs node AABBs yields an AABB fiting all geometry of this level */
+		m_aabb = left_aabb + right_aabb;
+	}
+
+	else // this is a leaf node, m_object_index is valid
+	{
+		m_object_index = objects_index[0];
+		/* get AABB and return it to parent node */
+		m_aabb = objects[m_object_index]->GetAABB();
+	}
+
+	return m_aabb;
 }

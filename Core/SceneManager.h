@@ -102,7 +102,7 @@ private:
 	OCLMemoryObject<SceneGroupStruct>* m_groupsBuffer;
 	OCLMemoryObject<Material>* m_materials;
 
-	std::list<SceneGroup*> m_groups;
+	std::vector<SceneGroup*> m_groups;
 	
 	/* copy of context currently being used, filled by RenderGirlShared upon the first rendering */
 	OCLContext* m_context;

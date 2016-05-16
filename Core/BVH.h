@@ -24,8 +24,7 @@
 #include "CL\cl.h"
 #include "glm\glm\glm.hpp"
 #include "AABB.h"
-
-class SceneGroup;
+#include "SceneGroup.h"
 
 
 /* 
@@ -45,12 +44,12 @@ public:
 	/*
 	Recursevely creates the BVHs
 	objects vector contains the pointers to all objects in the scene
-	objects_index is a set of indexes pointing to the objects array that
+	objects_index is a set of indexes pointing to the objects vector that
 				  will be split into a new level of the tree
 	x_split defines if this split will be on the X or Y axis
-	returns an AABB fitting all the geometry of this BVH and downwards
+	returns an AABB fitting all the geometry of child nodes
 	*/
-	AABB Create(std::vector<SceneGroup*>& objects, std::vector<int>& objects_index, bool x_split);
+	AABB Create(const std::vector<SceneGroup*>& objects, std::vector<int>& objects_index);
 
 private:
 
@@ -58,11 +57,14 @@ private:
 	BVH* m_left;
 	BVH* m_right;
 
-	/* The bounding box that fits all geometry of this node downward */
+	/* The bounding box that fits all geometry of this node and its children */
 	AABB m_aabb;
 	
 	/* Index pointing to an SceneGroup in the list of objects. Only valid on a leaf node */
 	int m_object_index;
+
+	/* True if this BVH was sorted in the X coordinated */
+	bool m_x_split;
 };
 
 

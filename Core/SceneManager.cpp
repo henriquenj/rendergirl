@@ -17,6 +17,7 @@
 	*/
 
 #include "SceneManager.h"
+#include "BVH.h"
 
 
 SceneManager::SceneManager()
@@ -40,7 +41,7 @@ SceneManager::~SceneManager()
 void SceneManager::ClearScene()
 {
 	/* clear all groups in scene */
-	std::list<SceneGroup*>::iterator it;
+	std::vector<SceneGroup*>::iterator it;
 	for (it = m_groups.begin(); it != m_groups.end(); it++)
 	{
 		delete *it;
@@ -85,7 +86,7 @@ void SceneManager::DeleteSceneGroup(SceneGroup* group)
 	&& "This scene group is not part of this scene!");
 
 	delete group;
-	m_groups.remove(group);
+	m_groups.erase(std::remove(m_groups.begin(), m_groups.end(), group),m_groups.end());
 
 }
 
@@ -113,7 +114,7 @@ bool SceneManager::PrepareScene(OCLKernel* kernel)
 	assert(kernel->GetOk() && "Kernel must be ready");
 
 	/* we have to setup  the 4 first arguments of the kernel: vertices, faces, groups and materials */
-	std::list<SceneGroup*>::iterator it;
+	std::vector<SceneGroup*>::iterator it;
 	int groupCount = 0;
 	/* check if we need to check the groups for chances in the geometry */
 	if (!m_geometryUpdated)
@@ -127,12 +128,30 @@ bool SceneManager::PrepareScene(OCLKernel* kernel)
 
 		int facesCount = 0;
 		int vertexCount = 0;
-		/* query the groups for face count and vertex count */
+		/* covert geometry to global space and query for vertex number and faces number */
 		for (it = m_groups.begin(); it != m_groups.end(); it++)
 		{
+			if ((*it)->AreVerticesInLocalSpace())
+			{
+				(*it)->TransformLocalToGlobalVertices();
+			}
+
+			/* query the groups for face count and vertex count */
 			vertexCount += (*it)->GetVerticesNumber();
 			facesCount += (*it)->GetFaceNumber();
 		}
+
+		/* create the BVHs */
+		std::vector<int> objects_index;
+		objects_index.reserve(m_groups.size());
+		for (int i = 0; i < m_groups.size(); i++)
+		{
+			/* at the root node, the list of indexes contains opaque
+			* handlers to the whole list of objects in the scene */
+			objects_index.push_back(i);
+		}
+		BVH root_bvh;
+		root_bvh.Create(m_groups, objects_index);
 
 		/* alloc enought memory */
 		cl_bool error;
@@ -159,10 +178,6 @@ bool SceneManager::PrepareScene(OCLKernel* kernel)
 
 		for (it = m_groups.begin(); it != m_groups.end(); it++, groupCount++)
 		{
-			if ((*it)->AreVerticesInLocalSpace())
-			{
-				(*it)->TransformLocalToGlobalVertices();
-			}
 			/* fill the buffers */
 			memcpy(&facesRaw[facesOffset], &((*it)->m_faces[0]), (*it)->GetFaceNumber() * sizeof(cl_int3));
 			groupsRaw[groupCount].facesSize = (*it)->GetFaceNumber();
@@ -206,20 +221,19 @@ bool SceneManager::PrepareScene(OCLKernel* kernel)
 
 	m_context->SyncAllMemoryHostToDevice();
 	m_geometryUpdated = true;
-		
+
 	return true;
 }
 
 void SceneManager::RemoveEmptyGroups()
 {
-	std::list<SceneGroup*>::iterator it;
-	std::vector<SceneGroup*> toDelete;
-	for (it = m_groups.begin(); it != m_groups.end(); it++)
+	for (int i = 0; i < m_groups.size(); i++)
 	{
-		if ((*it)->GetVerticesNumber() == 0 || (*it)->GetFaceNumber() == 0)
-			toDelete.push_back((*it));
+		if (m_groups[i]->GetVerticesNumber() == 0 || m_groups[i]->GetFaceNumber() == 0)
+		{
+			m_groups.erase(m_groups.begin() + i);
+			i--;
+		}
 	}
 
-	for (int p = 0; p < toDelete.size(); p++)
-		m_groups.remove(toDelete[p]);
 }
