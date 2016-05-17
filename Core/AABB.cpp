@@ -28,7 +28,7 @@ AABB::~AABB()
 {
 }
 
-AABB::AABB(std::vector<cl_float3>& vertices)
+AABB::AABB(const std::vector<cl_float3>& vertices)
 {
 	this->Create(vertices);
 }
@@ -56,7 +56,7 @@ AABB AABB::operator+(const AABB& other) const
 	return result;
 }
 
-void AABB::Create(std::vector<cl_float3>& vertices)
+void AABB::Create(const std::vector<cl_float3>& vertices)
 {
 	float x_max = -std::numeric_limits<float>::max();
 	float x_min = std::numeric_limits<float>::max();

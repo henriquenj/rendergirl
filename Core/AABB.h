@@ -30,7 +30,7 @@ public:
 	AABB();
 
 	/* Constructor that also generated the AABB itself (same as create function) */
-	AABB(std::vector<cl_float3>& vertices);
+	AABB(const std::vector<cl_float3>& vertices);
 
 	~AABB();
 
@@ -38,7 +38,7 @@ public:
 	AABB operator+(const AABB& other) const;
 
 	/* given a list of vertices, computes the AABB of the object */
-	void Create(std::vector<cl_float3>& vertices);
+	void Create(const std::vector<cl_float3>& vertices);
 
 	inline cl_float3 GetMaxPoint() const
 	{
