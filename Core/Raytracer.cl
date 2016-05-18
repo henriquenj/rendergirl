@@ -164,7 +164,7 @@ int Intersect(const float3   V1,  // Triangle vertices
 
 /* Here starts the raytracer*/
 __kernel void Raytrace(__global float3* vertices, __global int4* faces, __global SceneGroupStruct* groups, __global Material* materials,
-	__global BVHTreeNode* bvhTreeNode, __global SceneInformation* sceneInfo, __global uchar4* frame, __global Camera* camera, 
+	__global BVHTreeNode* bvhTreeNode, __global SceneInformation* sceneInfo, __global uchar4* frame, __global Camera* camera,
 	__global Light* light, __global uint* intersectCounter, __global uint* intersectHitCounter)
 {
 	int id = get_global_id(0);
@@ -190,9 +190,7 @@ __kernel void Raytrace(__global float3* vertices, __global int4* faces, __global
 	float3 point_i; // intersection point
 	float3 normal; // face normal
 	float3 l_origin = camera->pos; // local copy of origin of rays (camera/eye)
-	/* this is used to correct the offsets of the index inside the faces buffer, since they are using local indexes
-		(related to the group to which they are associated) */
-	int vertexOffset = 0;
+
 	for (unsigned int p = 0; p < sceneInfo->groupsSize; p++)
 	{
 		// for each face, look for intersections with the ray
@@ -208,9 +206,9 @@ __kernel void Raytrace(__global float3* vertices, __global int4* faces, __global
 			atomic_inc(intersectCounter);
 #endif // EFFICIENCY_METRICS
 
-			result = Intersect(vertices[faces[k].x + vertexOffset],
-								vertices[faces[k].y + vertexOffset],
-								vertices[faces[k].z + vertexOffset],
+			result = Intersect(vertices[faces[k].x],
+								vertices[faces[k].y],
+								vertices[faces[k].z],
 								l_origin, ray_dir, &temp_normal, &temp_point, &distance);
 
 			if (result > 0)
@@ -230,8 +228,6 @@ __kernel void Raytrace(__global float3* vertices, __global int4* faces, __global
 #endif // EFFICIENCY_METRICS
 			}
 		}
-		/* update offset for the next group */
-		vertexOffset += groups[p].vertexSize;
 	}
 	// paint pixel
 	if (face_i != -1)

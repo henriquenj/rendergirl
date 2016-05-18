@@ -195,12 +195,24 @@ bool SceneManager::PrepareScene(OCLKernel* kernel)
 
 		for (it = m_groups.begin(); it != m_groups.end(); it++, groupCount++)
 		{
+			/* we need to correct the offsets of the index inside the faces buffer, since they are using local indexes
+			 * (related to the group to which they are associated), for the OpenCL device they must point to global 
+			 * indexes in the vertex buffer (describing the entire scene) */
+			for (int p = 0; p < (*it)->GetFaceNumber(); p++)
+			{
+				facesRaw[facesOffset + p].s[0] = (*it)->m_faces[p].s[0] + vertexOffset;
+				facesRaw[facesOffset + p].s[1] = (*it)->m_faces[p].s[1] + vertexOffset;
+				facesRaw[facesOffset + p].s[2] = (*it)->m_faces[p].s[2] + vertexOffset;
+			}
+
 			/* fill the buffers */
-			memcpy(&facesRaw[facesOffset], &((*it)->m_faces[0]), (*it)->GetFaceNumber() * sizeof(cl_int3));
 			groupsRaw[groupCount].facesSize = (*it)->GetFaceNumber();
 			groupsRaw[groupCount].facesStart = facesOffset;
 			groupsRaw[groupCount].vertexSize = (*it)->GetVerticesNumber();
 			facesOffset += (*it)->GetFaceNumber();
+			/* XXX: the order of insertion of the groups in groupsRaw must follow 
+			 * the same order it was generated for BVH creation (which means, the order of
+			 * m_groups, so the index on BVH can match. */
 
 			memcpy(&vertexRaw[vertexOffset], &((*it)->m_vertices[0]), (*it)->GetVerticesNumber() * sizeof(cl_float3));
 			vertexOffset += (*it)->GetVerticesNumber();
