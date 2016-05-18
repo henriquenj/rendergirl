@@ -25,12 +25,13 @@ SceneManager::SceneManager()
 	m_geometryUpdated = false;
 	m_materialsUpdated = false;
 
-	m_facesBuffer = NULL;
-	m_groupsBuffer = NULL;
-	m_verticesBuffer = NULL;
-	m_materials = NULL;
+	m_facesBuffer = nullptr;
+	m_groupsBuffer = nullptr;
+	m_verticesBuffer = nullptr;
+	m_materials = nullptr;
+	m_bvhTreeNodes = nullptr;
 
-	m_context = NULL;
+	m_context = nullptr;
 }
 
 SceneManager::~SceneManager()
@@ -48,23 +49,26 @@ void SceneManager::ClearScene()
 	}
 	m_groups.clear();
 
-	if (m_context != NULL)
+	if (m_context != nullptr)
 	{
-		if (m_facesBuffer != NULL)
+		if (m_facesBuffer != nullptr)
 			m_context->DeleteMemoryObject(m_facesBuffer);
-		if (m_verticesBuffer != NULL)
+		if (m_verticesBuffer != nullptr)
 			m_context->DeleteMemoryObject(m_verticesBuffer);
-		if (m_groupsBuffer != NULL)
+		if (m_groupsBuffer != nullptr)
 			m_context->DeleteMemoryObject(m_groupsBuffer);
-		if (m_materials != NULL)
+		if (m_materials != nullptr)
 			m_context->DeleteMemoryObject(m_materials);
+		if (m_bvhTreeNodes != nullptr)
+			m_context->DeleteMemoryObject(m_bvhTreeNodes);
 			
 	}
 
-	m_facesBuffer = NULL;
-	m_verticesBuffer = NULL;
-	m_groupsBuffer = NULL;
-	m_materials = NULL;
+	m_facesBuffer = nullptr;
+	m_verticesBuffer = nullptr;
+	m_groupsBuffer = nullptr;
+	m_materials = nullptr;
+	m_bvhTreeNodes = nullptr;
 
 	m_geometryUpdated = false;
 	m_materialsUpdated = false;
@@ -93,10 +97,11 @@ void SceneManager::DeleteSceneGroup(SceneGroup* group)
 void SceneManager::SetContext(const OCLContext* context)
 {
 	/* changes in the context imply that those memory objects no longer exist */
-	m_facesBuffer = NULL;
-	m_verticesBuffer = NULL;
-	m_groupsBuffer = NULL;
-	m_materials = NULL;
+	m_facesBuffer = nullptr;
+	m_verticesBuffer = nullptr;
+	m_groupsBuffer = nullptr;
+	m_materials = nullptr;
+	m_bvhTreeNodes = nullptr;
 	m_geometryUpdated = false;
 	m_materialsUpdated = false;
 
@@ -119,12 +124,14 @@ bool SceneManager::PrepareScene(OCLKernel* kernel)
 	/* check if we need to check the groups for chances in the geometry */
 	if (!m_geometryUpdated)
 	{
-		if (m_facesBuffer != NULL)
+		if (m_facesBuffer != nullptr)
 			m_context->DeleteMemoryObject(m_facesBuffer);
-		if (m_verticesBuffer != NULL)
+		if (m_verticesBuffer != nullptr)
 			m_context->DeleteMemoryObject(m_verticesBuffer);
-		if (m_groupsBuffer != NULL)
+		if (m_groupsBuffer != nullptr)
 			m_context->DeleteMemoryObject(m_groupsBuffer);
+		if (m_bvhTreeNodes != nullptr)
+			m_context->DeleteMemoryObject(m_bvhTreeNodes);
 
 		int facesCount = 0;
 		int vertexCount = 0;
@@ -146,10 +153,11 @@ bool SceneManager::PrepareScene(OCLKernel* kernel)
 		objects_index.reserve(m_groups.size());
 		for (int i = 0; i < m_groups.size(); i++)
 		{
-			/* at the root node, the list of indexes contains opaque
-			* handlers to the whole list of objects in the scene */
+			/* at the root node, the list of indexes contains 
+			 * to the whole list of objects in the scene */
 			objects_index.push_back(i);
 		}
+
 		BVH root_bvh;
 		root_bvh.Create(m_groups, objects_index);
 
@@ -168,9 +176,18 @@ bool SceneManager::PrepareScene(OCLKernel* kernel)
 		if (error)
 			return false;
 
+		m_bvhTreeNodes = m_context->CreateMemoryObject<BVHTreeNode>(root_bvh.GetNodesAmount(), ReadOnly, &error);
+		if (error)
+			return false;
+
 		cl_int3* facesRaw = new cl_int3[facesCount];
 		cl_float3* vertexRaw = new cl_float3[vertexCount];
 		SceneGroupStruct* groupsRaw = new SceneGroupStruct[m_groups.size()];
+		BVHTreeNode* bvhTreeNodesRaw = new BVHTreeNode[root_bvh.GetNodesAmount()];
+
+		/* build  traversal array, used for traversal within OpenCL device */
+		int offset_traversal = 0;
+		root_bvh.BuildTraversal(bvhTreeNodesRaw,offset_traversal);
 
 		int facesOffset = 0;
 		int vertexOffset = 0;
@@ -190,11 +207,11 @@ bool SceneManager::PrepareScene(OCLKernel* kernel)
 
 		}
 
-		// set date on memroy objects
+		// set date on memory objects
 		m_verticesBuffer->SetData(vertexRaw, false);
 		m_facesBuffer->SetData(facesRaw, false);
 		m_groupsBuffer->SetData(groupsRaw, false);
-
+		m_bvhTreeNodes->SetData(bvhTreeNodesRaw, false);
 	}
 
 	if (m_materials != NULL)
@@ -218,6 +235,7 @@ bool SceneManager::PrepareScene(OCLKernel* kernel)
 	kernel->SetArgument(1, m_facesBuffer);
 	kernel->SetArgument(2, m_groupsBuffer);
 	kernel->SetArgument(3, m_materials);
+	kernel->SetArgument(4, m_bvhTreeNodes);
 
 	m_context->SyncAllMemoryHostToDevice();
 	m_geometryUpdated = true;

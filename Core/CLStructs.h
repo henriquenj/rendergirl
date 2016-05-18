@@ -22,7 +22,7 @@
 
 #include "CL\cl.h"
 
-//Any change on those structs should be copied back to the device code on Raytracer.cl* /
+/* XXX: Any change on those structs should be copied back to the device code on Raytracer.cl */
 
 /* Stores the concept of a Camera. The interface only needs to fill the pos, lookAt (or dir) and the up information. */
 typedef struct Camera
@@ -54,6 +54,7 @@ typedef struct SceneInformation
 	cl_int height;
 	cl_int pixelCount;
 	cl_int groupsSize;
+	cl_int bvhSize;
 	cl_float proportion_x;
 	cl_float proportion_y;
 } SceneInformation;
@@ -74,6 +75,28 @@ typedef struct Material
 	cl_float3 specularColor;//KS
 }Material;
 
+/* A packed AABB structure suitable to be transmitted to OpenCL */
+typedef struct CL_AABB
+{
+	cl_float3 point_max;
+	cl_float3 point_min;
+}CL_AABB;
+
+/* The BVH structure organized as an array, suitable for stackless traversal within OpenCL */
+typedef struct BVHTreeNode
+{
+	/* The combined AABB of this node and its children */
+	CL_AABB aabb;
+
+	/* The first element of packet_indexes is the escape index,
+	 * which means if a ray failed to hit the AABB of this node,
+	 * it must resume the traversal at the position pointed by
+	 * packet_indexes.s[0]
+	 * 
+	 * The second element is only valid on leaf nodes, it points to 
+	 * position within the SceneGroupStruct array, -1 otherwise */
+	 cl_int2 packet_indexes;
+}BVHTreeNode;
 
 /* default material to objects that don't have one */
 static const Material s_defaultMaterial = 

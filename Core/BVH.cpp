@@ -25,6 +25,7 @@ BVH::BVH()
 	m_right = nullptr;
 	m_object_index = -1;
 	m_x_split = true; /* root node will perform an X split */
+	nodes_amount = 1; /* this BVH has at least its own node */
 }
 
 
@@ -103,6 +104,7 @@ AABB BVH::Create(const std::vector<SceneGroup*>& objects, std::vector<int>& obje
 
 		/* combining the two childs node AABBs yields an AABB fiting all geometry of this level */
 		m_aabb = left_aabb + right_aabb;
+		nodes_amount = m_left->nodes_amount + m_right->nodes_amount + 1; /* +1 for this own node */
 	}
 
 	else // this is a leaf node, m_object_index is valid
@@ -113,4 +115,45 @@ AABB BVH::Create(const std::vector<SceneGroup*>& objects, std::vector<int>& obje
 	}
 
 	return m_aabb;
+}
+
+void BVH::BuildTraversal(BVHTreeNode* traversal_array, int& offset)const
+{
+	assert(traversal_array != nullptr && "Traversal array must be pre-allocated");
+	assert((m_left != nullptr || m_object_index != -1) &&
+		"Node must be a leaf, root or middle node. BVH was probably not generated");
+
+	/* 
+	* This function builds an array of a fixed traversal over this BVH.
+	* This implementation is based on the work Thrane and Simonsen
+	* in their master thesis "A Comparison of Acceleration Structures 
+	* for GPU Assisted Ray Tracing" (2005), specifically the chapter where 
+	* they describe traversal code for BVHs on GPUs.
+	*/
+
+	int local_offset = offset;
+	traversal_array[offset].aabb.point_max = m_aabb.GetMaxPoint();
+	traversal_array[offset].aabb.point_min = m_aabb.GetMinPoint();
+
+	if (m_object_index == -1) // this is a root or middle node
+	{
+		traversal_array[local_offset].packet_indexes.s[1] = -1;
+
+		offset++;/* traversal resumes on the left node */
+		m_left->BuildTraversal(traversal_array, offset);
+		/* offset was modified by the left branch */
+		m_right->BuildTraversal(traversal_array, offset);
+		
+		/* offset after traversing the right branch  is the scape index */
+		traversal_array[local_offset].packet_indexes.s[0] = offset;
+
+	}
+	else // this is a leaf node
+	{
+		traversal_array[local_offset].packet_indexes.s[1] = m_object_index;
+		traversal_array[local_offset].packet_indexes.s[0] = ++offset; /* scape index */
+		/* on leaf node the escape index is always offset + 1, but
+		 * we'll store it here for the sake of simplicity */
+
+	}
 }

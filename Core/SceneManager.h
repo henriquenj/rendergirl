@@ -101,6 +101,7 @@ private:
 	OCLMemoryObject<cl_float3>* m_verticesBuffer;
 	OCLMemoryObject<SceneGroupStruct>* m_groupsBuffer;
 	OCLMemoryObject<Material>* m_materials;
+	OCLMemoryObject<BVHTreeNode>* m_bvhTreeNodes;
 
 	std::vector<SceneGroup*> m_groups;
 	

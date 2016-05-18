@@ -52,6 +52,7 @@ typedef struct SceneInformation
 	int height;
 	int pixelCount;
 	int groupsSize;
+	int bvhSize;
 	float proportion_x;
 	float proportion_y;
 } SceneInformation;
@@ -72,6 +73,28 @@ typedef struct Material
 	float3 specularColor;//KS
 }Material;
 
+/* A packed AABB structure suitable to be transmitted to OpenCL */
+typedef struct CL_AABB
+{
+	float3 point_max;
+	float3 point_min;
+}CL_AABB;
+
+/* The BVH structure organized as an array, suitable for stackless traversal within OpenCL */
+typedef struct BVHTreeNode
+{
+	/* The combined AABB of this node and its children */
+	CL_AABB aabb;
+
+	/* The first element of packet_indexes is the escape index,
+	* which means if a ray failed to hit the AABB of this node,
+	* it must resume the traversal at the position pointed by
+	* packet_indexes.s[0]
+	*
+	* The second element is only valid on leaf nodes, it points to
+	* position within the SceneGroupStruct array, -1 otherwise */
+	int2 packet_indexes;
+}BVHTreeNode;
 
 
 /* Möller–Trumbore intersection algorithm - http://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm */
@@ -141,8 +164,8 @@ int Intersect(const float3   V1,  // Triangle vertices
 
 /* Here starts the raytracer*/
 __kernel void Raytrace(__global float3* vertices, __global int4* faces, __global SceneGroupStruct* groups, __global Material* materials,
-	__global SceneInformation* sceneInfo, __global uchar4* frame, __global Camera* camera, __global Light* light,
-    __global uint* intersectCounter, __global uint* intersectHitCounter)
+	__global BVHTreeNode* bvhTreeNode, __global SceneInformation* sceneInfo, __global uchar4* frame, __global Camera* camera, 
+	__global Light* light, __global uint* intersectCounter, __global uint* intersectHitCounter)
 {
 	int id = get_global_id(0);
 	// grab XY coordinate of this instance

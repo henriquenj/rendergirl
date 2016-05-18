@@ -310,6 +310,8 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 	m_scene.height = height;
 	m_scene.pixelCount = pixelCount;
 	m_scene.groupsSize = sceneManager.GetGroupsCount();
+	/* TODO: this private access is awful, remove this as soon as possible */
+	m_scene.bvhSize = sceneManager.m_bvhTreeNodes->GetSize();
 	m_scene.proportion_x = (float)width / (float)height;
 	m_scene.proportion_y = (float)height / (float)width;
 
@@ -360,12 +362,12 @@ bool RenderGirlShared::Render(int width, int height, Camera &camera, Light &ligh
 	}
 
 	// set remaining arguments
-	m_kernel->SetArgument(4, sceneInfoMem);
-	m_kernel->SetArgument(5, m_frame);
-	m_kernel->SetArgument(6, mem_cam);
-	m_kernel->SetArgument(7, mem_light);
-	m_kernel->SetArgument(8, mem_intersectCounter);
-	m_kernel->SetArgument(9, mem_intersectHitCounter);
+	m_kernel->SetArgument(5, sceneInfoMem);
+	m_kernel->SetArgument(6, m_frame);
+	m_kernel->SetArgument(7, mem_cam);
+	m_kernel->SetArgument(8, mem_light);
+	m_kernel->SetArgument(9, mem_intersectCounter);
+	m_kernel->SetArgument(10, mem_intersectHitCounter);
 
 	m_kernel->SetGlobalWorkSize(pixelCount); // one work-iten per pixel
 

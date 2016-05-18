@@ -25,6 +25,7 @@
 #include "glm\glm\glm.hpp"
 #include "AABB.h"
 #include "SceneGroup.h"
+#include "CLStructs.h"
 
 
 /* 
@@ -42,14 +43,27 @@ public:
 	~BVH();
 
 	/*
-	Recursevely creates the BVHs
-	objects vector contains the pointers to all objects in the scene
-	objects_index is a set of indexes pointing to the objects vector that
-				  will be split into a new level of the tree
-	x_split defines if this split will be on the X or Y axis
-	returns an AABB fitting all the geometry of child nodes
+	* Recursevely creates the BVHs
+	* objects vector contains the pointers to all objects in the scene
+	* objects_index is a set of indexes pointing to the objects vector that
+	* 			  will be split into a new level of the tree
+	* returns an AABB fitting all the geometry of child nodes
 	*/
 	AABB Create(const std::vector<SceneGroup*>& objects, std::vector<int>& objects_index);
+
+	/* Return the amount of nodes this BVH has, including its own */
+	inline int GetNodesAmount() const
+	{
+		return nodes_amount;
+	}
+
+	/* Resursvely traversal this BVH in a top-botton left-right manner and build
+	 * an array representing the traversal. 
+	 * traversal_array is a pre-allocated array of size of the amount of nodes in 
+	 *                 in the entire BVH (from root node) 
+	 * offset is the amount of the array filled so far, must start with 0
+	 */
+	void BuildTraversal(BVHTreeNode* traversal_array, int& offset) const;
 
 private:
 
@@ -65,6 +79,9 @@ private:
 
 	/* True if this BVH was sorted in the X coordinated */
 	bool m_x_split;
+
+	/* The amount of nodes on this level of the tree, including this own */
+	int nodes_amount;
 };
 
 
