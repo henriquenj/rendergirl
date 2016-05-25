@@ -141,7 +141,8 @@ void BVH::BuildTraversal(BVHTreeNode* traversal_array, int& offset)const
 
 		offset++;/* traversal resumes on the left node */
 		m_left->BuildTraversal(traversal_array, offset);
-		/* offset was modified by the left branch */
+
+		/* offset was modified by the left branch, now traversing through the right */
 		m_right->BuildTraversal(traversal_array, offset);
 		
 		/* offset after traversing the right branch  is the scape index */

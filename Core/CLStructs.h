@@ -96,6 +96,7 @@ typedef struct BVHTreeNode
 	 * The second element is only valid on leaf nodes, it points to 
 	 * position within the SceneGroupStruct array, -1 otherwise */
 	 cl_int2 packet_indexes;
+	 cl_int2 padding; /* extra 8 bytes due do memory aligment */
 }BVHTreeNode;
 
 /* default material to objects that don't have one */

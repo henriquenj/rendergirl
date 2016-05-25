@@ -94,7 +94,28 @@ typedef struct BVHTreeNode
 	* The second element is only valid on leaf nodes, it points to
 	* position within the SceneGroupStruct array, -1 otherwise */
 	int2 packet_indexes;
+    int2 padding; /* extra 8 bytes due do memory aligment */
 }BVHTreeNode;
+
+
+/* Kay and Kayjia ray-box intersection algorithm */
+bool RayBoxIntersect(
+    const float3 O, // Ray origin
+    const float3 D, // Ray direction
+    const CL_AABB box)
+{
+    float3 tmin, tmax;
+    tmin = (box.point_min - O) / D;
+    tmax = (box.point_max - O) / D;
+
+    float3 real_min = min(tmin, tmax);
+    float3 real_max = max(tmin, tmax);
+
+    float minmax = min(min(real_max.x, real_max.y), real_max.z);
+    float maxmin = max(max(real_min.x, real_min.y), real_min.z);
+
+    return minmax >= maxmin;
+}
 
 
 /* Möller–Trumbore intersection algorithm - http://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm */
@@ -191,44 +212,69 @@ __kernel void Raytrace(__global float3* vertices, __global int4* faces, __global
 	float3 normal; // face normal
 	float3 l_origin = camera->pos; // local copy of origin of rays (camera/eye)
 
-	for (unsigned int p = 0; p < sceneInfo->groupsSize; p++)
+    /* Thrane and Simonsen traversal algorithm from "A Comparison of Acceleration Structures
+	 * for GPU Assisted Ray Tracing" */
+    int i = 0;
+    /* traverse the tree in a fixed order generated on host code */
+    while (i < sceneInfo->bvhSize)
 	{
-		// for each face, look for intersections with the ray
-		int facesEnd = groups[p].facesStart + groups[p].facesSize; // the index where the faces of this group ends
-		for (unsigned int k = groups[p].facesStart; k < facesEnd; k++)
-		{
-			int result;
-			float3 temp_point; // temporary intersection point
-			float3 temp_normal;// temporary normal vector
+        /* Intersect agaisnst this node of the tree */
+        if (RayBoxIntersect(l_origin, ray_dir,bvhTreeNode[i].aabb))
+        {
+            /* nice, a hit, but this may be a leaf node or middle node */
+            if (bvhTreeNode[i].packet_indexes.y != -1)
+            {
+                /* this is an object, so we must test agains all geometry  */
+                int p = bvhTreeNode[i].packet_indexes.y;
+
+                // for each face, look for intersections with the ray
+                int facesEnd = groups[p].facesStart + groups[p].facesSize; // the index where the faces of this group ends
+                for (unsigned int k = groups[p].facesStart; k < facesEnd; k++)
+                {
+                    int result;
+                    float3 temp_point; // temporary intersection point
+                    float3 temp_normal;// temporary normal vector
 
 #ifdef EFFICIENCY_METRICS
-			/* metrics are not compiled depending on user configuration */
-			atomic_inc(intersectCounter);
+                    /* metrics are not compiled depending on user configuration */
+                    atomic_inc(intersectCounter);
 #endif // EFFICIENCY_METRICS
 
-			result = Intersect(vertices[faces[k].x],
-								vertices[faces[k].y],
-								vertices[faces[k].z],
-								l_origin, ray_dir, &temp_normal, &temp_point, &distance);
+                    result = Intersect(vertices[faces[k].x],
+                                       vertices[faces[k].y],
+                                       vertices[faces[k].z],
+                                       l_origin, ray_dir, &temp_normal, &temp_point, &distance);
 
-			if (result > 0)
-			{
-				//some collision
-				if (distance < maxDistance) // check if it's the closest to the camera so far
-				{
-					maxDistance = distance;
-					face_i = k;
-					point_i = temp_point;
-					normal = temp_normal;
-					groupIndex = p;
-				}
+                    if (result > 0)
+                    {
+                        //some collision
+                        if (distance < maxDistance) // check if it's the closest to the camera so far
+                        {
+                            maxDistance = distance;
+                            face_i = k;
+                            point_i = temp_point;
+                            normal = temp_normal;
+                            groupIndex = p;
+                        }
 #ifdef EFFICIENCY_METRICS
-				/* metrics are not compiled depending on user configuration */
-				atomic_inc(intersectHitCounter);
+                        /* metrics are not compiled depending on user configuration */
+                        atomic_inc(intersectHitCounter);
 #endif // EFFICIENCY_METRICS
-			}
-		}
+                    }
+                }
+            }
+            /* continue on the next node */
+            i++;
+        }
+        else
+        {
+            /* no hit, this subtree is dead, proceed to the scape index of this node */
+            i = bvhTreeNode[i].packet_indexes.x;
+        }
+
 	}
+
+
 	// paint pixel
 	if (face_i != -1)
 	{
