@@ -34,7 +34,7 @@
 # error Another compiler detect, please include the proper macros
 #endif
 
-#define RENDERGIRLCORE_VERSION "0.0.1"
+#define RENDERGIRLCORE_VERSION "0.1"
 #define RENDERGIRLCORE_COMPILED_DATE __DATE__
 
 /* Core project contains only the core renderer and the OpenCL wrappers.
