@@ -1,3 +1,5 @@
+[![Build status](https://ci.appveyor.com/api/projects/status/bmyr05fi72274srf/branch/master?svg=true)](https://ci.appveyor.com/project/henriquenj/rendergirl/branch/master)
+
 Render Girl
 =======
 RenderGirl is an ongoing effort to build an open source raytracer capable of running inside the OpenCL architecture. There are currently few options available for this kind of software, since most part of the implementations are either on CUDA, closed-source, or both.
