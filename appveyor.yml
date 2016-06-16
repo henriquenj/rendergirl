@@ -7,3 +7,6 @@ build:
   parallel: true
   project: VS2013/RenderGirlOpenCL.sln
   verbosity: normal
+
+install:
+  - git submodule update --init --recursive
